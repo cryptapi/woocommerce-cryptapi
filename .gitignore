@@ -1,0 +1,10 @@
+**/__pycache__
+node_modules/
+.idea/
+*.pyc
+
+settings_docker.py
+
+**/migrations
+
+docker-compose.yml
