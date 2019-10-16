@@ -149,15 +149,14 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
 
     function validate_fields()
     {
-        return array_key_exists($_POST['cryptapi_coin'], $this->coin_options);
+        return array_key_exists(sanitize_text_field($_POST['cryptapi_coin']), $this->coin_options);
     }
 
     function process_payment($order_id)
     {
         global $woocommerce;
-        $order = new WC_Order($order_id);
 
-        $selected = $_POST['cryptapi_coin'];
+        $selected = sanitize_text_field($_POST['cryptapi_coin']);
         $addr = $this->get_option($selected . '_address');
 
         if (!empty($addr)) {
@@ -170,10 +169,12 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
                 'nonce' => $nonce,
             ), home_url('/')));
 
-            $currency = get_woocommerce_currency();
-            $total = $order->get_total('edit');
 
             try {
+                $order = new WC_Order($order_id);
+                $total = $order->get_total('edit');
+                $currency = get_woocommerce_currency();
+
                 $info = CryptAPI\CryptAPI::get_info($selected);
                 $min_tx = CryptAPI\CryptAPI::convert($info->minimum_transaction, $selected);
 
@@ -245,15 +246,24 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
 
     function order_status()
     {
-        $order_id = $_REQUEST['order_id'];
-        $order = new WC_Order($order_id);
+        $order_id = sanitize_text_field($_REQUEST['order_id']);
 
-        $data = [
-            'is_paid' => $order->is_paid(),
-            'is_pending' => boolval($order->get_meta('cryptapi_pending')),
-        ];
+        try {
+            $order = new WC_Order($order_id);
 
-        echo json_encode($data);
+            $data = [
+                'is_paid' => $order->is_paid(),
+                'is_pending' => boolval($order->get_meta('cryptapi_pending')),
+            ];
+
+            echo json_encode($data);
+            die();
+
+        } catch (Exception $e) {
+            //
+        }
+
+        echo json_encode(['status' => 'error', 'error' => 'not a valid order_id']);
         die();
     }
 
@@ -271,94 +281,14 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
             'order_id' => $order_id,
         ), home_url('/wp-admin/admin-ajax.php'));
 
+        wp_enqueue_script('ca-jquery-qrcode', PLUGIN_CRYPTAPI_URL . 'static/jquery-qrcode-0.17.0.min.js', array('jquery'));
+        wp_enqueue_script('ca-payment', PLUGIN_CRYPTAPI_URL . 'static/payment.js', array('ca-jquery-qrcode'), false, true);
+        wp_add_inline_script('ca-payment', "function maybe_fill(){if(jQuery('.payment-panel').length>1){jQuery('.payment-panel')[1].remove();return}let ca_address='{$address_in}';let ca_value='{$crypto_value}';let ca_coin='{$crypto_coin}';let ajax_url='{$ajax_url}';check_status(ajax_url);fill(ca_address,ca_value,ca_coin)}jQuery(function(){setTimeout(maybe_fill(),Math.floor(Math.random()*500))})");
+        wp_enqueue_style('ca-loader-css', PLUGIN_CRYPTAPI_URL . 'static/loader.css');
+
         ?>
 
-        <style type="text/css">
-            @keyframes lds-dual-ring {
-                0% {
-                    -webkit-transform: rotate(0);
-                    transform: rotate(0);
-                }
-                100% {
-                    -webkit-transform: rotate(360deg);
-                    transform: rotate(360deg);
-                }
-            }
-
-            @-webkit-keyframes lds-dual-ring {
-                0% {
-                    -webkit-transform: rotate(0);
-                    transform: rotate(0);
-                }
-                100% {
-                    -webkit-transform: rotate(360deg);
-                    transform: rotate(360deg);
-                }
-            }
-
-            .lds-dual-ring {
-                position: relative;
-            }
-
-            .lds-dual-ring div {
-                box-sizing: border-box;
-            }
-
-            .lds-dual-ring > div {
-                position: absolute;
-                width: 174px;
-                height: 174px;
-                top: 13px;
-                left: 13px;
-                border-radius: 50%;
-                border: 14px solid #000;
-                border-color: #0288d1 transparent #0288d1 transparent;
-                -webkit-animation: lds-dual-ring 5s linear infinite;
-                animation: lds-dual-ring 5s linear infinite;
-            }
-
-            .lds-dual-ring > div:nth-child(2) {
-                border-color: transparent;
-            }
-
-            .lds-dual-ring > div:nth-child(2) div {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                -webkit-transform: rotate(45deg);
-                transform: rotate(45deg);
-            }
-
-            .lds-dual-ring > div:nth-child(2) div:before,
-            .lds-dual-ring > div:nth-child(2) div:after {
-                content: "";
-                display: block;
-                position: absolute;
-                width: 14px;
-                height: 14px;
-                top: -14px;
-                left: 66px;
-                background: #0288d1;
-                border-radius: 50%;
-                box-shadow: 0 160px 0 0 #0288d1;
-            }
-
-            .lds-dual-ring > div:nth-child(2) div:after {
-                left: -14px;
-                top: 66px;
-                box-shadow: 160px 0 0 0 #0288d1;
-            }
-
-            .lds-dual-ring {
-                width: 100px !important;
-                height: 100px !important;
-                -webkit-transform: translate(-50px, -50px) scale(0.5) translate(50px, 50px);
-                transform: translate(-50px, -50px) scale(0.5) translate(50px, 50px);
-            }
-        </style>
-
         <div class="payment-panel">
-            <script src="<?php echo PLUGIN_CRYPTAPI_URL . 'static/jquery-qrcode-0.17.0.min.js' ?>"></script>
             <div class="ca_loader" style="width: 100%; text-align: center; margin-bottom: 1rem;">
                 <div style="width: 100px; margin: 0 auto">
                     <div class="lds-css ng-scope">
@@ -394,70 +324,6 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
             <div class="payment_complete" style="width: 100%; text-align: center; display: none;">
                 <h4><?php echo __('Your payment has been confirmed!', 'cryptapi') ?></h4>
             </div>
-            <script>
-                function check_status() {
-                    let is_paid = false;
-                    let ajax_url = '<?php echo $ajax_url ?>';
-
-                    function status_loop() {
-                        if (is_paid) return;
-
-                        jQuery.getJSON(ajax_url, function (data) {
-                            if (data.is_pending) {
-                                jQuery('.payment_details,.payment_complete').hide(200);
-                                jQuery('.payment_pending,.ca_loader').show(200);
-                            }
-
-                            if (data.is_paid) {
-                                jQuery('.ca_loader,.payment_pending,.payment_details').hide(200);
-                                jQuery('.payment_complete,.ca_check').show(200);
-
-                                is_paid = true;
-                            }
-                        });
-
-                        setTimeout(status_loop, 5000);
-                    }
-
-                    status_loop();
-                }
-
-                function fill() {
-                    if (jQuery('.payment-panel').length > 1) {
-                        jQuery('.payment-panel')[1].remove();
-                        return;
-                    }
-
-                    check_status();
-
-                    let ca_address = '<?php echo $address_in; ?>';
-                    let ca_value = '<?php echo $crypto_value; ?>';
-                    let ca_coin = '<?php echo $crypto_coin; ?>';
-
-                    generate_qr(ca_address, ca_value, ca_coin);
-
-                    function generate_qr(_addr, _value, _coin) {
-                        let _protocols = {
-                            btc: 'bitcoin',
-                            bch: 'bitcoincash',
-                            ltc: 'litecoin',
-                            eth: 'ethereum',
-                            xmr: 'monero',
-                            iota: 'iota'
-                        };
-
-                        let _address = _protocols[_coin] + ":" + _addr + "?amount=" + _value;
-
-                        let canvas = jQuery('.qrcode').get(0);
-                        let context = canvas.getContext('2d');
-                        context.clearRect(0, 0, canvas.width, canvas.height);
-
-                        jQuery('.qrcode').qrcode({'label': _address, 'text': _address, 'size': 300});
-                    }
-                }
-
-                fill();
-            </script>
         </div>
         <?php
     }

@@ -106,6 +106,10 @@ class CryptAPI {
             $params[$k] = $_get[$k];
         }
 
+        foreach ($params as &$val) {
+            $val = sanitize_text_field($val);
+        }
+
         return $params;
     }
 
@@ -123,11 +127,7 @@ class CryptAPI {
 
         if (!empty($data)) $url .= "?{$data}";
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        $response = curl_exec($ch);
-        curl_close($ch);
+        $response = wp_remote_retrieve_body(wp_remote_get($url));
 
         return json_decode($response);
     }
