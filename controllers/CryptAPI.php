@@ -1,6 +1,6 @@
 <?php
 
-class WC_Gateway_CryptAPI extends WC_Payment_Gateway
+class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 {
 
     private $coin_options = array(
@@ -15,7 +15,7 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
     function __construct()
     {
         $this->id = 'cryptapi';
-        $this->icon = PLUGIN_CRYPTAPI_URL . 'static/200_logo_ca.png';
+        $this->icon = CRYPTAPI_PLUGIN_URL . 'static/200_logo_ca.png';
         $this->has_fields = true;
         $this->method_title = 'CryptAPI';
         $this->method_description = 'CryptAPI allows customers to pay in cryptocurrency';
@@ -175,8 +175,8 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
                 $total = $order->get_total('edit');
                 $currency = get_woocommerce_currency();
 
-                $info = CryptAPI\CryptAPI::get_info($selected);
-                $min_tx = CryptAPI\CryptAPI::convert($info->minimum_transaction, $selected);
+                $info = CryptAPI\Helper::get_info($selected);
+                $min_tx = CryptAPI\Helper::convert($info->minimum_transaction, $selected);
 
                 $price = floatval($info->prices->USD);
                 if (isset($info->prices->{$currency})) {
@@ -190,7 +190,7 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
                     return null;
                 }
 
-                $ca = new CryptAPI\CryptAPI($selected, $addr, $callback_url, [], true);
+                $ca = new CryptAPI\Helper($selected, $addr, $callback_url, [], true);
                 $addr_in = $ca->get_address();
 
                 $order->add_meta_data('cryptapi_nonce', $nonce);
@@ -219,12 +219,12 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
 
     function validate_payment()
     {
-        $data = CryptAPI\CryptAPI::process_callback($_GET);
+        $data = CryptAPI\Helper::process_callback($_GET);
         $order = new WC_Order($data['order_id']);
 
         if ($order->is_paid() || $data['nonce'] != $order->get_meta('cryptapi_nonce')) die("*ok*");
 
-        $value_convert = CryptAPI\CryptAPI::convert($data['value'], $data['coin']);
+        $value_convert = CryptAPI\Helper::convert($data['value'], $data['coin']);
         $paid = floatval($order->get_meta('cryptpi_paid')) + $value_convert;
 
         if (!$data['pending']) {
@@ -281,10 +281,10 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
             'order_id' => $order_id,
         ), home_url('/wp-admin/admin-ajax.php'));
 
-        wp_enqueue_script('ca-jquery-qrcode', PLUGIN_CRYPTAPI_URL . 'static/jquery-qrcode-0.17.0.min.js', array('jquery'));
-        wp_enqueue_script('ca-payment', PLUGIN_CRYPTAPI_URL . 'static/payment.js', array('ca-jquery-qrcode'), false, true);
+        wp_enqueue_script('ca-jquery-qrcode', CRYPTAPI_PLUGIN_URL . 'static/jquery-qrcode-0.17.0.min.js', array('jquery'));
+        wp_enqueue_script('ca-payment', CRYPTAPI_PLUGIN_URL . 'static/payment.js', array('ca-jquery-qrcode'), false, true);
         wp_add_inline_script('ca-payment', "function maybe_fill(){if(jQuery('.payment-panel').length>1){jQuery('.payment-panel')[1].remove();return}let ca_address='{$address_in}';let ca_value='{$crypto_value}';let ca_coin='{$crypto_coin}';let ajax_url='{$ajax_url}';check_status(ajax_url);fill(ca_address,ca_value,ca_coin)}jQuery(function(){setTimeout(maybe_fill(),Math.floor(Math.random()*500))})");
-        wp_enqueue_style('ca-loader-css', PLUGIN_CRYPTAPI_URL . 'static/loader.css');
+        wp_enqueue_style('ca-loader-css', CRYPTAPI_PLUGIN_URL . 'static/loader.css');
 
         ?>
 
@@ -302,7 +302,7 @@ class WC_Gateway_CryptAPI extends WC_Payment_Gateway
                 </div>
             </div>
             <div class="ca_check" style="width: 100%; text-align: center; display: none;">
-                <img width="100" style="margin: 0 auto;" src="<?php echo PLUGIN_CRYPTAPI_URL . 'static/check.png' ?>"/>
+                <img width="100" style="margin: 0 auto;" src="<?php echo CRYPTAPI_PLUGIN_URL . 'static/check.png' ?>"/>
             </div>
             <div class="payment_details" style="width: 100%; text-align: center">
                 <h4><?php echo __('Waiting for payment', 'cryptapi') ?></h4>

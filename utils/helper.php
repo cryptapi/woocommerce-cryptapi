@@ -3,7 +3,7 @@
 namespace CryptAPI;
 use Exception;
 
-class CryptAPI {
+class Helper {
     private static $base_url = "https://cryptapi.io/api";
     private $valid_coins = ['btc', 'bch', 'eth', 'ltc', 'xmr', 'iota'];
     private $own_address = null;
@@ -52,7 +52,7 @@ class CryptAPI {
             'pending' => $this->pending,
         ];
 
-        $response = CryptAPI::_request($this->coin, 'create', $ca_params);
+        $response = Helper::_request($this->coin, 'create', $ca_params);
 
         if ($response->status == 'success') {
             return $response->address_in;
@@ -69,7 +69,7 @@ class CryptAPI {
             'callback' => $this->callback_url,
         ];
 
-        $response = CryptAPI::_request($this->coin, 'logs', $params);
+        $response = Helper::_request($this->coin, 'logs', $params);
 
         if ($response->status == 'success') {
             return $response;
@@ -79,7 +79,7 @@ class CryptAPI {
     }
 
     public static function get_info($coin) {
-        $response = CryptAPI::_request($coin, 'info');
+        $response = Helper::_request($coin, 'info');
 
         if ($response->status == 'success') {
             return $response;
@@ -95,8 +95,8 @@ class CryptAPI {
             'txid_in' => $_get['txid_in'],
             'txid_out' => isset($_get['txid_out']) ? $_get['txid_out'] : null,
             'confirmations' => $_get['confirmations'],
-            'value' => $convert ? Cryptapi::convert($_get['value'], $_get['coin']) : $_get['value'],
-            'value_forwarded' => isset($_get['value_forwarded']) ? ($convert ? Cryptapi::convert($_get['value_forwarded'], $_get['coin']) : $_get['value_forwarded']) : null,
+            'value' => $convert ? Helper::convert($_get['value'], $_get['coin']) : $_get['value'],
+            'value_forwarded' => isset($_get['value_forwarded']) ? ($convert ? Helper::convert($_get['value_forwarded'], $_get['coin']) : $_get['value_forwarded']) : null,
             'coin' => $_get['coin'],
             'pending' => isset($_get['pending']) ? $_get['pending'] : false,
         ];
@@ -114,12 +114,12 @@ class CryptAPI {
     }
 
     public static function convert($val, $coin) {
-        return $val / Cryptapi::$COIN_MULTIPLIERS[$coin];
+        return $val / Helper::$COIN_MULTIPLIERS[$coin];
     }
 
     private static function _request($coin, $endpoint, $params=[]) {
 
-        $base_url = Cryptapi::$base_url;
+        $base_url = Helper::$base_url;
 
         if (!empty($params)) $data = http_build_query($params);
 
