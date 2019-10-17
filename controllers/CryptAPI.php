@@ -310,7 +310,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     <canvas height="300" class="qrcode"></canvas>
                 </div>
                 <div style="width: 100%; margin: 2rem auto; text-align: center;">
-                    <?php echo __('Please send', 'cryptapi') ?>
+                    <?php echo __('In order to confirm your order, please send', 'cryptapi') ?>
                     <span style="font-weight: 500"><?php echo $crypto_value ?></span>
                     <span style="font-weight: 500"><?php echo strtoupper($crypto_coin) ?></span>
                     (<?php echo $currency_symbol . ' ' . $total; ?>)
