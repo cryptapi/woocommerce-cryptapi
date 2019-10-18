@@ -176,7 +176,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $currency = get_woocommerce_currency();
 
                 $info = CryptAPI\Helper::get_info($selected);
-                $min_tx = CryptAPI\Helper::convert($info->minimum_transaction, $selected);
+                $min_tx = CryptAPI\Helper::convert_div($info->minimum_transaction, $selected);
 
                 $price = floatval($info->prices->USD);
                 if (isset($info->prices->{$currency})) {
@@ -224,7 +224,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
         if ($order->is_paid() || $data['nonce'] != $order->get_meta('cryptapi_nonce')) die("*ok*");
 
-        $value_convert = CryptAPI\Helper::convert($data['value'], $data['coin']);
+        $value_convert = CryptAPI\Helper::convert_div($data['value'], $data['coin']);
         $paid = floatval($order->get_meta('cryptpi_paid')) + $value_convert;
 
         if (!$data['pending']) {
@@ -275,6 +275,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $address_in = $order->get_meta('cryptapi_address');
         $crypto_value = $order->get_meta('cryptapi_total');
         $crypto_coin = $order->get_meta('cryptapi_currency');
+
+        if ($crypto_coin == 'iota') $crypto_coin = 'miota';
+        
 
         $ajax_url = add_query_arg(array(
             'action' => 'cryptapi_order_status',

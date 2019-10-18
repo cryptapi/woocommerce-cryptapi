@@ -30,15 +30,34 @@ function fill(ca_address, ca_value, ca_coin) {
 
     function generate_qr(_addr, _value, _coin) {
         let _protocols = {
-            btc: 'bitcoin',
-            bch: 'bitcoincash',
-            ltc: 'litecoin',
-            eth: 'ethereum',
-            xmr: 'monero',
-            iota: 'iota'
+            btc: 'bitcoin:',
+            bch: 'bitcoincash:',
+            ltc: 'litecoin:',
+            eth: 'ethereum:',
+            xmr: 'monero:',
+            iota: 'iota:'
         };
 
-        let _address = _protocols[_coin] + ":" + _addr + "?amount=" + _value;
+        let _keys = {
+
+        };
+
+        let _coin_multipliers = {
+
+        };
+
+        let _address;
+
+        if (_addr.startsWith('bitcoincash:'))
+            _address = _addr;
+        else
+            _address = _protocols[_coin] + _addr;
+
+        let params = {};
+
+        jQuery.param()
+
+        _address += "?amount=" + _value;
 
         let canvas = jQuery('.qrcode').get(0);
         let context = canvas.getContext('2d');
