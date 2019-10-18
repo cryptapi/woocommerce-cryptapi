@@ -139,8 +139,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function payment_fields()
     { ?>
-
         <div class="form-row form-row-wide">
+            <p><?php echo $this->description; ?></p>
             <ul style="list-style: none outside;">
                 <?php
                 if (!empty($this->coins) && is_array($this->coins)) {
