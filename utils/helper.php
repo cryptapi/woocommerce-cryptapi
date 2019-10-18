@@ -95,8 +95,8 @@ class Helper {
             'txid_in' => $_get['txid_in'],
             'txid_out' => isset($_get['txid_out']) ? $_get['txid_out'] : null,
             'confirmations' => $_get['confirmations'],
-            'value' => $convert ? Helper::convert($_get['value'], $_get['coin']) : $_get['value'],
-            'value_forwarded' => isset($_get['value_forwarded']) ? ($convert ? Helper::convert($_get['value_forwarded'], $_get['coin']) : $_get['value_forwarded']) : null,
+            'value' => $convert ? Helper::convert_div($_get['value'], $_get['coin']) : $_get['value'],
+            'value_forwarded' => isset($_get['value_forwarded']) ? ($convert ? Helper::convert_div($_get['value_forwarded'], $_get['coin']) : $_get['value_forwarded']) : null,
             'coin' => $_get['coin'],
             'pending' => isset($_get['pending']) ? $_get['pending'] : false,
         ];
@@ -113,8 +113,12 @@ class Helper {
         return $params;
     }
 
-    public static function convert($val, $coin) {
+    public static function convert_div($val, $coin) {
         return $val / Helper::$COIN_MULTIPLIERS[$coin];
+    }
+
+    public static function convert_mul($val, $coin) {
+        return $val * Helper::$COIN_MULTIPLIERS[$coin];
     }
 
     private static function _request($coin, $endpoint, $params=[]) {

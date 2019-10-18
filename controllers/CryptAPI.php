@@ -176,7 +176,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $currency = get_woocommerce_currency();
 
                 $info = CryptAPI\Helper::get_info($selected);
-                $min_tx = CryptAPI\Helper::convert($info->minimum_transaction, $selected);
+                $min_tx = CryptAPI\Helper::convert_div($info->minimum_transaction, $selected);
 
                 $price = floatval($info->prices->USD);
                 if (isset($info->prices->{$currency})) {
@@ -224,7 +224,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
         if ($order->is_paid() || $data['nonce'] != $order->get_meta('cryptapi_nonce')) die("*ok*");
 
-        $value_convert = CryptAPI\Helper::convert($data['value'], $data['coin']);
+        $value_convert = CryptAPI\Helper::convert_div($data['value'], $data['coin']);
         $paid = floatval($order->get_meta('cryptpi_paid')) + $value_convert;
 
         if (!$data['pending']) {
@@ -276,6 +276,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $crypto_value = $order->get_meta('cryptapi_total');
         $crypto_coin = $order->get_meta('cryptapi_currency');
 
+        $show_crypto_coin = $crypto_coin;
+        if ($show_crypto_coin == 'iota') $show_crypto_coin = 'miota';
+
+        $qr_value = $crypto_value;
+        if ($crypto_coin == 'iota') $qr_value = CryptAPI\Helper::convert_mul($crypto_value, $crypto_coin);
+
         $ajax_url = add_query_arg(array(
             'action' => 'cryptapi_order_status',
             'order_id' => $order_id,
@@ -283,7 +289,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
         wp_enqueue_script('ca-jquery-qrcode', CRYPTAPI_PLUGIN_URL . 'static/jquery-qrcode-0.17.0.min.js', array('jquery'));
         wp_enqueue_script('ca-payment', CRYPTAPI_PLUGIN_URL . 'static/payment.js', array('ca-jquery-qrcode'), false, true);
-        wp_add_inline_script('ca-payment', "function maybe_fill(){if(jQuery('.payment-panel').length>1){jQuery('.payment-panel')[1].remove();return}let ca_address='{$address_in}';let ca_value='{$crypto_value}';let ca_coin='{$crypto_coin}';let ajax_url='{$ajax_url}';check_status(ajax_url);fill(ca_address,ca_value,ca_coin)}jQuery(function(){setTimeout(maybe_fill(),Math.floor(Math.random()*500))})");
+        wp_add_inline_script('ca-payment', "function maybe_fill(){if(jQuery('.payment-panel').length>1){jQuery('.payment-panel')[1].remove();return}let ca_address='{$address_in}';let ca_value='{$qr_value}';let ca_coin='{$crypto_coin}';let ajax_url='{$ajax_url}';check_status(ajax_url);fill(ca_address,ca_value,ca_coin)}jQuery(function(){setTimeout(maybe_fill(),Math.floor(Math.random()*500))})");
         wp_enqueue_style('ca-loader-css', CRYPTAPI_PLUGIN_URL . 'static/loader.css');
 
         ?>
@@ -312,7 +318,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 <div style="width: 100%; margin: 2rem auto; text-align: center;">
                     <?php echo __('In order to confirm your order, please send', 'cryptapi') ?>
                     <span style="font-weight: 500"><?php echo $crypto_value ?></span>
-                    <span style="font-weight: 500"><?php echo strtoupper($crypto_coin) ?></span>
+                    <span style="font-weight: 500"><?php echo strtoupper($show_crypto_coin) ?></span>
                     (<?php echo $currency_symbol . ' ' . $total; ?>)
                     <?php echo __('to', 'cryptapi') ?>
                     <span style="font-weight: 500"><?php echo $address_in ?></span>
