@@ -29,6 +29,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
         $this->init_form_fields();
         $this->init_settings();
+        $this->ca_settings();
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
         add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
@@ -45,6 +46,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         echo "<div style='margin-top: 2rem;'>If you need any help or have any suggestion, contact us via the <b>live chat</b> on our <b><a href='https://cryptapi.io'>website</a></b></div>";
     }
 
+    private function ca_settings() {
+        $this->enabled = $this->get_option('enabled');
+        $this->title = $this->get_option('title');
+        $this->description = $this->get_option('description');
+        $this->coins = $this->get_option('coins');
+
+        foreach(array_keys($this->coin_options) as $coin) {
+            $this->{$coin . '_address'} = $this->get_option($coin . '_address');
+        }
+    }
+
     function init_form_fields()
     {
         $this->form_fields = array(
@@ -58,8 +70,14 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 'title' => __('Title', 'cryptapi'),
                 'type' => 'text',
                 'description' => __('This controls the title which the user sees during checkout.', 'cryptapi'),
-                'default' => __('Crypto', 'cryptapi'),
+                'default' => __('Cryptocurrency', 'cryptapi'),
                 'desc_tip' => true,
+            ),
+            'description' 	=> array(
+                'title'       	=> __('Description', 'cryptapi'),
+                'type'        	=> 'textarea',
+                'default'     	=> __('Pay with cryptocurrency (BTC, BCH, LTC, ETH, XMR and IOTA)', 'cryptapi'),
+                'description' 	=> __('Payment method description that the customer will see on your checkout', 'cryptapi' )
             ),
             'coins' => array(
                 'title' => __('Accepted cryptocurrencies', 'cryptapi'),
@@ -110,28 +128,24 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function needs_setup()
     {
-        $selected = $this->get_option('coins');
+        if (empty($this->coins) || !is_array($this->coins)) return true;
 
-        if (empty($selected) || !is_array($selected)) return true;
-
-        foreach ($selected as $val) {
-            $addr = $this->get_option($val . '_address');
-            if (!empty($addr)) return false;
+        foreach ($this->coins as $val) {
+            if (!empty($this->{$val . '_address'})) return false;
         }
 
         return true;
     }
 
     function payment_fields()
-    {
-        $selected = $this->get_option('coins'); ?>
+    { ?>
 
         <div class="form-row form-row-wide">
             <ul style="list-style: none outside;">
                 <?php
-                if (!empty($selected) && is_array($selected)) {
-                    foreach ($selected as $val) {
-                        $addr = $this->get_option($val . '_address');
+                if (!empty($this->coins) && is_array($this->coins)) {
+                    foreach ($this->coins as $val) {
+                        $addr = $this->{$val . '_address'};
                         if (!empty($addr)) { ?>
                             <li>
                                 <input id="payment_method_<?php echo $val ?>" type="radio" class="input-radio"
@@ -157,7 +171,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         global $woocommerce;
 
         $selected = sanitize_text_field($_POST['cryptapi_coin']);
-        $addr = $this->get_option($selected . '_address');
+        $addr = $this->{$selected . '_address'};
 
         if (!empty($addr)) {
 
