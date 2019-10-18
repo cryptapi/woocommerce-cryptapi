@@ -70,7 +70,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 'title' => __('Title', 'cryptapi'),
                 'type' => 'text',
                 'description' => __('This controls the title which the user sees during checkout.', 'cryptapi'),
-                'default' => __('Crypto', 'cryptapi'),
+                'default' => __('Cryptocurrency', 'cryptapi'),
                 'desc_tip' => true,
             ),
             'description' 	=> array(
