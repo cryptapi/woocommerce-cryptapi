@@ -79,3 +79,8 @@
     -webkit-transform: translate(-50px, -50px) scale(0.5) translate(50px, 50px);
     transform: translate(-50px, -50px) scale(0.5) translate(50px, 50px);
 }
+
+canvas.qrcode {
+    border: 1.2rem white solid;
+    border-radius: 1rem;
+}
