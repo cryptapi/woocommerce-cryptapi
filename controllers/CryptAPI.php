@@ -280,7 +280,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         if ($show_crypto_coin == 'iota') $show_crypto_coin = 'miota';
 
         $qr_value = $crypto_value;
-        if ($crypto_coin == 'iota') $qr_value = CryptAPI\Helper::convert_mul($crypto_value, $crypto_coin);
+        if (in_array($crypto_coin, array('eth', 'iota'))) $qr_value = CryptAPI\Helper::convert_mul($crypto_value, $crypto_coin);
 
         $ajax_url = add_query_arg(array(
             'action' => 'cryptapi_order_status',
