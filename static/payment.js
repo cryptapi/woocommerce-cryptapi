@@ -24,45 +24,40 @@ function check_status(ajax_url) {
     status_loop();
 }
 
-function fill(ca_address, ca_value, ca_coin) {
+function fill(_addr, _value, _coin) {
+    let _protocols = {
+        btc: 'bitcoin:',
+        bch: 'bitcoincash:',
+        ltc: 'litecoin:',
+        eth: 'ethereum:',
+        xmr: 'monero:',
+        iota: 'iota:'
+    };
 
-    generate_qr(ca_address, ca_value, ca_coin);
+    let _keys = {
+        btc: 'amount',
+        bch: 'amount',
+        ltc: 'amount',
+        eth: 'value',
+        xmr: 'tx_amount',
+        iota: 'amount'
+    };
 
-    function generate_qr(_addr, _value, _coin) {
-        let _protocols = {
-            btc: 'bitcoin:',
-            bch: 'bitcoincash:',
-            ltc: 'litecoin:',
-            eth: 'ethereum:',
-            xmr: 'monero:',
-            iota: 'iota:'
-        };
+    let _address;
 
-        let _keys = {
+    if (_addr.startsWith('bitcoincash:'))
+        _address = _addr;
+    else
+        _address = _protocols[_coin] + _addr;
 
-        };
+    let params = {};
+    params[_keys[_coin]] = _value;
 
-        let _coin_multipliers = {
+    _address += "?" + jQuery.param(params);
 
-        };
+    let canvas = jQuery('.qrcode').get(0);
+    let context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
 
-        let _address;
-
-        if (_addr.startsWith('bitcoincash:'))
-            _address = _addr;
-        else
-            _address = _protocols[_coin] + _addr;
-
-        let params = {};
-
-        jQuery.param()
-
-        _address += "?amount=" + _value;
-
-        let canvas = jQuery('.qrcode').get(0);
-        let context = canvas.getContext('2d');
-        context.clearRect(0, 0, canvas.width, canvas.height);
-
-        jQuery('.qrcode').qrcode({'label': _address, 'text': _address, 'size': 300});
-    }
+    jQuery('.qrcode').qrcode({'label': _address, 'text': _address, 'size': 300});
 }
