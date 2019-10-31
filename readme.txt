@@ -2,7 +2,7 @@
 Contributors: cryptapi
 Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, ethereum, monero, iota, litecoin, bitcoin cash,
 Requires at least: 4.0
-Tested up to: 5.2
+Tested up to: 5.3
 Stable tag: 1.0.2
 Requires PHP: 5.5
 WC requires at least: 2.4
@@ -86,6 +86,18 @@ For more info on our fees [click here](https://cryptapi.io/get_started/#fees)
 = Updating =
 
 Automatic updates should work like a charm; as always though, ensure you backup your site just in case.
+
+== Configuration ==
+
+1. Go to WooCommerce settings
+2. Select the "Payments" tab
+3. Activate the payment method (if inactive)
+4. Set the name you wish to show your users on Checkout (for example: "Cryptocurrency")
+5. Fill the payment method's description (for example: "Pay with cryptocurrency")
+6. Select which cryptocurrencies you wish to accept (control + click to select many)
+7. Input your addresses to the cryptocurrencies you selected. This is where your funds will be sent to, so make sure the addresses are correct.
+8. Click "Save Changes"
+9. All done!
 
 == Frequently Asked Questions ==
 
