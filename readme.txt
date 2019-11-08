@@ -3,10 +3,10 @@ Contributors: cryptapi
 Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, ethereum, monero, iota, litecoin, bitcoin cash,
 Requires at least: 4.0
 Tested up to: 5.3
-Stable tag: 1.0.2
+Stable tag: 1.0.4
 Requires PHP: 5.5
 WC requires at least: 2.4
-WC tested up to: 3.7
+WC tested up to: 3.8
 License: MIT
 
 Accept cryptocurrency payments on your WooCommerce website
