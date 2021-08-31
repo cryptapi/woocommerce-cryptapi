@@ -1,12 +1,12 @@
 === CryptAPI Payment Gateway for WooCommerce ===
 Contributors: cryptapi
-Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, ethereum, monero, iota, litecoin, bitcoin cash,
+Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, monero, litecoin, bitcoin cash
 Requires at least: 4.0
-Tested up to: 5.3
-Stable tag: 1.0.4
+Tested up to: 5.8
+Stable tag: 2.0.1
 Requires PHP: 5.5
 WC requires at least: 2.4
-WC tested up to: 3.8
+WC tested up to: 5.6
 License: MIT
 
 Accept cryptocurrency payments on your WooCommerce website
@@ -14,21 +14,27 @@ Accept cryptocurrency payments on your WooCommerce website
 
 == Description ==
 
-Accept payments in Bitcoin, Bitcoin Cash, Litecoin, Ethereum, Monero and IOTA directly to your crypto wallet, without any sign-ups or lengthy processes.
+Accept payments in Bitcoin, Ethereum, Bitcoin Cash, Litecoin, Monero, BNB, USDT and many more directly to your crypto wallet, without any sign-ups or lengthy processes.
 All you need is to provide your crypto address.
 
 = Allow users to pay with crypto directly on your store =
 
 The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto directly on your store, with a simple setup and no sign-ups required.
 
-Currently accepted cryptocurrencies are:
+= Accepted cryptocurrencies & tokens include: =
 
 * (BTC) Bitcoin
+* (ETH) Ethereum
 * (BCH) Bitcoin Cash
 * (LTC) Litecoin
-* (ETH) Ethereum
 * (XMR) Monero
-* (IOTA) IOTA
+* (TRX) Tron
+* (BNB) Binance Coin
+* (USDT) USDT
+
+among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/pricing/).
+
+= Auto-value conversion =
 
 CryptAPI will attempt to automatically convert the value you set on your store to the cryptocurrency your customer chose.
 Exchange rates are fetched hourly from CoinMarketCap.
@@ -50,6 +56,8 @@ Supported currencies for automatic exchange rates are:
 
 If your WooCommerce's currency is none of the above, the exchange rates will default to USD.
 If you're using WooCommerce in a different currency not listed here and need support, please [contact us](https://cryptapi.io) via our live chat.
+
+**Note:** CryptAPI will not exchange your crypto for FIAT or other crypto, just convert the value
 
 = Why choose CryptAPI? =
 
@@ -136,5 +144,11 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 = 1.0 =
 * Initial release.
 
+= 2.0 =
+* New coins
+* Updated codebase
+* New API URL
+
+
 == Upgrade Notice ==
-* Initial release.
+* No breaking changes

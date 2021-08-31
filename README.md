@@ -20,17 +20,23 @@ All you need is to provide your crypto address.
 
 The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto directly on your store, with a simple setup and no sign-ups required.
 
-Currently accepted cryptocurrencies are:
+####Accepted cryptocurrencies & tokens include:
 
 * (BTC) Bitcoin
+* (ETH) Ethereum
 * (BCH) Bitcoin Cash
 * (LTC) Litecoin
-* (ETH) Ethereum
 * (XMR) Monero
-* (IOTA) IOTA
+* (TRX) Tron
+* (BNB) Binance Coin
+* (USDT) USDT
 
-CryptAPI will attempt to automatically convert the value you set on your store to the cryptocurrency your customer chose.
-Exchange rates are fetched hourly from CoinMarketCap.
+among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/pricing/).
+
+#### Auto-value conversion
+
+CryptAPI plugin will attempt to automatically convert the value you set on your store to the cryptocurrency your customer chose.
+Exchange rates are fetched every 5 minutes.
 
 Supported currencies for automatic exchange rates are:
 
@@ -50,13 +56,15 @@ Supported currencies for automatic exchange rates are:
 If your WooCommerce's currency is none of the above, the exchange rates will default to USD.
 If you're using WooCommerce in a different currency not listed here and need support, please [contact us](https://cryptapi.io) via our live chat.
 
+**Note:** CryptAPI will not exchange your crypto for FIAT or other crypto, just convert the value
+
 #### Why choose CryptAPI?
 
 CryptAPI has no setup fees, no monthly fees, no hidden costs, and you don't even need to sign-up!
 Simply set your crypto addresses and you're ready to go. As soon as your customers pay we forward your earnings directly to your own wallet.
 
 CryptAPI has a low 1% fee on the transactions processed. No hidden costs.
-For more info on our fees [click here](https://cryptapi.io/get_started/#fees)
+For more info on our fees [click here](https://cryptapi.io/pricing/)
 
 ### Installation
 
@@ -135,5 +143,10 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 #### 1.0
 * Initial release.
 
+#### 2.0
+* New coins
+* Updated codebase
+* New API URL
+
 ### Upgrade Notice
-* Initial release.
+* No breaking changes

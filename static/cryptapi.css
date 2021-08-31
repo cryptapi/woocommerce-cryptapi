@@ -1,0 +1,177 @@
+@keyframes lds-dual-ring {
+    0% {
+        -webkit-transform: rotate(0);
+        transform: rotate(0);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes lds-dual-ring {
+    0% {
+        -webkit-transform: rotate(0);
+        transform: rotate(0);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+.lds-dual-ring {
+    position: relative;
+}
+
+.lds-dual-ring div {
+    box-sizing: border-box;
+}
+
+.lds-dual-ring > div {
+    position: absolute;
+    width: 174px;
+    height: 174px;
+    top: 13px;
+    left: 13px;
+    border-radius: 50%;
+    border: 14px solid #000;
+    border-color: #0288d1 transparent #0288d1 transparent;
+    -webkit-animation: lds-dual-ring 5s linear infinite;
+    animation: lds-dual-ring 5s linear infinite;
+}
+
+.lds-dual-ring > div:nth-child(2) {
+    border-color: transparent;
+}
+
+.lds-dual-ring > div:nth-child(2) div {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.lds-dual-ring > div:nth-child(2) div:before,
+.lds-dual-ring > div:nth-child(2) div:after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    top: -14px;
+    left: 66px;
+    background: #0288d1;
+    border-radius: 50%;
+    box-shadow: 0 160px 0 0 #0288d1;
+}
+
+.lds-dual-ring > div:nth-child(2) div:after {
+    left: -14px;
+    top: 66px;
+    box-shadow: 160px 0 0 0 #0288d1;
+}
+
+.lds-dual-ring {
+    width: 100px !important;
+    height: 100px !important;
+    -webkit-transform: translate(-50px, -50px) scale(0.5) translate(50px, 50px);
+    transform: translate(-50px, -50px) scale(0.5) translate(50px, 50px);
+}
+
+.ca_loader {
+    width: 100% !important;
+    text-align: center !important;
+    margin-bottom: 1rem !important;
+}
+
+.ca_loader > div {
+    width: 100px !important;
+    margin: 0 auto !important;
+}
+
+.ca_check {
+    width: 100% !important;
+    text-align: center !important;
+    display: none;
+}
+
+.ca_check img {
+    margin: 0 auto !important;
+    width: 100px !important;
+}
+
+.payment_details {
+    width: 100% !important;
+    text-align: center !important;
+}
+
+.payment_details .qrcode_wrapper {
+    text-align: center !important;
+    margin: 1em auto !important;
+    position: relative !important;
+    display: inline-block !important;
+}
+
+.payment_details .qrcode_wrapper img {
+    display: inline-block !important;
+    border: 1px #686868 solid;
+    border-radius: 0.4em;
+    padding: 0.2em;
+    background: #fff;
+}
+
+.payment_details .qrcode_wrapper .inner-wrapper {
+    z-index: 3 !important;
+    position: relative !important;
+}
+
+.payment_details .qrcode_wrapper .cryptapi_branding {
+    font-size: 11px;
+    font-family: "roboto", sans-serif;
+    color: #666;
+    position: absolute;
+    bottom: -15px;
+    right: 0;
+    background: #ddd;
+    padding: 20px 5px 2px 5px;
+    border-radius: 0.4em;
+    z-index: 2;
+    border: 1px #777 solid;
+}
+
+.payment_details .qrcode_wrapper:before {
+    content: "clickable on mobile devices";
+    font-size: 13px;
+    font-family: "roboto", sans-serif;
+    color: #666;
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    background: #f6f6f6;
+    border-radius: 0.4em;
+    border: 1px #888 solid;
+    padding: 18px 1px 1px 1px;
+    z-index: 1;
+}
+
+.payment_details .details_box {
+    width: 100%;
+    margin: 3em auto;
+    text-align: center;
+}
+
+.payment_pending {
+    width: 100%;
+    text-align: center;
+    display: none;
+}
+
+.payment_complete {
+    width: 100%;
+    text-align: center;
+    display: none;
+}

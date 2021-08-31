@@ -4,30 +4,15 @@ namespace CryptAPI;
 use Exception;
 
 class Helper {
-    private static $base_url = "https://cryptapi.io/api";
-    private $valid_coins = ['btc', 'bch', 'eth', 'ltc', 'xmr', 'iota'];
+    private static $base_url = "https://api.cryptapi.io";
     private $own_address = null;
+    private $payment_address = null;
     private $callback_url = null;
     private $coin = null;
     private $pending = false;
     private $parameters = [];
 
-    public static $COIN_MULTIPLIERS = [
-        'btc' => 100000000,
-        'bch' => 100000000,
-        'ltc' => 100000000,
-        'eth' => 1000000000000000000,
-        'iota' => 1000000,
-        'xmr' => 1000000000000,
-    ];
-
     public function __construct($coin, $own_address, $callback_url, $parameters=[], $pending=false) {
-
-        if (!in_array($coin, $this->valid_coins)) {
-            $vc = print_r($this->valid_coins, true);
-            throw new Exception("Unsupported Coin: {$coin}, Valid options are: {$vc}");
-        }
-
         $this->own_address = $own_address;
         $this->callback_url = $callback_url;
         $this->coin = $coin;
@@ -55,6 +40,7 @@ class Helper {
         $response = Helper::_request($this->coin, 'create', $ca_params);
 
         if ($response->status == 'success') {
+            $this->payment_address = $response->address_in;
             return $response->address_in;
         }
 
@@ -78,25 +64,80 @@ class Helper {
         return null;
     }
 
-    public static function get_info($coin) {
-        $response = Helper::_request($coin, 'info');
+    public function get_qrcode($value, $size=300) {
+        if (empty($this->coin)) return null;
+
+        $params = [
+            'address' => $this->payment_address,
+            'value' => $value,
+            'size' => $size,
+        ];
+
+        $response = Helper::_request($this->coin, 'qrcode', $params);
 
         if ($response->status == 'success') {
+            return ['qr_code' => $response->qr_code, 'uri' => $response->payment_uri];
+        }
+
+        return null;
+    }
+
+    public static function get_supported_coins() {
+        $info = Helper::get_info(null, true);
+
+        if (empty($info)) {
+            return null;
+        }
+
+        unset($info['fee_tiers']);
+
+        $coins = [];
+
+        foreach ($info as $chain => $data) {
+            $is_base_coin = in_array('ticker', array_keys($data));
+            if ($is_base_coin) {
+                $coins[$chain] = $data['coin'];
+                continue;
+            }
+
+            $base_ticker = "{$chain}_";
+            foreach ($data as $token => $subdata) {
+                $chain_upper = strtoupper($chain);
+                $coins[$base_ticker . $token] = "{$subdata['coin']} ({$chain_upper})";
+            }
+        }
+
+        return $coins;
+    }
+
+    public static function get_info($coin=null, $assoc=false) {
+
+        $params = [];
+
+        if (empty($coin)) {
+            $params['prices'] = '0';
+        }
+
+        $response = Helper::_request($coin, 'info', $params, $assoc);
+
+        if (empty($coin) || $response->status == 'success') {
             return $response;
         }
 
         return null;
     }
 
-    public static function process_callback($_get, $convert=false) {
+    public static function process_callback($_get) {
         $params = [
             'address_in' => $_get['address_in'],
             'address_out' => $_get['address_out'],
             'txid_in' => $_get['txid_in'],
             'txid_out' => isset($_get['txid_out']) ? $_get['txid_out'] : null,
             'confirmations' => $_get['confirmations'],
-            'value' => $convert ? Helper::convert_div($_get['value'], $_get['coin']) : $_get['value'],
-            'value_forwarded' => isset($_get['value_forwarded']) ? ($convert ? Helper::convert_div($_get['value_forwarded'], $_get['coin']) : $_get['value_forwarded']) : null,
+            'value' => $_get['value'],
+            'value_coin' => $_get['value_coin'],
+            'value_forwarded' => isset($_get['value_forwarded']) ? $_get['value_forwarded'] : null,
+            'value_forwarded_coin' => isset($_get['value_forwarded_coin']) ? $_get['value_forwarded_coin'] : null,
             'coin' => $_get['coin'],
             'pending' => isset($_get['pending']) ? $_get['pending'] : false,
         ];
@@ -113,26 +154,28 @@ class Helper {
         return $params;
     }
 
-    public static function convert_div($val, $coin) {
-        return $val / Helper::$COIN_MULTIPLIERS[$coin];
-    }
-
-    public static function convert_mul($val, $coin) {
-        return $val * Helper::$COIN_MULTIPLIERS[$coin];
-    }
-
-    private static function _request($coin, $endpoint, $params=[]) {
+    private static function _request($coin, $endpoint, $params=[], $assoc=false) {
 
         $base_url = Helper::$base_url;
-
         if (!empty($params)) $data = http_build_query($params);
 
-        $url = "{$base_url}/{$coin}/{$endpoint}/";
+        if (!empty($coin)) {
+            $coin = str_replace('_', '/', $coin);
+            $url = "{$base_url}/{$coin}/{$endpoint}/";
+        } else {
+            $url = "{$base_url}/{$endpoint}/";
+        }
 
         if (!empty($data)) $url .= "?{$data}";
 
         $response = wp_remote_retrieve_body(wp_remote_get($url));
 
-        return json_decode($response);
+//        $ch = curl_init();
+//        curl_setopt($ch, CURLOPT_URL, $url);
+//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+//        $response = curl_exec($ch);
+//        curl_close($ch);
+
+        return json_decode($response, $assoc);
     }
 }
