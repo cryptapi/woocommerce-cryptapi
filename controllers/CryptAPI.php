@@ -48,6 +48,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $this->qrcode_size = $this->get_option('qrcode_size');
         $this->coins = $this->get_option('coins');
         $this->show_branding = $this->get_option('show_branding') === 'yes';
+        $this->disable_conversion = $this->get_option('disable_conversion') === 'yes';
 
         if (!$this->show_branding) {
             $this->icon = '';
@@ -85,6 +86,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 'type' => 'checkbox',
                 'label' => __('Show CryptAPI logo and credits below the QR code', 'cryptapi'),
                 'default' => 'yes'
+            ),
+            'disable_conversion' => array(
+                'title' => __('Disable price conversion', 'cryptapi'),
+                'type' => 'checkbox',
+                'label' => __("<b>Attention: This option will disable the price conversion for ALL cryptocurrencies!</b><br/>If you check this, pricing will not be converted from the currency of your shop to the cryptocurrency selected by the user, and users will be requested to pay the same value as shown on your shop, regardless of the cryptocurrency selected", 'cryptapi'),
+                'default' => 'no'
             ),
             'qrcode_size' => array(
                 'title'       	=> __('QR Code size', 'cryptapi'),
@@ -178,12 +185,16 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $info = CryptAPI\Helper::get_info($selected);
                 $min_tx = floatval($info->minimum_transaction_coin);
 
-                $price = floatval($info->prices->USD);
-                if (isset($info->prices->{$currency})) {
-                    $price = floatval($info->prices->{$currency});
-                }
+                if ($this->disable_conversion) {
+                    $crypto_total = $total;
+                } else {
+                    $price = floatval($info->prices->USD);
+                    if (isset($info->prices->{$currency})) {
+                        $price = floatval($info->prices->{$currency});
+                    }
 
-                $crypto_total = $this->round_sig($total / $price, 6);
+                    $crypto_total = $this->round_sig($total / $price, 6);
+                }
 
                 if ($crypto_total < $min_tx) {
                     wc_add_notice(__('Payment error:', 'woocommerce') . __('Value too low, minimum is', 'cryptapi') . ' ' . $min_tx . ' ' . strtoupper($selected), 'error');
