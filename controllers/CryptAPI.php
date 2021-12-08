@@ -7,8 +7,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function __construct()
     {
-        WC_CryptAPI_Gateway::$COIN_OPTIONS = CryptAPI\Helper::get_supported_coins();
-
         $this->id = 'cryptapi';
         $this->icon = CRYPTAPI_PLUGIN_URL . 'static/200_logo_ca.png';
         $this->has_fields = true;
@@ -21,6 +19,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             'add_payment_method',
         );
 
+        $this->load_coins();
 
         $this->init_form_fields();
         $this->init_settings();
@@ -33,6 +32,22 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         add_action('wp_ajax_nopriv_' . $this->id . '_order_status', array($this, 'order_status'));
         add_action('wp_ajax_' . $this->id . '_order_status', array($this, 'order_status'));
 
+    }
+
+    function load_coins() {
+        if (!empty(WC_CryptAPI_Gateway::$COIN_OPTIONS)) {
+            return;
+        }
+
+        $transient = get_transient('cryptapi_coins');
+        if (!empty($transient)) {
+            WC_CryptAPI_Gateway::$COIN_OPTIONS = $transient;
+            return;
+        }
+
+        $coins = CryptAPI\Helper::get_supported_coins();
+        set_transient('cryptapi_coins', $coins, 86400);
+        WC_CryptAPI_Gateway::$COIN_OPTIONS = $coins;
     }
 
     function admin_options()
