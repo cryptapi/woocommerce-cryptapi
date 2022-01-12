@@ -51,7 +51,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 
 	function admin_options() {
 		parent::admin_options();
-		echo "<div style='margin-top: 2rem;'>If you need any help or have any suggestion, contact us via the <b>live chat</b> on our <b><a href='https://cryptapi.io'>website</a></b></div>";
+		echo "<div style='margin-top: 2rem;'>If you need any help or have any suggestion, contact us via the <b>live chat</b> on our <b><a href='https://cryptapi.io' target='_blank'>website</a></b> or join our <b><a href='https://discord.gg/pQaJ32SGrR' target='_blank'>Discord server</a></b></div>";
+		echo "<div style='margin-top: .5rem;'>If you enjoy this plugin please <b><a href='https://wordpress.org/support/plugin/cryptapi-payment-gateway-for-woocommerce/reviews/#new-post' target='_blank'>rate and review it</a></b>!</div>";
 	}
 
 	private function ca_settings() {
@@ -337,17 +338,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
                             </figure>
                             <div class="ca_qrcode_buttons">
                                 <button class="ca_qrcode_btn no_value active" aria-label="<?php echo __( 'Show QR Code without value', 'cryptapi' ); ?>">
-					                <?php echo __( 'ADDRESS', 'cryptapi' ); ?>
+									<?php echo __( 'ADDRESS', 'cryptapi' ); ?>
                                 </button>
                                 <button class="ca_qrcode_btn value" aria-label="<?php echo __( 'Show QR Code with value', 'cryptapi' ); ?>">
-					                <?php echo __( 'WITH AMMOUNT', 'cryptapi' ); ?>
+									<?php echo __( 'WITH AMMOUNT', 'cryptapi' ); ?>
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="ca_details_box">
                         <div class="ca_details_text">
-			                <?php echo __( 'PLEASE SEND', 'cryptapi' ) ?>
+							<?php echo __( 'PLEASE SEND', 'cryptapi' ) ?>
                             <button class="ca_copy ca_details_copy" data-tocopy="<?php echo $crypto_value; ?>">
                                 <span><b><?php echo $crypto_value ?></b></span>
                                 <span><b><?php echo strtoupper( $crypto_coin ) ?></b></span>
@@ -367,23 +368,23 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
                     </div>
                     <div class="ca_buttons_container">
                         <a href="<?php echo $payment_uri_value ?>" target="_blank">
-			                <?php echo __( 'WALLET', 'cryptapi' ); ?>
+							<?php echo __( 'WALLET', 'cryptapi' ); ?>
                         </a>
                         <a class="ca_show_qr" href="#" aria-label="<?php echo __( 'Show the QR code', 'cryptapi' ); ?>">
-			                <?php echo __( 'QR CODE', 'cryptapi' ); ?>
+							<?php echo __( 'QR CODE', 'cryptapi' ); ?>
                         </a>
                     </div>
-	                <?php
-	                if ( $this->show_branding ) {
-		                ?>
+					<?php
+					if ( $this->show_branding ) {
+						?>
                         <div class="ca_branding">
                             <a href="https://cryptapi.io/" target="_blank">
                                 <img width="122" class="img-fluid" src="<?php echo CRYPTAPI_PLUGIN_URL . 'static/files/200_logo_ca.png' ?>" alt="Cryptapi Logo"/>
                             </a>
                         </div>
-		                <?php
-	                }
-	                ?>
+						<?php
+					}
+					?>
                 </div>
                 <div class="ca_payment_confirmed" style="display: none">
                     <div class="ca_payment_confirmed_icon">

@@ -315,21 +315,13 @@
         width: 100%;
     }
 
-    .ca_progress .ca_progress_icon.waiting_network:before,
-    .ca_progress .ca_progress_icon.waiting_network:after {
+    .ca_progress .ca_progress_icon.waiting_payment:before,
+    .ca_progress .ca_progress_icon.waiting_network:before {
         width: 2px;
         height: 40px;
         left: 0;
         right: 0;
         margin: 0 auto;
-        bottom: -51px;
-    }
-
-    .ca_progress .ca_progress_icon.waiting_network:before {
-        top: -55px;
-    }
-
-    .ca_progress .ca_progress_icon.waiting_network:after {
         top: unset;
         bottom: -55px;
     }
