@@ -1,177 +1,352 @@
-@keyframes lds-dual-ring {
-    0% {
-        -webkit-transform: rotate(0);
-        transform: rotate(0);
-    }
-    100% {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
+.ca_payment-panel {
+    max-width: 700px;
+    width: 100%;
+    margin: 60px auto;
 }
 
-@-webkit-keyframes lds-dual-ring {
-    0% {
-        -webkit-transform: rotate(0);
-        transform: rotate(0);
-    }
-    100% {
-        -webkit-transform: rotate(360deg);
-        transform: rotate(360deg);
-    }
+.ca_payment_details {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    flex-direction: column;
 }
 
-.lds-dual-ring {
+.ca_details_copy {
+    padding: 7px 10px;
+    margin: 0 5px;
+    background: #FAFAFA !important;
+    font-weight: bold;
+    color: #000 !important;
+}
+
+.ca_details_box {
+    width: 100%;
+}
+
+.ca_details_text {
+    text-align: center;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: .045em;
+}
+
+.ca_qrcode_wrapper {
+    max-width: 100%;
+    margin: 0 auto 26px;
+}
+
+.ca_qrcode_wrapper .inner-wrapper {
+    background: #FAFAFA;
+    border-radius: 15px;
+    padding: 10px 10px 0 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.ca_qrcode_wrapper .inner-wrapper img {
+    mix-blend-mode: multiply;
+}
+
+.ca_qrcode_buttons {
+    display: flex;
+    flex-direction: row;
+    margin-left: -10px;
+    margin-right: -10px;
+    margin-top: 10px;
+}
+
+.ca_qrcode_buttons button {
+    display: inline-block;
+    width: 50%;
+    height: 42px;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: .045em;
+    background-color: #FAFAF9 !important;
+    color: #000 !important;
+}
+
+.ca_qrcode_buttons button.active {
+    background: #E0E0E0 !important;
+    color: #000;
+    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+.ca_details_input {
+    position: relative;
+    display: block;
+    height: 75px;
+    background-color: #FAFAFA;
+    border-radius: 50px;
+    margin: 26px 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.ca_details_input span {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    height: 100%;
+    padding: 0 8%
+}
+
+.ca_copy {
     position: relative;
 }
 
-.lds-dual-ring div {
-    box-sizing: border-box;
-}
-
-.lds-dual-ring > div {
+.ca_copy .ca_copy_icon_tooltip {
+    visibility: hidden;
+    width: 100px;
+    background-color: rgba(66, 66, 66, .8);
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0 !important;
     position: absolute;
-    width: 174px;
-    height: 174px;
-    top: 13px;
-    left: 13px;
-    border-radius: 50%;
-    border: 14px solid #000;
-    border-color: #0288d1 transparent #0288d1 transparent;
-    -webkit-animation: lds-dual-ring 5s linear infinite;
-    animation: lds-dual-ring 5s linear infinite;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -50px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
 }
 
-.lds-dual-ring > div:nth-child(2) {
-    border-color: transparent;
-}
-
-.lds-dual-ring > div:nth-child(2) div {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-transform: rotate(45deg);
-    transform: rotate(45deg);
-}
-
-.lds-dual-ring > div:nth-child(2) div:before,
-.lds-dual-ring > div:nth-child(2) div:after {
+.ca_copy .ca_copy_icon_tooltip::after {
     content: "";
-    display: block;
     position: absolute;
-    width: 14px;
-    height: 14px;
-    top: -14px;
-    left: 66px;
-    background: #0288d1;
-    border-radius: 50%;
-    box-shadow: 0 160px 0 0 #0288d1;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
 }
 
-.lds-dual-ring > div:nth-child(2) div:after {
-    left: -14px;
-    top: 66px;
-    box-shadow: 160px 0 0 0 #0288d1;
+.ca_copy:hover .ca_copy_icon_tooltip {
+    visibility: visible;
+    opacity: 1;
 }
 
-.lds-dual-ring {
-    width: 100px !important;
-    height: 100px !important;
-    -webkit-transform: translate(-50px, -50px) scale(0.5) translate(50px, 50px);
-    transform: translate(-50px, -50px) scale(0.5) translate(50px, 50px);
+.ca_copy_icon {
+    position: absolute;
+    top: calc(50% - 15px);
+    width: 24px;
+    height: 28px;
+    right: 25px;
+    background-size: contain;
+    background: transparent url(./files/ca_copy_icon.svg) no-repeat !important;
+}
+
+.ca_copy_icon_tooltip {
+    position: absolute;
+    opacity: 0;
+    right: 0;
+    visibility: hidden;
 }
 
 .ca_loader {
-    width: 100% !important;
-    text-align: center !important;
-    margin-bottom: 1rem !important;
-}
-
-.ca_loader > div {
-    width: 100px !important;
-    margin: 0 auto !important;
-}
-
-.ca_check {
-    width: 100% !important;
-    text-align: center !important;
-    display: none;
-}
-
-.ca_check img {
-    margin: 0 auto !important;
-    width: 100px !important;
-}
-
-.payment_details {
-    width: 100% !important;
-    text-align: center !important;
-}
-
-.payment_details .qrcode_wrapper {
-    text-align: center !important;
-    margin: 1em auto !important;
-    position: relative !important;
-    display: inline-block !important;
-}
-
-.payment_details .qrcode_wrapper img {
-    display: inline-block !important;
-    border: 1px #686868 solid;
-    border-radius: 0.4em;
-    padding: 0.2em;
-    background: #fff;
-}
-
-.payment_details .qrcode_wrapper .inner-wrapper {
-    z-index: 3 !important;
-    position: relative !important;
-}
-
-.payment_details .qrcode_wrapper .cryptapi_branding {
-    font-size: 11px;
-    font-family: "roboto", sans-serif;
-    color: #666;
     position: absolute;
-    bottom: -15px;
-    right: 0;
-    background: #ddd;
-    padding: 20px 5px 2px 5px;
-    border-radius: 0.4em;
-    z-index: 2;
-    border: 1px #777 solid;
+    left: 10px;
+    width: 50px;
+    height: 50px;
+    background-image: url(./files/ca_loader.svg);
+    background-size: contain;
+    top: calc(50% - 25px);
+    bottom: 0;
+    background-repeat: no-repeat;
 }
 
-.payment_details .qrcode_wrapper:before {
-    content: "clickable on mobile devices";
+.ca_buttons_container {
+    display: flex;
+    justify-content: center;
+    padding: 13px 0;
+    background-color: #FAFAFA;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    max-width: 250px;
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 50px;
+}
+
+.ca_buttons_container a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    color: #2695D3;
+    font-weight: 600;
+    letter-spacing: .045em;
+    width: 100px;
+    height: 38px;
+    border-radius: 50px;
+    border: 3px solid #2695D3;
     font-size: 13px;
-    font-family: "roboto", sans-serif;
-    color: #666;
+    margin: 0 6px;
+}
+
+.ca_buttons_container a:hover {
+    color: #FFF;
+    background-color: #2695D3;
+}
+
+.ca_branding {
+    margin-top: 26px;
+    text-align: center;
+}
+
+.ca_branding img {
+    display: inline-block !important;
+}
+
+.ca_progress {
+    display: flex;
+    margin-top: 52px;
+}
+
+.ca_progress .ca_progress_icon {
+    position: relative;
+    width: 33.33%;
+    text-align: center;
+}
+
+.ca_progress .ca_progress_icon.waiting_network {
+    position: relative;
+}
+
+.ca_progress .ca_progress_icon.waiting_payment:before,
+.ca_progress .ca_progress_icon.waiting_network:before {
+    content: '';
     position: absolute;
-    bottom: -15px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    background: #f6f6f6;
-    border-radius: 0.4em;
-    border: 1px #888 solid;
-    padding: 18px 1px 1px 1px;
-    z-index: 1;
+    width: 80px;
+    height: 2px;
+    background: #2695D3 !important;
+    top: 28%;
+    right: -18%;
 }
 
-.payment_details .details_box {
-    width: 100%;
-    margin: 3em auto;
-    text-align: center;
+.ca_progress .ca_progress_icon.waiting_payment.done:before,
+.ca_progress .ca_progress_icon.waiting_network.done:before {
+    background: #66BB6A !important;
 }
 
-.payment_pending {
-    width: 100%;
-    text-align: center;
-    display: none;
+.ca_progress .ca_progress_icon svg {
+    margin: 0 auto 12px;
 }
 
-.payment_complete {
+.ca_progress .ca_progress_icon.done svg path {
+    fill: #66BB6A;
+}
+
+.ca_progress .ca_progress_icon p {
+    width: 154px;
+    margin: 0 auto;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.ca_payment_confirmed {
     width: 100%;
+}
+
+.ca_payment_confirmed h2 {
     text-align: center;
-    display: none;
+    font-size: 28px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-top: 26px;
+}
+
+.ca_payment_confirmed .ca_payment_confirmed_icon  {
+    text-align: center !important;
+}
+
+.ca_payment_confirmed .ca_payment_confirmed_icon svg {
+    max-width: 100% !important;
+    width: 100px !important;
+    margin: 0 auto !important;
+    display: inline-block !important;
+}
+
+@media screen and (max-width: 768.98px) {
+    .ca_details_input span {
+        font-size: 16px;
+        word-break: break-all;
+    }
+
+    .ca_copy_icon {
+        width: 17px;
+        height: 20px;
+        right: 20px;
+        top: calc(50% - 11px);
+    }
+
+    .ca_progress .ca_progress_icon.waiting_network:before,
+    .ca_progress .ca_progress_icon.waiting_network:after {
+        width: 60px;
+    }
+
+    .ca_progress .ca_progress_icon.waiting_network:before {
+        left: -22%;
+    }
+
+    .ca_progress .ca_progress_icon.waiting_network:after {
+        right: -22%;
+    }
+}
+
+@media screen and (max-width: 575.98px) {
+    .ca_details_copy {
+        display: block;
+        margin: 12px auto;
+    }
+
+    .ca_details_input span {
+        padding: 0 50px 0 8%;
+    }
+
+    .ca_progress {
+        flex-direction: column;
+    }
+
+    .ca_progress .ca_progress_icon {
+        width: 100%;
+    }
+
+    .ca_progress .ca_progress_icon.waiting_network:before,
+    .ca_progress .ca_progress_icon.waiting_network:after {
+        width: 2px;
+        height: 40px;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        bottom: -51px;
+    }
+
+    .ca_progress .ca_progress_icon.waiting_network:before {
+        top: -55px;
+    }
+
+    .ca_progress .ca_progress_icon.waiting_network:after {
+        top: unset;
+        bottom: -55px;
+    }
+
+    .ca_progress .ca_progress_icon.waiting_network {
+        margin: 70px 0;
+    }
+
+    .ca_details_input {
+        margin-bottom: 64px;
+    }
+
+    .ca_loader {
+        top: unset;
+        bottom: -243px;
+        right: 0;
+        left: 0;
+        margin: 0 auto;
+    }
 }

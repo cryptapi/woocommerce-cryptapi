@@ -75,11 +75,18 @@ class Helper {
 			return null;
 		}
 
-		$params = [
-			'address' => $this->payment_address,
-			'value'   => $value,
-			'size'    => $size,
-		];
+		if ( ! empty( $value ) ) {
+			$params = [
+				'address' => $this->payment_address,
+				'value'   => $value,
+				'size'    => $size,
+			];
+		} else {
+			$params = [
+				'address' => $this->payment_address,
+				'size'    => $size,
+			];
+		}
 
 		$response = Helper::_request( $this->coin, 'qrcode', $params );
 

@@ -1,12 +1,12 @@
 === CryptAPI Payment Gateway for WooCommerce ===
 Contributors: cryptapi
-Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, monero, litecoin, bitcoin cash
-Requires at least: 4.0
-Tested up to: 5.8
-Stable tag: 2.1.2
+Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, monero, litecoin, bitcoin cash, shib, doge
+Requires at least: 4.4
+Tested up to: 5.8.3
+Stable tag: 3.0
 Requires PHP: 5.5
 WC requires at least: 2.4
-WC tested up to: 5.6
+WC tested up to: 6.1
 License: MIT
 
 Accept cryptocurrency payments on your WooCommerce website
@@ -14,7 +14,7 @@ Accept cryptocurrency payments on your WooCommerce website
 
 == Description ==
 
-Accept payments in Bitcoin, Ethereum, Bitcoin Cash, Litecoin, Monero, BNB, USDT and many more directly to your crypto wallet, without any sign-ups or lengthy processes.
+Accept payments in Bitcoin, Ethereum, Bitcoin Cash, Litecoin, Monero, BNB, USDT, SHIB, DOGE and many more directly to your crypto wallet, without any sign-ups or lengthy processes.
 All you need is to provide your crypto address.
 
 = Allow users to pay with crypto directly on your store =
@@ -31,28 +31,40 @@ The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto dire
 * (TRX) Tron
 * (BNB) Binance Coin
 * (USDT) USDT
+* (SHIB) Shiba Inu
+* (DOGE) Dogecoin
+
 
 among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/pricing/).
 
 = Auto-value conversion =
 
 CryptAPI will attempt to automatically convert the value you set on your store to the cryptocurrency your customer chose.
-Exchange rates are fetched hourly from CoinMarketCap.
+
+Exchange rates are fetched every 5 minutes from CoinGecko.
 
 Supported currencies for automatic exchange rates are:
 
-* (USD) United States Dollar
-* (EUR) Euro
-* (GBP) Great Britain Pound
-* (JPY) Japanese Yen
-* (CNY) Chinese Yuan
-* (INR) Indian Rupee
-* (CAD) Canadian Dollar
-* (HKD) Hong Kong Dollar
-* (BRL) Brazilian Real
-* (DKK) Danish Krone
+* (XAF) CFA Franc
+* (RON) Romanian Leu
+* (BGN) Bulgarian Lev
+* (HUF) Hungarian Forint
+* (CZK) Czech Koruna
+* (PHP) Philippine Peso
+* (PLN) Poland Zloti
+* (UGX) Uganda Shillings
 * (MXN) Mexican Peso
-* (AED) United Arab Emirates Dirham
+* (INR) Indian Rupee
+* (HKD) Hong Kong Dollar
+* (CNY) Chinese Yuan
+* (BRL) Brazilian Real
+* (DKK) DKK
+* (AED) UAE Dollar
+* (JPY) Japanese Yen
+* (CAD) Canadian Dollar
+* (GBP) GB Pound
+* (EUR) Euro
+* (USD) US Dollar
 
 If your WooCommerce's currency is none of the above, the exchange rates will default to USD.
 If you're using WooCommerce in a different currency not listed here and need support, please [contact us](https://cryptapi.io) via our live chat.
@@ -119,7 +131,7 @@ This depends on the cryptocurrency you're using. Bitcoin usually takes up to 11 
 
 = Is there a minimum for a payment? =
 
-Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/get_started/#fees).
+Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/pricing/).
 If the WooCommerce order total is below the chosen cryptocurrency's minimum, an error is raised to the user.
 
 = Where can I find more documentation on your service? =
@@ -129,15 +141,17 @@ If there's anything else you need that is not covered on those pages, please get
 
 = Where can I get support? =
 
-The easiest and fastest way is via our live chat on our [website](https://cryptapi.io) or via our [contact form](https://cryptapi.io/contact/).
+The easiest and fastest way is via our live chat on our [website](https://cryptapi.io), via our [contact form](https://cryptapi.io/contact/), via [discord](https://discord.gg/pQaJ32SGrR) or via [telegram](https://t.me/cryptapi_support).
 
 == Screenshots ==
 
-1. The settings panel used to configure the gateway.
-2. Normal checkout with CryptAPI.
-3. Standard payment page with QR-Code.
-4. Awaiting payment confirmation
-5. Payment confirmed
+1. The settings panel used to configure the gateway
+2. Set your crypto addresses (part 1)
+3. Set your crypto addresses (part 2)
+4. Example of payment using Litecoins
+5. The QR code can be set to provide only the address or the address with the amount: the user can choose with one click
+6. Once the payment is received, the system will wait for network confirmations
+7. The payment is confirmed!
 
 == Changelog ==
 
@@ -149,6 +163,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Updated codebase
 * New API URL
 
+= 3.0 =
+* UI Improvements
+* Minor Bug Fixes
 
 == Upgrade Notice ==
 * No breaking changes

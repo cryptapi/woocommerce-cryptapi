@@ -7,7 +7,7 @@ Accept cryptocurrency payments on your WooCommerce website
 
 ```
 PHP >= 5.5
-Wordpress >= 4.0
+Wordpress >= 4.4
 WooCommerce >= 2.4
 ```
 
