@@ -17,6 +17,7 @@
     background: #FAFAFA !important;
     font-weight: bold;
     color: #000 !important;
+    border: 0;
 }
 
 .ca_details_box {
@@ -64,6 +65,7 @@
     letter-spacing: .045em;
     background-color: #FAFAF9 !important;
     color: #000 !important;
+    border: 0 !important;
 }
 
 .ca_qrcode_buttons button.active {
@@ -138,6 +140,7 @@
     right: 25px;
     background-size: contain;
     background: transparent url(./files/ca_copy_icon.svg) no-repeat !important;
+    border: 0 !important;
 }
 
 .ca_copy_icon_tooltip {
@@ -204,12 +207,28 @@
 .ca_progress {
     display: flex;
     margin-top: 52px;
+    flex-wrap: wrap;
 }
 
 .ca_progress .ca_progress_icon {
     position: relative;
     width: 33.33%;
+    flex: 0 0 33.33%;
     text-align: center;
+}
+
+.ca_notification_text {
+    display: block;
+    width: 100%;
+    flex: 0 0 100%;
+    margin-top: 35px;
+    text-align: center;
+}
+
+.ca_notification_text span {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 14px;
 }
 
 .ca_progress .ca_progress_icon.waiting_network {
@@ -251,7 +270,8 @@
     width: 100%;
 }
 
-.ca_payment_confirmed h2 {
+.ca_payment_confirmed h2,
+.ca_payment_canceled h2 {
     text-align: center;
     font-size: 28px;
     text-transform: uppercase;
@@ -259,11 +279,14 @@
     margin-top: 26px;
 }
 
-.ca_payment_confirmed .ca_payment_confirmed_icon  {
+.ca_payment_confirmed .ca_payment_confirmed_icon,
+.ca_payment_canceled .ca_payment_cancelled_icon {
     text-align: center !important;
+    margin-bottom: 15px;
 }
 
-.ca_payment_confirmed .ca_payment_confirmed_icon svg {
+.ca_payment_confirmed .ca_payment_confirmed_icon svg,
+.ca_payment_canceled .ca_payment_cancelled_icon svg {
     max-width: 100% !important;
     width: 100px !important;
     margin: 0 auto !important;
@@ -313,6 +336,7 @@
 
     .ca_progress .ca_progress_icon {
         width: 100%;
+        flex: 0 0 100%;
     }
 
     .ca_progress .ca_progress_icon.waiting_payment:before,

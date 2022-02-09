@@ -3,7 +3,7 @@ Contributors: cryptapi
 Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, monero, litecoin, bitcoin cash, shib, doge
 Requires at least: 4.4
 Tested up to: 5.8.3
-Stable tag: 3.0.1
+Stable tag: 3.1
 Requires PHP: 5.5
 WC requires at least: 2.4
 WC tested up to: 6.1
@@ -58,8 +58,8 @@ Supported currencies for automatic exchange rates are:
 * (HKD) Hong Kong Dollar
 * (CNY) Chinese Yuan
 * (BRL) Brazilian Real
-* (DKK) DKK
-* (AED) UAE Dollar
+* (DKK) Danish Krone
+* (AED) UAE Dirham
 * (JPY) Japanese Yen
 * (CAD) Canadian Dollar
 * (GBP) GB Pound
@@ -166,6 +166,16 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 = 3.0 =
 * UI Improvements
 * Minor Bug Fixes
+
+= 3.0.2 =
+* New setting to show QR Code by default
+* UI Improvements
+* Minor Bug Fixes
+
+= 3.1 =
+* Add support for WooCommerce Subscriptions plugin
+* Add new feature to refresh values based on store owner preferences
+* Add new feature to cancel orders if they take more than selected time to pay
 
 == Upgrade Notice ==
 * No breaking changes

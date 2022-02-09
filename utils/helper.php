@@ -97,6 +97,33 @@ class Helper {
 		return null;
 	}
 
+	public static function get_static_qrcode( $address, $coin, $value, $size = 300 ) {
+		if ( empty( $address ) ) {
+			return null;
+		}
+
+		if ( ! empty( $value ) ) {
+			$params = [
+				'address' => $address,
+				'value'   => $value,
+				'size'    => $size,
+			];
+		} else {
+			$params = [
+				'address' => $address,
+				'size'    => $size,
+			];
+		}
+
+		$response = Helper::_request( $coin, 'qrcode', $params );
+
+		if ( $response->status == 'success' ) {
+			return [ 'qr_code' => $response->qr_code, 'uri' => $response->payment_uri ];
+		}
+
+		return null;
+	}
+
 	public static function get_supported_coins() {
 		$info = Helper::get_info( null, true );
 
