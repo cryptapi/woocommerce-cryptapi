@@ -227,23 +227,26 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'type' => 'select',
                     'default' => 'none',
                     'options' => array(
-                        '0.5' => '5%',
-                        '0.4' => '4%',
-                        '0.3' => '3%',
-                        '0.2' => '2%',
-                        '0.1' => '1%',
-                        '0.090' => '0.90%',
-                        '0.085' => '0.85%',
-                        '0.080' => '0.80%',
-                        '0.075' => '0.75%',
-                        '0.070' => '0.70%',
-                        '0.065' => '0.65%',
-                        '0.060' => '0.60%',
-                        '0.055' => '0.55%',
-                        '0.050' => '0.50%',
-                        '0.040' => '0.40%',
-                        '0.030' => '0.30%',
-                        '0.025' => '0.25%',
+                        '0.05' => '5%',
+                        '0.04' => '4%',
+                        '0.03' => '3%',
+                        '0.02' => '2%',
+                        '0.018' => '1.8%',
+                        '0.015' => '1.5%',
+                        '0.012' => '1.2%',
+                        '0.01' => '1%',
+                        '0.0090' => '0.90%',
+                        '0.0085' => '0.85%',
+                        '0.0080' => '0.80%',
+                        '0.0075' => '0.75%',
+                        '0.0070' => '0.70%',
+                        '0.0065' => '0.65%',
+                        '0.0060' => '0.60%',
+                        '0.0055' => '0.55%',
+                        '0.0050' => '0.50%',
+                        '0.0040' => '0.40%',
+                        '0.0030' => '0.30%',
+                        '0.0025' => '0.25%',
                         'none' => '0%',
                     ),
                     'description' => __('Set the CryptAPI service fee you want to charge the costumer.<br><strong>Note: </strong>Fee you want to charge your costumers (to cover CryptAPI\'s fees fully or partially)</strong>', 'cryptapi')
@@ -975,9 +978,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             return;
         }
 
+
         $total_fee = $this->get_option('fee_order_percentage') == 'none' ? 0 : $this->get_option('fee_order_percentage');
 
-        $fee_order = $this->get_option('add_blockchain_fee');
+
+        $fee_order = WC()->cart->subtotal * $total_fee;
 
         if ($fee_order) {
 
@@ -990,14 +995,14 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             if (!empty($selected) && $selected != 'none') {
                 $est = CryptAPI\Helper::get_estimate($selected);
 
-                $total_fee += (float)$est->{get_woocommerce_currency()};
+                $fee_order += (float)$est->{get_woocommerce_currency()};
             }
 
-            if (empty($total_fee)) {
+            if (empty($fee_order)) {
                 return;
             }
 
-            WC()->cart->add_fee(__('Service Fee', 'cryptapi'), $total_fee, true);
+            WC()->cart->add_fee(__('Service Fee', 'cryptapi'), $fee_order, true);
         }
     }
 
