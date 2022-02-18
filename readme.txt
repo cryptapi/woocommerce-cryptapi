@@ -2,11 +2,11 @@
 Contributors: cryptapi
 Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, monero, litecoin, bitcoin cash, shib, doge
 Requires at least: 4.4
-Tested up to: 5.8.3
-Stable tag: 3.1
+Tested up to: 5.9
+Stable tag: 4.0.2
 Requires PHP: 5.5
 WC requires at least: 2.4
-WC tested up to: 6.1
+WC tested up to: 6.2
 License: MIT
 
 Accept cryptocurrency payments on your WooCommerce website
@@ -176,6 +176,27 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Add support for WooCommerce Subscriptions plugin
 * Add new feature to refresh values based on store owner preferences
 * Add new feature to cancel orders if they take more than selected time to pay
+
+= 3.2 =
+* UI Improvements
+* Minor Bug Fixes
+
+= 3.2.1 =
+* Add translations for multiple languages
+
+= 4.0 =
+* New settings and color schemes to fit dark mode
+* New settings to add CryptAPI's services fees to the checkout
+* New settings to add blockchain fees to the checkout
+* Upgrade the settings
+* UI Improvements
+* Minor fixes
+
+= 4.0.1 =
+* Minor fixes
+
+= 4.0.2 =
+* Minor fixes
 
 == Upgrade Notice ==
 * No breaking changes

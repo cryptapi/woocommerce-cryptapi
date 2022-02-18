@@ -1,77 +1,84 @@
 <?php
 
-class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
-	private static $HAS_TRIGGERED = false;
-	private static $COIN_OPTIONS = [];
+class WC_CryptAPI_Gateway extends WC_Payment_Gateway
+{
+    private static $HAS_TRIGGERED = false;
+    private static $COIN_OPTIONS = [];
 
-	function __construct() {
-		$this->id                 = 'cryptapi';
-		$this->icon               = CRYPTAPI_PLUGIN_URL . 'static/files/200_logo_ca.png';
-		$this->has_fields         = true;
-		$this->method_title       = 'CryptAPI';
-		$this->method_description = 'CryptAPI allows customers to pay in cryptocurrency';
+    function __construct()
+    {
+        $this->id = 'cryptapi';
+        $this->icon = CRYPTAPI_PLUGIN_URL . 'static/files/200_logo_ca.png';
+        $this->has_fields = true;
+        $this->method_title = 'CryptAPI';
+        $this->method_description = __('CryptAPI allows customers to pay in cryptocurrency', 'cryptapi');
 
-		$this->supports = array(
-			'products',
-			'tokenization',
-			'add_payment_method',
-			'subscriptions',
-			'subscription_cancellation',
-			'subscription_amount_changes',
-			'subscription_suspension',
-			'subscription_reactivation',
-			'subscription_date_changes',
-			'multiple_subscriptions',
-		);
+        $this->supports = array(
+            'products',
+            'tokenization',
+            'add_payment_method',
+            'subscriptions',
+            'subscription_cancellation',
+            'subscription_amount_changes',
+            'subscription_suspension',
+            'subscription_reactivation',
+            'subscription_date_changes',
+            'multiple_subscriptions',
+        );
 
-		$this->load_coins();
+        $this->load_coins();
 
-		$this->init_form_fields();
-		$this->init_settings();
-		$this->ca_settings();
+        $this->init_form_fields();
+        $this->init_settings();
+        $this->ca_settings();
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
-		add_action( 'woocommerce_api_wc_gateway_' . $this->id, array( $this, 'validate_payment' ) );
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+        add_action('woocommerce_thankyou_' . $this->id, array($this, 'thankyou_page'));
+        add_action('woocommerce_api_wc_gateway_' . $this->id, array($this, 'validate_payment'));
 
-		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'scheduled_subscription_mail' ), 10, 2 );
+        add_action('woocommerce_scheduled_subscription_payment_' . $this->id, array($this, 'scheduled_subscription_mail'), 10, 2);
 
-		add_action( 'wcs_create_pending_renewal', array( $this, 'subscription_send_email' ) );
+        add_action('wcs_create_pending_renewal', array($this, 'subscription_send_email'));
 
-		add_action( 'wp_ajax_nopriv_' . $this->id . '_order_status', array( $this, 'order_status' ) );
-		add_action( 'wp_ajax_' . $this->id . '_order_status', array( $this, 'order_status' ) );
+        add_action('wp_ajax_nopriv_' . $this->id . '_order_status', array($this, 'order_status'));
+        add_action('wp_ajax_' . $this->id . '_order_status', array($this, 'order_status'));
 
-		add_action( 'cryptapi_cronjob', array( $this, 'ca_cronjob' ), 10, 3 );
-	}
+        add_action('cryptapi_cronjob', array($this, 'ca_cronjob'), 10, 3);
 
-	function load_coins() {
-		if ( ! empty( WC_CryptAPI_Gateway::$COIN_OPTIONS ) ) {
-			return;
-		}
+        add_action('woocommerce_cart_calculate_fees', array($this, 'handling_fee'));
 
-		$transient = get_transient( 'cryptapi_coins' );
-		if ( ! empty( $transient ) ) {
-			WC_CryptAPI_Gateway::$COIN_OPTIONS = $transient;
+        add_action('woocommerce_checkout_update_order_review', array($this, 'chosen_currency_value_to_wc_session'));
 
-			return;
-		}
+        add_action('wp_footer', array($this, 'refresh_checkout'));
+    }
 
-		$coins = CryptAPI\Helper::get_supported_coins();
-		set_transient( 'cryptapi_coins', $coins, 86400 );
-		WC_CryptAPI_Gateway::$COIN_OPTIONS = $coins;
-	}
+    function load_coins()
+    {
+        if (!empty(WC_CryptAPI_Gateway::$COIN_OPTIONS)) {
+            return;
+        }
 
-	function admin_options() {
-		parent::admin_options();
-		?>
+        $transient = get_transient('cryptapi_coins');
+        if (!empty($transient)) {
+            WC_CryptAPI_Gateway::$COIN_OPTIONS = $transient;
+
+            return;
+        }
+
+        $coins = CryptAPI\Helper::get_supported_coins();
+        set_transient('cryptapi_coins', $coins, 86400);
+        WC_CryptAPI_Gateway::$COIN_OPTIONS = $coins;
+    }
+
+    function admin_options()
+    {
+        parent::admin_options();
+        ?>
         <div style='margin-top: 2rem;'>
-            If you need any help or have any suggestion, contact us via the <b>live chat</b> on our
-            <b><a href='https://cryptapi.io' target='_blank'>website</a></b> or join our
-            <b><a href='https://discord.gg/cryptapi' target='_blank'>Discord server</a></b>
+            <?php echo __("If you need any help or have any suggestion, contact us via the <b>live chat</b> on our <b><a href='https://cryptapi.io' target='_blank'>website</a></b> or join our <b><a href='https://discord.gg/cryptapi' target='_blank'>Discord server</a></b>", "cryptapi") ?>
         </div>
         <div style='margin-top: .5rem;'>
-            If you enjoy this plugin please
-            <b><a href='https://wordpress.org/support/plugin/cryptapi-payment-gateway-for-woocommerce/reviews/#new-post' target='_blank'>rate and review it</a></b>!
+            <?php echo __("If you enjoy this plugin please <b><a href='https://wordpress.org/support/plugin/cryptapi-payment-gateway-for-woocommerce/reviews/#new-post' target='_blank'>rate and review it</a></b>!", "cryptapi") ?>
         </div>
         <div style="margin-top: 1.5rem">
             <a href="https://uk.trustpilot.com/review/cryptapi.io" target="_blank">
@@ -151,429 +158,578 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
                 <img src="https://widget.cryptwerk.com/cryptapi/?shape=rectangle" width="145" alt="CryptAPI rating on Cryptwerk" border="0">
             </a>
         </div>
-		<?php
-	}
+        <?php
+    }
 
-	private function ca_settings() {
-		$this->enabled                   = $this->get_option( 'enabled' );
-		$this->title                     = $this->get_option( 'title' );
-		$this->description               = $this->get_option( 'description' );
-		$this->qrcode_size               = $this->get_option( 'qrcode_size' );
-		$this->qrcode_default            = $this->get_option( 'qrcode_default' ) === 'yes';
-		$this->coins                     = $this->get_option( 'coins' );
-		$this->show_branding             = $this->get_option( 'show_branding' ) === 'yes';
-		$this->refresh_value_interval    = $this->get_option( 'refresh_value_interval' );
-		$this->order_cancelation_timeout = $this->get_option( 'order_cancelation_timeout' );
-		$this->disable_conversion        = $this->get_option( 'disable_conversion' ) === 'yes';
+    private function ca_settings()
+    {
+        $this->enabled = $this->get_option('enabled');
+        $this->title = $this->get_option('title');
+        $this->description = $this->get_option('description');
+        $this->qrcode_size = $this->get_option('qrcode_size');
+        $this->qrcode_default = $this->get_option('qrcode_default') === 'yes';
+        $this->qrcode_setting = $this->get_option('qrcode_setting');
+        $this->coins = $this->get_option('coins');
+        $this->show_branding = $this->get_option('show_branding') === 'yes';
+        $this->color_scheme = $this->get_option('color_scheme');
+        $this->refresh_value_interval = $this->get_option('refresh_value_interval');
+        $this->order_cancelation_timeout = $this->get_option('order_cancelation_timeout');
+        $this->add_blockchain_fee = $this->get_option('add_blockchain_fee');
+        $this->fee_order_percentage = $this->get_option('fee_order_percentage');
+        $this->disable_conversion = $this->get_option('disable_conversion') === 'yes';
+        $this->icon = '';
 
-		if ( ! $this->show_branding ) {
-			$this->icon = '';
-		}
+        if (!empty(WC_CryptAPI_Gateway::$COIN_OPTIONS)) {
+            foreach (array_keys(WC_CryptAPI_Gateway::$COIN_OPTIONS) as $coin) {
+                $this->{$coin . '_address'} = $this->get_option($coin . '_address');
+            }
+        }
+    }
 
-		foreach ( array_keys( WC_CryptAPI_Gateway::$COIN_OPTIONS ) as $coin ) {
-			$this->{$coin . '_address'} = $this->get_option( $coin . '_address' );
-		}
-	}
+    function init_form_fields()
+    {
 
-	function init_form_fields() {
-		$this->form_fields = array(
-			'enabled'                   => array(
-				'title'   => __( 'Enabled', 'cryptapi' ),
-				'type'    => 'checkbox',
-				'label'   => __( 'Enable CryptAPI Payments', 'cryptapi' ),
-				'default' => 'yes'
-			),
-			'title'                     => array(
-				'title'       => __( 'Title', 'cryptapi' ),
-				'type'        => 'text',
-				'description' => __( 'This controls the title which the user sees during checkout.', 'cryptapi' ),
-				'default'     => __( 'Cryptocurrency', 'cryptapi' ),
-				'desc_tip'    => true,
-			),
-			'description'               => array(
-				'title'       => __( 'Description', 'cryptapi' ),
-				'type'        => 'textarea',
-				'default'     => '',
-				'description' => __( 'Payment method description that the customer will see on your checkout', 'cryptapi' )
-			),
-			'show_branding'             => array(
-				'title'   => __( 'Show CryptAPI branding', 'cryptapi' ),
-				'type'    => 'checkbox',
-				'label'   => __( 'Show CryptAPI logo and credits below the QR code', 'cryptapi' ),
-				'default' => 'yes'
-			),
-			'disable_conversion'        => array(
-				'title'   => __( 'Disable price conversion', 'cryptapi' ),
-				'type'    => 'checkbox',
-				'label'   => __( "<b>Attention: This option will disable the price conversion for ALL cryptocurrencies!</b><br/>If you check this, pricing will not be converted from the currency of your shop to the cryptocurrency selected by the user, and users will be requested to pay the same value as shown on your shop, regardless of the cryptocurrency selected", 'cryptapi' ),
-				'default' => 'no'
-			),
-			'qrcode_default'            => array(
-				'title'   => __( 'QR Code by default', 'cryptapi' ),
-				'type'    => 'checkbox',
-				'label'   => __( 'Show the QR Code by default', 'cryptapi' ),
-				'default' => 'yes'
-			),
-			'qrcode_size'               => array(
-				'title'       => __( 'QR Code size', 'cryptapi' ),
-				'type'        => 'number',
-				'default'     => 300,
-				'description' => __( 'QR code image size', 'cryptapi' )
-			),
-			'refresh_value_interval'    => array(
-				'title'       => __( 'Refresh converted value', 'cryptapi' ),
-				'type'        => 'select',
-				'default'     => '',
-				'options'     => array(
-					'0'    => 'Never',
-					'300'  => 'Every 5 Minutes',
-					'600'  => 'Every 10 Minutes',
-					'900'  => 'Every 15 Minutes',
-					'1800' => 'Every 30 Minutes',
-					'2700' => 'Every 45 Minutes',
-					'3600' => 'Every 60 Minutes',
-				),
-				'description' => __( "The system will automatically update the conversion value of the invoices (with real-time data), every X minutes.<br> This feature is helpful whenever a customer takes long time to pay a generated invoice and the selected crypto a volatile coin/token (not stable coin)", 'cryptapi' ),
-			),
-			'order_cancelation_timeout' => array(
-				'title'       => __( 'Order cancelation timeout', 'cryptapi' ),
-				'type'        => 'select',
-				'default'     => '',
-				'options'     => array(
-					'0'     => 'Never',
-					'3600'  => '1 Hour',
-					'21600' => '6 Hours',
-					'43200' => '12 Hours',
-					'64800' => '18 Hours',
-					'86400' => '24 Hours',
-				),
-				'description' => __( "Selects the ammount of time the user has to  pay for the order.<br>When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored.<br><strong>Notice:</strong> If the user still sends money to the generated address, value will still be redirected to you.", 'cryptapi' ),
-			),
-			'coins'                     => array(
-				'title'       => __( 'Accepted cryptocurrencies', 'cryptapi' ),
-				'type'        => 'multiselect',
-				'default'     => '',
-				'css'         => 'height: 15em;',
-				'options'     => WC_CryptAPI_Gateway::$COIN_OPTIONS,
-				'description' => __( "Select which coins do you wish to accept. CTRL + click to select multiple", 'cryptapi' ),
-			)
-		);
+        if (!empty(WC_CryptAPI_Gateway::$COIN_OPTIONS)) {
+            $this->form_fields = array(
+                'enabled' => array(
+                    'title' => __('Enabled', 'cryptapi'),
+                    'type' => 'checkbox',
+                    'label' => __('Enable CryptAPI Payments', 'cryptapi'),
+                    'default' => 'yes'
+                ),
+                'title' => array(
+                    'title' => __('Title', 'cryptapi'),
+                    'type' => 'text',
+                    'description' => __('This controls the title which the user sees during checkout.', 'cryptapi'),
+                    'default' => __('Cryptocurrency', 'cryptapi'),
+                    'desc_tip' => true,
+                ),
+                'description' => array(
+                    'title' => __('Description', 'cryptapi'),
+                    'type' => 'textarea',
+                    'default' => '',
+                    'description' => __('Payment method description that the customer will see on your checkout', 'cryptapi')
+                ),
+                'show_branding' => array(
+                    'title' => __('Show CryptAPI branding', 'cryptapi'),
+                    'type' => 'checkbox',
+                    'label' => __('Show CryptAPI logo and credits below the QR code', 'cryptapi'),
+                    'default' => 'yes'
+                ),
+                'add_blockchain_fee' => array(
+                    'title' => __('Add the blockchain fee to the order', 'cryptapi'),
+                    'type' => 'checkbox',
+                    'label' => __("This will add an estimation of the blockchain fee to the order value", 'cryptapi'),
+                    'default' => 'no'
+                ),
+                'fee_order_percentage' => array(
+                    'title' => __('Service fee manager', 'cryptapi'),
+                    'type' => 'select',
+                    'default' => 'none',
+                    'options' => array(
+                        '0.05' => '5%',
+                        '0.04' => '4%',
+                        '0.03' => '3%',
+                        '0.02' => '2%',
+                        '0.018' => '1.8%',
+                        '0.015' => '1.5%',
+                        '0.012' => '1.2%',
+                        '0.01' => '1%',
+                        '0.0090' => '0.90%',
+                        '0.0085' => '0.85%',
+                        '0.0080' => '0.80%',
+                        '0.0075' => '0.75%',
+                        '0.0070' => '0.70%',
+                        '0.0065' => '0.65%',
+                        '0.0060' => '0.60%',
+                        '0.0055' => '0.55%',
+                        '0.0050' => '0.50%',
+                        '0.0040' => '0.40%',
+                        '0.0030' => '0.30%',
+                        '0.0025' => '0.25%',
+                        'none' => '0%',
+                    ),
+                    'description' => __('Set the CryptAPI service fee you want to charge the costumer.<br><strong>Note: </strong>Fee you want to charge your costumers (to cover CryptAPI\'s fees fully or partially)</strong>', 'cryptapi')
+                ),
+                'qrcode_default' => array(
+                    'title' => __('QR Code by default', 'cryptapi'),
+                    'type' => 'checkbox',
+                    'label' => __('Show the QR Code by default', 'cryptapi'),
+                    'default' => 'yes'
+                ),
+                'qrcode_size' => array(
+                    'title' => __('QR Code size', 'cryptapi'),
+                    'type' => 'number',
+                    'default' => 300,
+                    'description' => __('QR code image size', 'cryptapi')
+                ),
+                'qrcode_setting' => array(
+                    'title' => __('QR Code to show', 'cryptapi'),
+                    'type' => 'select',
+                    'default' => 'ammount',
+                    'options' => array(
+                        'ammount' => __('Default Ammount', 'cryptapi'),
+                        'without_ammount' => __('Default Without Ammount', 'cryptapi'),
+                        'hide_ammount' => __('Hide Ammount', 'cryptapi'),
+                        'hide_without_ammount' => __('Hide Without Ammount', 'cryptapi'),
+                    ),
+                    'description' => __('Select how you want to show the QR Code to the user. Either select a default to show first, or hide one of them.', 'cryptapi')
+                ),
+                'color_scheme' => array(
+                    'title' => __('Color Scheme', 'cryptapi'),
+                    'type' => 'select',
+                    'default' => 'light',
+                    'description' => __('Selects the color scheme of the plugin to match your website (Light, Dark and Auto to automatically detect it)', 'cryptapi'),
+                    'options' => array(
+                        'light' => __('Light', 'cryptapi'),
+                        'dark' => __('Dark', 'cryptapi'),
+                        'auto' => __('Auto', 'cryptapi'),
+                    ),
+                ),
+                'refresh_value_interval' => array(
+                    'title' => __('Refresh converted value', 'cryptapi'),
+                    'type' => 'select',
+                    'default' => '',
+                    'options' => array(
+                        '0' => __('Never', 'cryptapi'),
+                        '300' => __('Every 5 Minutes', 'cryptapi'),
+                        '600' => __('Every 10 Minutes', 'cryptapi'),
+                        '900' => __('Every 15 Minutes', 'cryptapi'),
+                        '1800' => __('Every 30 Minutes', 'cryptapi'),
+                        '2700' => __('Every 45 Minutes', 'cryptapi'),
+                        '3600' => __('Every 60 Minutes', 'cryptapi'),
+                    ),
+                    'description' => __("The system will automatically update the conversion value of the invoices (with real-time data), every X minutes.<br> This feature is helpful whenever a customer takes long time to pay a generated invoice and the selected crypto a volatile coin/token (not stable coin)", 'cryptapi'),
+                ),
+                'order_cancelation_timeout' => array(
+                    'title' => __('Order cancelation timeout', 'cryptapi'),
+                    'type' => 'select',
+                    'default' => '',
+                    'options' => array(
+                        '0' => __('Never', 'cryptapi'),
+                        '3600' => __('1 Hour', 'cryptapi'),
+                        '21600' => __('6 Hours', 'cryptapi'),
+                        '43200' => __('12 Hours', 'cryptapi'),
+                        '64800' => __('18 Hours', 'cryptapi'),
+                        '86400' => __('24 Hours', 'cryptapi'),
+                    ),
+                    'description' => __("Selects the ammount of time the user has to  pay for the order.<br>When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored.<br><strong>Notice:</strong> If the user still sends money to the generated address, value will still be redirected to you.", 'cryptapi'),
+                ),
+                'disable_conversion' => array(
+                    'title' => __('Disable price conversion', 'cryptapi'),
+                    'type' => 'checkbox',
+                    'label' => __("<b>Attention: This option will disable the price conversion for ALL cryptocurrencies!</b><br/>If you check this, pricing will not be converted from the currency of your shop to the cryptocurrency selected by the user, and users will be requested to pay the same value as shown on your shop, regardless of the cryptocurrency selected", 'cryptapi'),
+                    'default' => 'no'
+                ),
+            );
 
-		foreach ( WC_CryptAPI_Gateway::$COIN_OPTIONS as $ticker => $coin ) {
-			$this->form_fields["{$ticker}_address"] = array(
-				'title'       => __( "{$coin} Address", 'cryptapi' ),
-				'type'        => 'text',
-				'description' => __( "Insert your {$coin} address here. Leave blank if you want to skip this cryptocurrency", 'cryptapi' ),
-				'desc_tip'    => true,
-			);
-		}
-	}
+            $coin_description = __('Insert your %s address here. Leave the checkbox unselected if you want to skip this cryptocurrency', 'cryptapi');
 
-	function needs_setup() {
-		if ( empty( $this->coins ) || ! is_array( $this->coins ) ) {
-			return true;
-		}
+            foreach (WC_CryptAPI_Gateway::$COIN_OPTIONS as $ticker => $coin) {
 
-		foreach ( $this->coins as $val ) {
-			if ( ! empty( $this->{$val . '_address'} ) ) {
-				return false;
-			}
-		}
+                $this->form_fields["{$ticker}_address"] = array(
+                    'title' => $coin,
+                    'type' => 'cryptocurrency',
+                    'description' => sprintf($coin_description, $coin),
+                    'desc_tip' => true,
+                );
 
-		return true;
-	}
+            }
 
-	function payment_fields() { ?>
+        }
+    }
+
+    function needs_setup()
+    {
+        if (empty($this->coins) || !is_array($this->coins)) {
+            return true;
+        }
+
+        foreach ($this->coins as $val) {
+            if (!empty($this->{$val . '_address'})) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function payment_fields()
+    { ?>
         <div class="form-row form-row-wide">
             <p><?php echo $this->description; ?></p>
             <ul style="list-style: none outside;">
-				<?php
-				if ( ! empty( $this->coins ) && is_array( $this->coins ) ) {
-					foreach ( $this->coins as $val ) {
-						$addr = $this->{$val . '_address'};
-						if ( ! empty( $addr ) ) { ?>
-                            <li>
-                                <input id="payment_method_<?php echo $val ?>" type="radio" class="input-radio"
-                                       name="cryptapi_coin" value="<?php echo $val ?>"/>
-                                <label for="payment_method_<?php echo $val ?>"
-                                       style="display: inline-block;"><?php echo __( 'Pay with', 'cryptapi' ) . ' ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[ $val ] ?></label>
-                            </li>
-							<?php
-						}
-					}
-				} ?>
+                <?php
+                if (!empty($this->coins) && is_array($this->coins)) {
+                    $selected = WC()->session->get('cryptapi_coin');
+
+                    ?>
+                    <li>
+                        <select name="cryptapi_coin" id="payment_cryptapi_coin" class="input-control" style="display:block; margin-top: 10px">
+                            <option value="none"><?php echo __('Please select a Cryptocurrency', 'cryptapi') ?></option>
+                            <?php
+                            foreach ($this->coins as $val) {
+                                $addr = $this->{$val . '_address'};
+                                if (!empty($addr)) { ?>
+                                    <option value="<?php echo $val; ?>" <?php
+                                    if(!empty($selected) && $selected === $val) {
+                                        echo " selected='true'";
+                                    }
+                                    ?>> <?php echo __('Pay with', 'cryptapi') . ' ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[$val] ?></option>
+                                    <?php
+                                }
+                            }
+                            ?>
+                        </select>
+                    </li>
+                    <?php
+                } ?>
             </ul>
         </div>
-		<?php
-	}
+        <?php
+    }
 
-	function validate_fields() {
-		return array_key_exists( sanitize_text_field( $_POST['cryptapi_coin'] ), WC_CryptAPI_Gateway::$COIN_OPTIONS );
-	}
+    function validate_fields()
+    {
+        return array_key_exists(sanitize_text_field($_POST['cryptapi_coin']), WC_CryptAPI_Gateway::$COIN_OPTIONS);
+    }
 
-	function process_payment( $order_id ) {
-		global $woocommerce;
+    function process_payment($order_id)
+    {
+        global $woocommerce;
 
-		$selected = sanitize_text_field( $_POST['cryptapi_coin'] );
-		$addr     = $this->{$selected . '_address'};
+        $selected = sanitize_text_field($_POST['cryptapi_coin']);
 
-		if ( ! empty( $addr ) ) {
+        if ($selected === 'none') {
+            wc_add_notice(__('Payment error:', 'woocommerce') . ' ' . __('Please choose a cryptocurrency', 'cryptapi'), 'error');
 
-			$nonce = $this->generate_nonce();
+            return null;
+        }
 
-			$callback_url = str_replace( 'https:', 'http:', add_query_arg( array(
-				'wc-api'   => 'WC_Gateway_CryptAPI',
-				'order_id' => $order_id,
-				'nonce'    => $nonce,
-			), home_url( '/' ) ) );
+        $addr = $this->{$selected . '_address'};
 
-			try {
-				$order = new WC_Order( $order_id );
+        if (!empty($addr)) {
 
-				if ( in_array( 'woocommerce-subscriptions/woocommerce-subscriptions.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+            $nonce = $this->generate_nonce();
 
-					if ( WC_Subscriptions_Order::order_contains_subscription( $order_id ) ) {
+            $callback_url = str_replace('https:', 'http:', add_query_arg(array(
+                'wc-api' => 'WC_Gateway_CryptAPI',
+                'order_id' => $order_id,
+                'nonce' => $nonce,
+            ), home_url('/')));
 
-						$sign_up_fee      = ( WC_Subscriptions_Order::get_sign_up_fee( $order ) ) ? 0 : WC_Subscriptions_Order::get_sign_up_fee( $order );
-						$initial_payment  = ( WC_Subscriptions_Order::get_total_initial_payment( $order ) ) ? 0 : WC_Subscriptions_Order::get_total_initial_payment( $order );
-						$price_per_period = ( WC_Subscriptions_Order::get_recurring_total( $order ) ) ? 0 : WC_Subscriptions_Order::get_recurring_total( $order );
+            try {
+                $order = new WC_Order($order_id);
 
-						$total = $sign_up_fee + $initial_payment + $price_per_period + $order->get_total( 'edit' );
+                if (in_array('woocommerce-subscriptions/woocommerce-subscriptions.php', apply_filters('active_plugins', get_option('active_plugins')))) {
 
-						if ( $total == 0 ) {
-							$order->add_meta_data( 'cryptapi_currency', $selected );
-							$order->save_meta_data();
-							$order->payment_complete();
-							$woocommerce->cart->empty_cart();
+                    if (WC_Subscriptions_Order::order_contains_subscription($order_id)) {
 
-							return array(
-								'result'   => 'success',
-								'redirect' => $this->get_return_url( $order )
-							);
-						}
-					}
-				}
+                        $sign_up_fee = (WC_Subscriptions_Order::get_sign_up_fee($order)) ? 0 : WC_Subscriptions_Order::get_sign_up_fee($order);
+                        $initial_payment = (WC_Subscriptions_Order::get_total_initial_payment($order)) ? 0 : WC_Subscriptions_Order::get_total_initial_payment($order);
+                        $price_per_period = (WC_Subscriptions_Order::get_recurring_total($order)) ? 0 : WC_Subscriptions_Order::get_recurring_total($order);
 
-				$total = $order->get_total( 'edit' );
+                        $total = $sign_up_fee + $initial_payment + $price_per_period + $order->get_total('edit');
 
-				$currency = get_woocommerce_currency();
+                        if ($total == 0) {
+                            $order->add_meta_data('cryptapi_currency', $selected);
+                            $order->save_meta_data();
+                            $order->payment_complete();
+                            $woocommerce->cart->empty_cart();
 
-				$info   = CryptAPI\Helper::get_info( $selected );
-				$min_tx = floatval( $info->minimum_transaction_coin );
+                            return array(
+                                'result' => 'success',
+                                'redirect' => $this->get_return_url($order)
+                            );
+                        }
+                    }
+                }
 
-				$crypto_total = CryptAPI\Helper::get_conversion( $selected, $total, $currency, $this->disable_conversion );
+                $total = $order->get_total('edit');
 
-				if ( $crypto_total < $min_tx ) {
-					wc_add_notice( __( 'Payment error:', 'woocommerce' ) . __( 'Value too low, minimum is', 'cryptapi' ) . ' ' . $min_tx . ' ' . strtoupper( $selected ), 'error' );
+                $currency = get_woocommerce_currency();
 
-					return null;
-				}
+                $info = CryptAPI\Helper::get_info($selected);
+                $min_tx = floatval($info->minimum_transaction_coin);
 
-				$ca      = new CryptAPI\Helper( $selected, $addr, $callback_url, [], true );
-				$addr_in = $ca->get_address();
+                $crypto_total = CryptAPI\Helper::get_conversion($selected, $total, $currency, $this->disable_conversion);
 
-				$qr_code_data_value = $ca->get_qrcode( $crypto_total, $this->qrcode_size );
-				$qr_code_data       = $ca->get_qrcode( '', $this->qrcode_size );
+                if ($crypto_total < $min_tx) {
+                    wc_add_notice(__('Payment error:', 'woocommerce') . __('Value too low, minimum is', 'cryptapi') . ' ' . $min_tx . ' ' . strtoupper($selected), 'error');
 
-				$order->add_meta_data( 'cryptapi_nonce', $nonce );
-				$order->add_meta_data( 'cryptapi_address', $addr_in );
-				$order->add_meta_data( 'cryptapi_total', $crypto_total );
-				$order->add_meta_data( 'cryptapi_currency', $selected );
-				$order->add_meta_data( 'cryptapi_qr_code_value', $qr_code_data_value['qr_code'] );
-				$order->add_meta_data( 'cryptapi_qr_code', $qr_code_data['qr_code'] );
-				$order->add_meta_data( 'cryptapi_uri', $qr_code_data['uri'] );
-				$order->add_meta_data( 'cryptapi_last_price_update', time() );
-				$order->add_meta_data( 'cryptapi_cancelled', '0' );
-				$order->save_meta_data();
+                    return null;
+                }
 
-				$order->update_status( 'on-hold', __( 'Awaiting payment', 'cryptapi' ) . ': ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[ $selected ] );
-				$woocommerce->cart->empty_cart();
+                $ca = new CryptAPI\Helper($selected, $addr, $callback_url, [], true);
+                $addr_in = $ca->get_address();
 
-				return array(
-					'result'   => 'success',
-					'redirect' => $this->get_return_url( $order )
-				);
+                $qr_code_data_value = $ca->get_qrcode($crypto_total, $this->qrcode_size);
+                $qr_code_data = $ca->get_qrcode('', $this->qrcode_size);
 
-			} catch ( Exception $e ) {
-				wc_add_notice( __( 'Payment error:', 'cryptapi' ) . 'Unknown coin', 'error' );
+                $order->add_meta_data('cryptapi_nonce', $nonce);
+                $order->add_meta_data('cryptapi_address', $addr_in);
+                $order->add_meta_data('cryptapi_total', $crypto_total);
+                $order->add_meta_data('cryptapi_currency', $selected);
+                $order->add_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
+                $order->add_meta_data('cryptapi_qr_code', $qr_code_data['qr_code']);
+                $order->add_meta_data('cryptapi_uri', $qr_code_data_value['uri']);
+                $order->add_meta_data('cryptapi_last_price_update', time());
+                $order->add_meta_data('cryptapi_cancelled', '0');
+                $order->save_meta_data();
 
-				return null;
-			}
-		}
+                $order->update_status('on-hold', __('Awaiting payment', 'cryptapi') . ': ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[$selected]);
+                $woocommerce->cart->empty_cart();
 
-		wc_add_notice( __( 'Payment error:', 'woocommerce' ) . __( 'Payment could not be processed, please try again', 'cryptapi' ), 'error' );
+                return array(
+                    'result' => 'success',
+                    'redirect' => $this->get_return_url($order)
+                );
 
-		return null;
-	}
+            } catch (Exception $e) {
+                wc_add_notice(__('Payment error:', 'cryptapi') . 'Unknown coin', 'error');
 
-	function validate_payment() {
-		$data  = CryptAPI\Helper::process_callback( $_GET );
-		$order = new WC_Order( $data['order_id'] );
+                return null;
+            }
+        }
 
-		if ( $order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta( 'cryptapi_nonce' ) ) {
-			die( "*ok*" );
-		}
+        wc_add_notice(__('Payment error:', 'woocommerce') . __('Payment could not be processed, please try again', 'cryptapi'), 'error');
 
-		$paid        = floatval( $order->get_meta( 'cryptpi_paid' ) ) + floatval( $data['value_coin'] );
-		$crypto_coin = strtoupper( $order->get_meta( 'cryptapi_currency' ) );
+        return null;
+    }
 
-		if ( ! $data['pending'] ) {
-			$order->add_meta_data( 'cryptapi_paid', $paid );
-		}
+    function validate_payment()
+    {
+        try {
+            $data = CryptAPI\Helper::process_callback($_GET);
+            $order = new WC_Order($data['order_id']);
 
-		if ( $paid >= $order->get_meta( 'cryptapi_total' ) ) {
-			if ( $data['pending'] ) {
-				$order->add_meta_data( 'cryptapi_pending', "1" );
-			} else {
-				$order->delete_meta_data( 'cryptapi_pending' );
-				$order->payment_complete( $data['address_in'] );
-			}
-		}
+            if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
+                die("*ok*");
+            }
 
-		$order->add_order_note(
-			( $data['pending'] ? '[PENDING]' : '' ) .
-			__( 'User sent a payment of', 'cryptapi' ) . ' ' .
-			$data['value_coin'] . ' ' . $crypto_coin .
-			'. TXID: ' . $data['txid_in']
-		);
+            $paid = floatval($order->get_meta('cryptpi_paid')) + floatval($data['value_coin']);
+            $crypto_coin = strtoupper($order->get_meta('cryptapi_currency'));
 
-		$order->save_meta_data();
+            if (!$data['pending']) {
+                $order->add_meta_data('cryptapi_paid', $paid);
+            }
 
-		die( "*ok*" );
-	}
+            if ($paid >= $order->get_meta('cryptapi_total')) {
+                if ($data['pending']) {
+                    $order->add_meta_data('cryptapi_pending', "1");
+                } else {
+                    $order->delete_meta_data('cryptapi_pending');
+                    $order->payment_complete($data['address_in']);
+                }
+            }
 
-	function order_status() {
-		$order_id = sanitize_text_field( $_REQUEST['order_id'] );
+            $order->add_order_note(
+                ($data['pending'] ? '[PENDING]' : '') .
+                __('User sent a payment of', 'cryptapi') . ' ' .
+                $data['value_coin'] . ' ' . $crypto_coin .
+                '. TXID: ' . $data['txid_in']
+            );
 
-		try {
-			$order = new WC_Order( $order_id );
+            $order->save_meta_data();
 
-			$data = [
-				'is_paid'                => $order->is_paid(),
-				'is_pending'             => boolval( $order->get_meta( 'cryptapi_pending' ) ),
-				'crypto_total'           => $order->get_meta( 'cryptapi_total' ),
-				'cryptapi_qr_code_value' => $order->get_meta( 'cryptapi_qr_code_value' ),
-				'cryptapi_cancelled'     => $order->get_meta( 'cryptapi_cancelled' ),
-			];
+            die("*ok*");
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
+    }
 
-			echo json_encode( $data );
-			die();
+    function order_status()
+    {
+        $order_id = sanitize_text_field($_REQUEST['order_id']);
 
-		} catch ( Exception $e ) {
-			//
-		}
+        try {
+            $order = new WC_Order($order_id);
 
-		echo json_encode( [ 'status' => 'error', 'error' => 'not a valid order_id' ] );
-		die();
-	}
+            $data = [
+                'is_paid' => $order->is_paid(),
+                'is_pending' => boolval($order->get_meta('cryptapi_pending')),
+                'crypto_total' => $order->get_meta('cryptapi_total'),
+                'cryptapi_qr_code_value' => $order->get_meta('cryptapi_qr_code_value'),
+                'cryptapi_cancelled' => $order->get_meta('cryptapi_cancelled'),
+            ];
 
-	function thankyou_page( $order_id ) {
-		if ( WC_CryptAPI_Gateway::$HAS_TRIGGERED ) {
-			return;
-		}
-		WC_CryptAPI_Gateway::$HAS_TRIGGERED = true;
+            echo json_encode($data);
+            die();
 
-		$order             = new WC_Order( $order_id );
-		$total             = $order->get_total();
-		$currency_symbol   = get_woocommerce_currency_symbol();
-		$address_in        = $order->get_meta( 'cryptapi_address' );
-		$crypto_value      = $order->get_meta( 'cryptapi_total' );
-		$crypto_coin       = $order->get_meta( 'cryptapi_currency' );
-		$qr_code_img_value = $order->get_meta( 'cryptapi_qr_code_value' );
-		$qr_code_img       = $order->get_meta( 'cryptapi_qr_code' );
-		$payment_uri       = $order->get_meta( 'cryptapi_uri' );
+        } catch (Exception $e) {
+            //
+        }
 
-		$ajax_url = add_query_arg( array(
-			'action'   => 'cryptapi_order_status',
-			'order_id' => $order_id,
-		), home_url( '/wp-admin/admin-ajax.php' ) );
+        echo json_encode(['status' => 'error', 'error' => 'not a valid order_id']);
+        die();
+    }
 
-		wp_enqueue_script( 'ca-payment', CRYPTAPI_PLUGIN_URL . 'static/payment.js', array(), CRYPTAPI_PLUGIN_VERSION, true );
-		wp_add_inline_script( 'ca-payment', "jQuery(function() {let ajax_url = '{$ajax_url}'; setTimeout(function(){check_status(ajax_url)}, 500)})" );
-		wp_enqueue_style( 'ca-loader-css', CRYPTAPI_PLUGIN_URL . 'static/cryptapi.css', false, CRYPTAPI_PLUGIN_VERSION );
-		?>
-        <div class="ca_payment-panel">
+    function thankyou_page($order_id)
+    {
+        if (WC_CryptAPI_Gateway::$HAS_TRIGGERED) {
+            return;
+        }
+        WC_CryptAPI_Gateway::$HAS_TRIGGERED = true;
+
+        $order = new WC_Order($order_id);
+        $total = $order->get_total();
+        $currency_symbol = get_woocommerce_currency_symbol();
+        $address_in = $order->get_meta('cryptapi_address');
+        $crypto_value = $order->get_meta('cryptapi_total');
+        $crypto_coin = $order->get_meta('cryptapi_currency');
+        $qr_code_img_value = $order->get_meta('cryptapi_qr_code_value');
+        $qr_code_img = $order->get_meta('cryptapi_qr_code');
+        $qr_code_setting = $this->get_option('qrcode_setting');
+        $payment_uri = $order->get_meta('cryptapi_uri');
+        $color_scheme = $this->get_option('color_scheme');
+
+        $ajax_url = add_query_arg(array(
+            'action' => 'cryptapi_order_status',
+            'order_id' => $order_id,
+        ), home_url('/wp-admin/admin-ajax.php'));
+
+        wp_enqueue_script('ca-payment', CRYPTAPI_PLUGIN_URL . 'static/payment.js', array(), CRYPTAPI_PLUGIN_VERSION, true);
+        wp_add_inline_script('ca-payment', "jQuery(function() {let ajax_url = '{$ajax_url}'; setTimeout(function(){check_status(ajax_url)}, 500)})");
+        wp_enqueue_style('ca-loader-css', CRYPTAPI_PLUGIN_URL . 'static/cryptapi.css', false, CRYPTAPI_PLUGIN_VERSION);
+        ?>
+        <div class="ca_payment-panel<?php
+        if ($color_scheme == 'auto') {
+            echo ' auto';
+        } elseif ($color_scheme == 'light') {
+            echo ' light';
+        } else {
+            echo ' dark';
+        }
+        ?>">
             <div class="ca_payment_details">
-				<?php
-				if ( $total > 0 ) {
-					?>
+                <?php
+                if ($total > 0) {
+                    ?>
                     <div class="ca_payments_wrapper">
                         <div class="ca_qrcode_wrapper" style="<?php
-						if ( $this->qrcode_default ) {
-							echo 'display: block';
-						} else {
-							echo 'display: none';
-						}
-						?>; width: <?php echo intval( $this->qrcode_size ) + 20; ?>px;">
+                        if ($this->qrcode_default) {
+                            echo 'display: block';
+                        } else {
+                            echo 'display: none';
+                        }
+                        ?>; width: <?php echo intval($this->qrcode_size) + 20; ?>px;">
                             <div class="inner-wrapper">
                                 <figure>
-                                    <img class="ca_qrcode no_value" src="data:image/png;base64,<?php echo $qr_code_img; ?>" alt="<?php echo __( 'QR Code without value', 'cryptapi' ); ?>"/>
-                                    <img class="ca_qrcode value" style="display: none" src="data:image/png;base64,<?php echo $qr_code_img_value; ?>"
-                                         alt="<?php echo __( 'QR Code with value', 'cryptapi' ); ?>"/>
+                                    <?php
+                                    if ($qr_code_setting != 'hide_ammount') {
+                                        ?>
+                                        <img class="ca_qrcode no_value" <?php
+                                        if ($qr_code_setting == 'without_ammount') {
+                                            echo 'style="display:none;"';
+                                        }
+                                        ?> src="data:image/png;base64,<?php echo $qr_code_img; ?>" alt="<?php echo __('QR Code without value', 'cryptapi'); ?>"/>
+                                        <?php
+                                    }
+                                    if ($qr_code_setting != 'hide_without_ammount') {
+                                        ?>
+                                        <img class="ca_qrcode value" <?php
+                                        if ($qr_code_setting == 'ammount') {
+                                            echo 'style="display:none;"';
+                                        }
+                                        ?> src="data:image/png;base64,<?php echo $qr_code_img_value; ?>"
+                                             alt="<?php echo __('QR Code with value', 'cryptapi'); ?>"/>
+                                        <?php
+                                    }
+                                    ?>
                                 </figure>
-                                <div class="ca_qrcode_buttons">
-                                    <button class="ca_qrcode_btn no_value active" aria-label="<?php echo __( 'Show QR Code without value', 'cryptapi' ); ?>">
-										<?php echo __( 'ADDRESS', 'cryptapi' ); ?>
-                                    </button>
-                                    <button class="ca_qrcode_btn value" aria-label="<?php echo __( 'Show QR Code with value', 'cryptapi' ); ?>">
-										<?php echo __( 'WITH AMMOUNT', 'cryptapi' ); ?>
-                                    </button>
-                                </div>
+                                <?php
+                                if ($qr_code_setting != 'hide_ammount' && $qr_code_setting != 'hide_without_ammount') {
+                                    ?>
+                                    <div class="ca_qrcode_buttons">
+                                    <?php
+                                    if ($qr_code_setting != 'hide_without_ammount') {
+                                        ?>
+                                        <button class="ca_qrcode_btn no_value<?php
+                                        if ($qr_code_setting == 'ammount') {
+                                            echo ' active';
+                                        }
+                                        ?>" aria-label="<?php echo __('Show QR Code without value', 'cryptapi'); ?>">
+                                            <?php echo __('ADDRESS', 'cryptapi'); ?>
+                                        </button>
+                                        <?php
+                                    }
+                                    if ($qr_code_setting != 'hide_ammount') {
+                                        ?>
+                                        <button class="ca_qrcode_btn value<?php
+                                        if ($qr_code_setting == 'without_ammount') {
+                                            echo ' active';
+                                        }
+                                        ?>" aria-label="<?php echo __('Show QR Code with value', 'cryptapi'); ?>">
+                                            <?php echo __('WITH AMMOUNT', 'cryptapi'); ?>
+                                        </button>
+                                        </div>
+                                        <?php
+                                    }
+                                }
+                                ?>
                             </div>
                         </div>
                         <div class="ca_details_box">
                             <div class="ca_details_text">
-								<?php echo __( 'PLEASE SEND', 'cryptapi' ) ?>
+                                <?php echo __('PLEASE SEND', 'cryptapi') ?>
                                 <button class="ca_copy ca_details_copy" data-tocopy="<?php echo $crypto_value; ?>">
                                     <span><b class="ca_value"><?php echo $crypto_value ?></b></span>
-                                    <span><b><?php echo strtoupper( $crypto_coin ) ?></b></span>
-                                    <span class="ca_tooltip ca_copy_icon_tooltip tip"><?php echo __( 'COPY', 'cryptapi' ); ?></span>
-                                    <span class="ca_tooltip ca_copy_icon_tooltip success" style="display: none"><?php echo __( 'COPIED!', 'cryptapi' ); ?></span>
+                                    <span><b><?php echo strtoupper($crypto_coin) ?></b></span>
+                                    <span class="ca_tooltip ca_copy_icon_tooltip tip"><?php echo __('COPY', 'cryptapi'); ?></span>
+                                    <span class="ca_tooltip ca_copy_icon_tooltip success" style="display: none"><?php echo __('COPIED!', 'cryptapi'); ?></span>
                                 </button>
                                 (<?php echo "{$currency_symbol} {$total}"; ?>)
                             </div>
                             <div class="ca_details_input">
                                 <span><?php echo $address_in ?></span>
                                 <button class="ca_copy ca_copy_icon" data-tocopy="<?php echo $address_in; ?>">
-                                    <span class="ca_tooltip ca_copy_icon_tooltip tip"><?php echo __( 'COPY', 'cryptapi' ); ?></span>
-                                    <span class="ca_tooltip ca_copy_icon_tooltip success" style="display: none"><?php echo __( 'COPIED!', 'cryptapi' ); ?></span>
+                                    <span class="ca_tooltip ca_copy_icon_tooltip tip"><?php echo __('COPY', 'cryptapi'); ?></span>
+                                    <span class="ca_tooltip ca_copy_icon_tooltip success" style="display: none"><?php echo __('COPIED!', 'cryptapi'); ?></span>
                                 </button>
                                 <div class="ca_loader"></div>
                             </div>
                         </div>
                         <div class="ca_buttons_container">
                             <a href="<?php echo $payment_uri ?>" target="_blank">
-								<?php echo __( 'WALLET', 'cryptapi' ); ?>
+                                <?php echo __('WALLET', 'cryptapi'); ?>
                             </a>
-                            <a class="ca_show_qr" href="#" aria-label="<?php echo __( 'Show the QR code', 'cryptapi' ); ?>">
-								<?php echo __( 'QR CODE', 'cryptapi' ); ?>
+                            <a class="ca_show_qr" href="#" aria-label="<?php echo __('Show the QR code', 'cryptapi'); ?>">
+                                <?php echo __('QR CODE', 'cryptapi'); ?>
                             </a>
                         </div>
-						<?php
-						if ( $this->show_branding ) {
-							?>
+                        <?php
+                        if ($this->show_branding) {
+                            ?>
                             <div class="ca_branding">
                                 <a href="https://cryptapi.io/" target="_blank">
                                     <img width="122" class="img-fluid" src="<?php echo CRYPTAPI_PLUGIN_URL . 'static/files/200_logo_ca.png' ?>" alt="Cryptapi Logo"/>
                                 </a>
                             </div>
-							<?php
-						}
-						?>
+                            <?php
+                        }
+                        ?>
                     </div>
-					<?php
-				}
-				if ( $total == 0 ) {
-					?>
+                    <?php
+                }
+                if ($total == 0) {
+                    ?>
                     <style>
                         .ca_payment_confirmed {
                             display: block !important;
                             height: 100% !important;
                         }
                     </style>
-					<?php
-				}
-				?>
+                    <?php
+                }
+                ?>
+                <div class="ca_payment_processing" style="display: none;">
+                    <div class="ca_payment_processing_icon">
+                        <div class="ca_loader_payment_processing"></div>
+                    </div>
+                    <h2><?php echo __('Your payment is being processed!', 'cryptapi'); ?></h2>
+                    <h5><?php echo __('Processing can take some time depending on the blockchain.', 'cryptapi'); ?></h5>
+                </div>
+
                 <div class="ca_payment_confirmed" style="display: none;">
                     <div class="ca_payment_confirmed_icon">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -581,7 +737,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
                                   d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"></path>
                         </svg>
                     </div>
-                    <h2><?php echo __( 'Your payment has been confirmed!', 'cryptapi' ); ?></h2>
+                    <h2><?php echo __('Your payment has been confirmed!', 'cryptapi'); ?></h2>
                 </div>
 
                 <div class="ca_payment_cancelled" style="display: none;">
@@ -591,167 +747,290 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
                                   d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"></path>
                         </svg>
                     </div>
-                    <h2><?php echo __( 'Order has been cancelled due to lack of payment. Please don\'t send any payment to the address.', 'cryptapi' ); ?></h2>
+                    <h2><?php echo __('Order has been cancelled due to lack of payment. Please don\'t send any payment to the address.', 'cryptapi'); ?></h2>
                 </div>
-				<?php
-				if ( $total > 0 ) {
-					?>
+                <?php
+                if ($total > 0) {
+                    ?>
                     <div class="ca_progress">
                         <div class="ca_progress_icon waiting_payment">
                             <svg width="60" height="60" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M49.2188 25C49.2188 38.3789 38.3789 49.2188 25 49.2188C11.6211 49.2188 0.78125 38.3789 0.78125 25C0.78125 11.6211 11.6211 0.78125 25 0.78125C38.3789 0.78125 49.2188 11.6211 49.2188 25ZM35.1953 22.1777L28.125 29.5508V11.7188C28.125 10.4199 27.0801 9.375 25.7812 9.375H24.2188C22.9199 9.375 21.875 10.4199 21.875 11.7188V29.5508L14.8047 22.1777C13.8965 21.2305 12.3828 21.2109 11.4551 22.1387L10.3906 23.2129C9.47266 24.1309 9.47266 25.6152 10.3906 26.5234L23.3398 39.4824C24.2578 40.4004 25.7422 40.4004 26.6504 39.4824L39.6094 26.5234C40.5273 25.6055 40.5273 24.1211 39.6094 23.2129L38.5449 22.1387C37.6172 21.2109 36.1035 21.2305 35.1953 22.1777V22.1777Z"
                                       fill="#0B4B70"/>
                             </svg>
-                            <p><?php echo __( 'Waiting for payment', 'cryptapi' ); ?></p>
+                            <p><?php echo __('Waiting for payment', 'cryptapi'); ?></p>
                         </div>
                         <div class="ca_progress_icon waiting_network">
                             <svg width="60" height="60" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M46.875 15.625H3.125C1.39912 15.625 0 14.2259 0 12.5V6.25C0 4.52412 1.39912 3.125 3.125 3.125H46.875C48.6009 3.125 50 4.52412 50 6.25V12.5C50 14.2259 48.6009 15.625 46.875 15.625ZM42.1875 7.03125C40.8931 7.03125 39.8438 8.08057 39.8438 9.375C39.8438 10.6694 40.8931 11.7188 42.1875 11.7188C43.4819 11.7188 44.5312 10.6694 44.5312 9.375C44.5312 8.08057 43.4819 7.03125 42.1875 7.03125ZM35.9375 7.03125C34.6431 7.03125 33.5938 8.08057 33.5938 9.375C33.5938 10.6694 34.6431 11.7188 35.9375 11.7188C37.2319 11.7188 38.2812 10.6694 38.2812 9.375C38.2812 8.08057 37.2319 7.03125 35.9375 7.03125ZM46.875 31.25H3.125C1.39912 31.25 0 29.8509 0 28.125V21.875C0 20.1491 1.39912 18.75 3.125 18.75H46.875C48.6009 18.75 50 20.1491 50 21.875V28.125C50 29.8509 48.6009 31.25 46.875 31.25ZM42.1875 22.6562C40.8931 22.6562 39.8438 23.7056 39.8438 25C39.8438 26.2944 40.8931 27.3438 42.1875 27.3438C43.4819 27.3438 44.5312 26.2944 44.5312 25C44.5312 23.7056 43.4819 22.6562 42.1875 22.6562ZM35.9375 22.6562C34.6431 22.6562 33.5938 23.7056 33.5938 25C33.5938 26.2944 34.6431 27.3438 35.9375 27.3438C37.2319 27.3438 38.2812 26.2944 38.2812 25C38.2812 23.7056 37.2319 22.6562 35.9375 22.6562ZM46.875 46.875H3.125C1.39912 46.875 0 45.4759 0 43.75V37.5C0 35.7741 1.39912 34.375 3.125 34.375H46.875C48.6009 34.375 50 35.7741 50 37.5V43.75C50 45.4759 48.6009 46.875 46.875 46.875ZM42.1875 38.2812C40.8931 38.2812 39.8438 39.3306 39.8438 40.625C39.8438 41.9194 40.8931 42.9688 42.1875 42.9688C43.4819 42.9688 44.5312 41.9194 44.5312 40.625C44.5312 39.3306 43.4819 38.2812 42.1875 38.2812ZM35.9375 38.2812C34.6431 38.2812 33.5938 39.3306 33.5938 40.625C33.5938 41.9194 34.6431 42.9688 35.9375 42.9688C37.2319 42.9688 38.2812 41.9194 38.2812 40.625C38.2812 39.3306 37.2319 38.2812 35.9375 38.2812Z"
                                       fill="#0B4B70"/>
                             </svg>
-                            <p><?php echo __( 'Waiting for network confirmation', 'cryptapi' ); ?></p>
+                            <p><?php echo __('Waiting for network confirmation', 'cryptapi'); ?></p>
                         </div>
                         <div class="ca_progress_icon payment_done">
                             <svg width="60" height="60" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M45.0391 12.5H7.8125C6.94922 12.5 6.25 11.8008 6.25 10.9375C6.25 10.0742 6.94922 9.375 7.8125 9.375H45.3125C46.1758 9.375 46.875 8.67578 46.875 7.8125C46.875 5.22363 44.7764 3.125 42.1875 3.125H6.25C2.79785 3.125 0 5.92285 0 9.375V40.625C0 44.0771 2.79785 46.875 6.25 46.875H45.0391C47.7754 46.875 50 44.7725 50 42.1875V17.1875C50 14.6025 47.7754 12.5 45.0391 12.5ZM40.625 32.8125C38.8994 32.8125 37.5 31.4131 37.5 29.6875C37.5 27.9619 38.8994 26.5625 40.625 26.5625C42.3506 26.5625 43.75 27.9619 43.75 29.6875C43.75 31.4131 42.3506 32.8125 40.625 32.8125Z"
                                       fill="#0B4B70"/>
                             </svg>
-                            <p><?php echo __( 'Payment confirmed', 'cryptapi' ); ?></p>
+                            <p><?php echo __('Payment confirmed', 'cryptapi'); ?></p>
                         </div>
                         <div class="ca_notification_text">
-							<?php
-							if ( intval( $this->refresh_value_interval ) != 0 ) {
-								?>
-                                <span>
-                                    <?php echo sprintf( __( 'Converted values will be refreshed each %s minutes You can visit the page by clicking.', 'cryptapi' ),
-	                                    ltrim( gmdate( "i", $this->refresh_value_interval ), '0' )
+                            <?php
+                            if (intval($this->refresh_value_interval) != 0) {
+                                ?>
+                                <span class="ca_notification_refresh">
+                                    <?php echo sprintf(__('Converted values will be refreshed each %s minutes.', 'cryptapi'),
+                                        ltrim(gmdate("i", $this->refresh_value_interval), '0')
                                     ); ?>
                                 </span>
-								<?php
-							}
+                                <?php
+                            }
 
-							if ( intval( $this->order_cancelation_timeout ) != 0 ) {
-								?>
-                                <span>
-                                    <?php echo sprintf( __( 'This order has a time limit. You have %s to pay it otherwise will be cancelled.', 'cryptapi' ),
-	                                    gmdate( "H:i", $this->order_cancelation_timeout )
+                            if (intval($this->order_cancelation_timeout) != 0) {
+                                ?>
+                                <span class="ca_notification_cancel">
+                                    <?php echo sprintf(__('This order has a time limit. You have %s to pay it otherwise will be cancelled.', 'cryptapi'),
+                                        gmdate("H:i", $this->order_cancelation_timeout)
                                     ); ?>
                                 </span>
-								<?php
-							}
-							?>
+                                <?php
+                            }
+                            ?>
                         </div>
                     </div>
-					<?php
-				}
-				?>
+                    <?php
+                }
+                ?>
             </div>
         </div>
-		<?php
-	}
+        <?php
+    }
 
-	/**
-	 *  Cronjob
-	 */
-	function ca_cronjob() {
-		$order_timeout = intval( $this->order_cancelation_timeout );
-		$value_refresh = intval( $this->refresh_value_interval );
+    /**
+     *  Cronjob
+     */
+    function ca_cronjob()
+    {
+        $order_timeout = intval($this->order_cancelation_timeout);
+        $value_refresh = intval($this->refresh_value_interval);
 
-		if ( $order_timeout === 0 && $value_refresh === 0 ) {
-			return;
-		}
+        if ($order_timeout === 0 && $value_refresh === 0) {
+            return;
+        }
 
-		$orders = wc_get_orders( array(
-			'status'         => array( 'wc-on-hold' ),
-			'payment_method' => 'cryptapi',
-		) );
+        $orders = wc_get_orders(array(
+            'status' => array('wc-on-hold'),
+            'payment_method' => 'cryptapi',
+        ));
 
-		if ( empty( $orders ) ) {
-			return;
-		}
+        if (empty($orders)) {
+            return;
+        }
 
-		foreach ( $orders as $order ) {
-			$last_price_update = $order->get_meta( 'cryptapi_last_price_update' );
+        foreach ($orders as $order) {
+            $last_price_update = $order->get_meta('cryptapi_last_price_update');
 
-			if ( ( $last_price_update + $value_refresh ) <= time() && empty( $order->get_meta( 'cryptapi_pending' ) ) && ! empty( $last_price_update ) ) {
+            if (($last_price_update + $value_refresh) <= time() && empty($order->get_meta('cryptapi_pending')) && !empty($last_price_update)) {
 
-				$cryptapi_coin = $order->get_meta( 'cryptapi_currency' );
+                $cryptapi_coin = $order->get_meta('cryptapi_currency');
 
-				$crypto_total = CryptAPI\Helper::get_conversion( $cryptapi_coin, $order->get_total( 'edit' ), get_woocommerce_currency(), $this->disable_conversion );
+                $crypto_total = CryptAPI\Helper::get_conversion($cryptapi_coin, $order->get_total('edit'), get_woocommerce_currency(), $this->disable_conversion);
 
-				$qr_code_data_value = CryptAPI\Helper::get_static_qrcode( $order->get_meta( 'cryptapi_address' ), $cryptapi_coin, $crypto_total, $this->qrcode_size );
+                $qr_code_data_value = CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $crypto_total, $this->qrcode_size);
 
-				$order->update_meta_data( 'cryptapi_qr_code_value', $qr_code_data_value['qr_code'] );
-				$order->update_meta_data( 'cryptapi_total', $crypto_total );
-				$order->update_meta_data( 'cryptapi_last_price_update', time() );
+                $order->update_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
+                $order->update_meta_data('cryptapi_total', $crypto_total);
+                $order->update_meta_data('cryptapi_last_price_update', time());
 
-				$order->save();
-			}
+                $order->save();
+            }
 
-			if ( ( $order->get_date_created()->getTimestamp() + $order_timeout ) <= time() && empty( $order->get_meta( 'cryptapi_pending' ) ) && $order->get_meta( 'cryptapi_cancelled' ) ) {
-				$order->update_status( 'cancelled', __( 'Order cancelled due to lack of payment.', 'cryptapi' ) );
-				$order->update_meta_data( 'cryptapi_cancelled', '1' );
+            if (($order->get_date_created()->getTimestamp() + $order_timeout) <= time() && empty($order->get_meta('cryptapi_pending')) && $order->get_meta('cryptapi_cancelled')) {
+                $order->update_status('cancelled', __('Order cancelled due to lack of payment.', 'cryptapi'));
+                $order->update_meta_data('cryptapi_cancelled', '1');
 
-				$order->save();
-			}
-		}
-	}
+                $order->save();
+            }
+        }
+    }
 
-	/**
-	 * WooCommerce Subscriptions Integration
-	 */
-	function scheduled_subscription_mail( $amount, $renewal_order ) {
+    /**
+     * WooCommerce Subscriptions Integration
+     */
+    function scheduled_subscription_mail($amount, $renewal_order)
+    {
 
-		$order = $renewal_order;
+        $order = $renewal_order;
 
-		$costumer_id = get_post_meta( $order->get_id(), '_customer_user', true );
-		$customer    = new WC_Customer( $costumer_id );
+        $costumer_id = get_post_meta($order->get_id(), '_customer_user', true);
+        $customer = new WC_Customer($costumer_id);
 
-		if ( empty( $order->get_meta( 'cryptapi_paid' ) ) ) {
-			$mailer = WC()->mailer();
+        if (empty($order->get_meta('cryptapi_paid'))) {
+            $mailer = WC()->mailer();
 
-			$recipient = $customer->get_email();
+            $recipient = $customer->get_email();
 
-			$subject = sprintf( '[%s] %s', get_bloginfo( 'name' ), __( 'Please renew your subscription', 'cryptapi' ) );
-			$headers = 'From: ' . get_bloginfo( 'name' ) . ' <' . get_option( 'admin_email' ) . '>' . '\r\n';
+            $subject = sprintf('[%s] %s', get_bloginfo('name'), __('Please renew your subscription', 'cryptapi'));
+            $headers = 'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>' . '\r\n';
 
-			$content = wc_get_template_html( 'emails/renewal-email.php', array(
-				'order'         => $order,
-				'email_heading' => get_bloginfo( 'name' ),
-				'sent_to_admin' => false,
-				'plain_text'    => false,
-				'email'         => $mailer
-			), plugin_dir_path( dirname( __FILE__ ) ), plugin_dir_path( dirname( __FILE__ ) ) );
+            $content = wc_get_template_html('emails/renewal-email.php', array(
+                'order' => $order,
+                'email_heading' => get_bloginfo('name'),
+                'sent_to_admin' => false,
+                'plain_text' => false,
+                'email' => $mailer
+            ), plugin_dir_path(dirname(__FILE__)), plugin_dir_path(dirname(__FILE__)));
 
-			$mailer->send( $recipient, $subject, $content, $headers );
+            $mailer->send($recipient, $subject, $content, $headers);
 
-			$order->add_meta_data( 'cryptapi_paid', '1' );
-			$order->save_meta_data();
-		}
-	}
+            $order->add_meta_data('cryptapi_paid', '1');
+            $order->save_meta_data();
+        }
+    }
 
-	private function generate_nonce( $len = 32 ) {
-		$data = str_split( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' );
+    private function generate_nonce($len = 32)
+    {
+        $data = str_split('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
 
-		$nonce = [];
-		for ( $i = 0; $i < $len; $i ++ ) {
-			$nonce[] = $data[ mt_rand( 0, sizeof( $data ) - 1 ) ];
-		}
+        $nonce = [];
+        for ($i = 0; $i < $len; $i++) {
+            $nonce[] = $data[mt_rand(0, sizeof($data) - 1)];
+        }
 
-		return implode( '', $nonce );
-	}
+        return implode('', $nonce);
+    }
 
-	private function round_sig( $number, $sigdigs = 5 ) {
-		$multiplier = 1;
-		while ( $number < 0.1 ) {
-			$number     *= 10;
-			$multiplier /= 10;
-		}
-		while ( $number >= 1 ) {
-			$number     /= 10;
-			$multiplier *= 10;
-		}
+    private function round_sig($number, $sigdigs = 5)
+    {
+        $multiplier = 1;
+        while ($number < 0.1) {
+            $number *= 10;
+            $multiplier /= 10;
+        }
+        while ($number >= 1) {
+            $number /= 10;
+            $multiplier *= 10;
+        }
 
-		return round( $number, $sigdigs ) * $multiplier;
-	}
+        return round($number, $sigdigs) * $multiplier;
+    }
+
+    public function generate_cryptocurrency_html($key, $data)
+    {
+        $field_key = $this->get_field_key($key);
+        $defaults = array(
+            'title' => '',
+            'disabled' => false,
+            'class' => '',
+            'css' => '',
+            'placeholder' => '',
+            'type' => 'text',
+            'desc_tip' => false,
+            'description' => '',
+            'custom_attributes' => array(),
+        );
+
+        $data = wp_parse_args($data, $defaults);
+
+        ob_start();
+
+        $token = str_replace('_address', '', $key);
+        $token_option = $this->get_option('coins');
+        if (!empty($token_option)) {
+            $token_search = array_search($token, $token_option);
+        }
+        ?>
+        <tr valign="top">
+            <th scope="row" class="titledesc">
+                <input style="display: inline-block; margin-bottom: -4px;" type="checkbox"
+                       name="coins[]" id="<?php echo esc_attr('coins_' . $token); ?>"
+                       value="<?php echo str_replace('_address', '', $key); ?>"
+                    <?php if (!empty($token_option) && $this->get_option('coins')[$token_search] === $token) {
+                        echo 'checked="true" ';
+                    } ?> />
+                <label style="display: inline-block; width: 80%;" for="<?php echo esc_attr('coins_' . $token); ?>">
+                    <?php echo esc_html($data['title']); ?>
+                    <span class="woocommerce-help-tip" data-tip="<?php echo esc_html($data['description']); ?>"></span>
+                </label>
+            </th>
+            <td class="forminp forminp-<?php echo esc_attr($data['type']) ?>">
+                <input class="input-text regular-input <?php echo esc_attr($data['class']); ?>" type="text" name="<?php echo esc_attr($field_key); ?>"
+                       id="<?php echo esc_attr($field_key); ?>" style="<?php echo esc_attr($data['css']); ?>"
+                       value="<?php echo $this->get_option($key); ?>"
+                       placeholder="<?php echo esc_attr($data['placeholder']); ?>" <?php disabled($data['disabled'], true); ?> <?php echo $this->get_custom_attribute_html($data); // WPCS: XSS ok.
+                ?> />
+            </td>
+        </tr>
+
+        <?php
+        return ob_get_clean();
+    }
+
+    function handling_fee()
+    {
+        if (is_admin() && !defined('DOING_AJAX')) {
+            return;
+        }
+
+        $chosen_payment_id = WC()->session->get('chosen_payment_method');
+
+        if ($chosen_payment_id != 'cryptapi') {
+            return;
+        }
+
+
+        $total_fee = $this->get_option('fee_order_percentage') == 'none' ? 0 : $this->get_option('fee_order_percentage');
+
+
+        $fee_order = WC()->cart->subtotal * $total_fee;
+
+        if ($fee_order) {
+
+            $selected = WC()->session->get('cryptapi_coin');
+
+            if ($selected === 'none') {
+                return;
+            }
+
+            if (!empty($selected) && $selected != 'none') {
+                $est = CryptAPI\Helper::get_estimate($selected);
+
+                $fee_order += (float)$est->{get_woocommerce_currency()};
+            }
+
+            if (empty($fee_order)) {
+                return;
+            }
+
+            WC()->cart->add_fee(__('Service Fee', 'cryptapi'), $fee_order, true);
+        }
+    }
+
+    function refresh_checkout()
+    {
+        if (WC_CryptAPI_Gateway::$HAS_TRIGGERED) {
+            return;
+        }
+        WC_CryptAPI_Gateway::$HAS_TRIGGERED = true;
+        if (is_checkout()) {
+            wp_register_script('cryptapi-checkout', '',);
+            wp_enqueue_script('cryptapi-checkout');
+            wp_add_inline_script('cryptapi-checkout', "jQuery(function ($) { $('form.checkout').on('change', 'input[name=payment_method], #payment_cryptapi_coin', function () { $(document.body).trigger('update_checkout');});});");
+        }
+    }
+
+    function chosen_currency_value_to_wc_session($posted_data)
+    {
+        parse_str($posted_data, $fields);
+
+        if (isset($fields['cryptapi_coin'])) {
+            WC()->session->set('cryptapi_coin', $fields['cryptapi_coin']);
+        }
+    }
+
+    public function process_admin_options()
+    {
+        parent::update_option('coins', $_POST['coins']);
+        parent::process_admin_options();
+    }
 }
