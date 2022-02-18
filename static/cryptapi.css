@@ -60,7 +60,7 @@
     display: inline-block;
     width: 50%;
     height: 42px;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1;
     letter-spacing: .045em;
     background-color: #FAFAF9 !important;
@@ -162,6 +162,16 @@
     background-repeat: no-repeat;
 }
 
+.ca_loader_payment_processing {
+    background-image: url(./files/ca_loader.svg);
+    background-size: 150%;
+    background-repeat: no-repeat;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    background-position: center;
+}
+
 .ca_buttons_container {
     display: flex;
     justify-content: center;
@@ -178,7 +188,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    text-decoration: none;
     color: #2695D3;
     font-weight: 600;
     letter-spacing: .045em;
@@ -188,6 +197,7 @@
     border: 3px solid #2695D3;
     font-size: 13px;
     margin: 0 6px;
+    text-decoration: none !important;
 }
 
 .ca_buttons_container a:hover {
@@ -271,7 +281,8 @@
 }
 
 .ca_payment_confirmed h2,
-.ca_payment_canceled h2 {
+.ca_payment_processing h2,
+.ca_payment_cancelled h2 {
     text-align: center;
     font-size: 28px;
     text-transform: uppercase;
@@ -280,17 +291,26 @@
 }
 
 .ca_payment_confirmed .ca_payment_confirmed_icon,
-.ca_payment_canceled .ca_payment_cancelled_icon {
+.ca_payment_processing .ca_payment_confirmed_icon,
+.ca_payment_cancelled .ca_payment_cancelled_icon {
     text-align: center !important;
     margin-bottom: 15px;
 }
 
 .ca_payment_confirmed .ca_payment_confirmed_icon svg,
-.ca_payment_canceled .ca_payment_cancelled_icon svg {
+.ca_payment_cancelled .ca_payment_cancelled_icon svg {
     max-width: 100% !important;
     width: 100px !important;
     margin: 0 auto !important;
     display: inline-block !important;
+}
+
+.ca_payment_processing h5 {
+    text-align: center;
+    font-size: 13px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: -10px;
 }
 
 @media screen and (max-width: 768.98px) {
@@ -364,5 +384,126 @@
         right: 0;
         left: 0;
         margin: 0 auto;
+    }
+}
+
+.ca_payment-panel.dark {
+    color: #fafafa;
+}
+
+.ca_payment-panel.dark .ca_details_input {
+    background-color: #424242 !important;
+    color: #FAFAFA !important;
+}
+
+.ca_payment-panel.dark .ca_loader {
+    filter: invert(1);
+}
+
+.ca_payment-panel.dark .ca_details_copy {
+    background-color: #424242 !important;
+    color: #FAFAFA !important;
+}
+
+.ca_payment-panel.dark .ca_copy .ca_copy_icon_tooltip {
+    background-color: rgba(245, 245, 245, 1) !important;
+    color: #121212 !important;
+}
+
+.ca_payment-panel.dark .ca_copy .ca_copy_icon_tooltip::after {
+    border-color: rgba(245, 245, 245, 1) transparent transparent transparent !important;
+}
+
+.ca_payment-panel.dark .ca_buttons_container {
+    background-color: #424242 !important;
+    color: #FAFAFA !important;
+}
+
+.ca_payment-panel.dark .ca_buttons_container a {
+    color: #6ac5ff !important;
+    border: 3px solid #6ac5ff !important;
+}
+
+.ca_payment-panel.dark .ca_buttons_container a:hover {
+    background-color: #6ac5ff !important;
+    color: #212121 !important;
+}
+
+.ca_payment-panel.dark .ca_copy_icon {
+    background: transparent url(./files/ca_copy_icon_dark.svg) no-repeat !important
+}
+
+.ca_payment-panel.dark .ca_progress_icon svg path {
+    fill: #6ac5ff !important;
+}
+
+.ca_payment-panel.dark .ca_progress .ca_progress_icon.waiting_payment:before,
+.ca_payment-panel.dark .ca_progress .ca_progress_icon.waiting_network:before {
+    background: #6ac5ff !important;
+}
+
+.ca_payment-panel.dark .ca_payment_confirmed h2,
+.ca_payment-panel.dark .ca_payment_cancelled h2 {
+    color: #FFF;
+}
+
+@media (prefers-color-scheme: dark) {
+    .ca_payment-panel.auto {
+        color: #fafafa;
+    }
+
+    .ca_payment-panel.auto .ca_details_input {
+        background-color: #424242 !important;
+        color: #FAFAFA !important;
+    }
+
+    .ca_payment-panel.auto .ca_loader {
+        filter: invert(1);
+    }
+
+    .ca_payment-panel.auto .ca_details_copy {
+        background-color: #424242 !important;
+        color: #FAFAFA !important;
+    }
+
+    .ca_payment-panel.auto .ca_copy .ca_copy_icon_tooltip {
+        background-color: rgba(245, 245, 245, 1) !important;
+        color: #121212 !important;
+    }
+
+    .ca_payment-panel.auto .ca_copy .ca_copy_icon_tooltip::after {
+        border-color: rgba(245, 245, 245, 1) transparent transparent transparent !important;
+    }
+
+    .ca_payment-panel.auto .ca_buttons_container {
+        background-color: #424242 !important;
+        color: #FAFAFA !important;
+    }
+
+    .ca_payment-panel.auto .ca_buttons_container a {
+        color: #6ac5ff !important;
+        border: 3px solid #6ac5ff !important;
+    }
+
+    .ca_payment-panel.auto .ca_buttons_container a:hover {
+        background-color: #6ac5ff !important;
+        color: #212121 !important;
+    }
+
+    .ca_payment-panel.auto .ca_copy_icon {
+        background: transparent url(./files/ca_copy_icon_dark.svg) no-repeat !important
+    }
+
+    .ca_payment-panel.auto .ca_progress_icon svg path {
+        fill: #6ac5ff !important;
+    }
+
+    .ca_payment-panel.auto .ca_progress .ca_progress_icon.waiting_payment:before,
+    .ca_payment-panel.auto .ca_progress .ca_progress_icon.waiting_network:before {
+        background: #6ac5ff !important;
+    }
+
+    .ca_payment-panel.auto .ca_payment_confirmed h2, .ca_payment-panel.auto .ca_payment_cancelled h2 {
+        color: #FFF;
     }
 }

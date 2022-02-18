@@ -189,6 +189,23 @@ class Helper {
 		return null;
 	}
 
+    public static function get_estimate($coin) {
+
+        $params = [
+            'addresses' => 1,
+            'priority'  => 'default',
+        ];
+
+        $response = Helper::_request( $coin, 'estimate', $params );
+
+        if ( $response->status == 'success' ) {
+
+            return $response->estimated_cost_currency;
+        }
+
+        return null;
+    }
+
 	public static function process_callback( $_get ) {
 		$params = [
 			'address_in'           => $_get['address_in'],
