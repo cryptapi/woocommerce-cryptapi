@@ -10,7 +10,7 @@ function check_status(ajax_url) {
             let payment_done = jQuery('.payment_done');
 
             if (data.cryptapi_cancelled === '1') {
-                jQuery('.ca_loader').slideUp();
+                jQuery('.ca_loader').remove();
                 jQuery('.ca_payments_wrapper').slideUp('400');
                 jQuery('.ca_payment_cancelled').slideUp('400');
                 jQuery('.ca_progress').slideUp('400');
@@ -20,8 +20,9 @@ function check_status(ajax_url) {
             if (data.is_pending) {
                 waiting_payment.addClass('done');
                 waiting_network.addClass('done');
-                jQuery('.ca_loader').slideUp();
+                jQuery('.ca_loader').remove();
                 jQuery('.ca_notification_refresh').remove();
+                jQuery('.ca_notification_cancel').remove();
 
                 setTimeout(function () {
                     jQuery('.ca_payments_wrapper').slideUp('400');
@@ -33,8 +34,12 @@ function check_status(ajax_url) {
                 waiting_payment.addClass('done');
                 waiting_network.addClass('done');
                 payment_done.addClass('done');
+                jQuery('.ca_loader').remove();
+                jQuery('.ca_notification_refresh').remove();
+                jQuery('.ca_notification_cancel').remove();
 
                 setTimeout(function () {
+                    jQuery('.ca_payments_wrapper').slideUp('400');
                     jQuery('.ca_payment_processing').slideUp('400');
                     jQuery('.ca_payment_confirmed').slideDown('400');
                 }, 5000);
@@ -49,8 +54,6 @@ function check_status(ajax_url) {
 
             if (data.cryptapi_qr_code_value) {
                 jQuery('.ca_qrcode.value').attr("src", "data:image/png;base64," + data.cryptapi_qr_code_value);
-
-
             }
         });
 

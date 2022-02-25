@@ -228,8 +228,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'default' => 'none',
                     'options' => array(
                         '0.05' => '5%',
+                        '0.048' => '4.8%',
+                        '0.045' => '4.5%',
+                        '0.042' => '4.2%',
                         '0.04' => '4%',
+                        '0.038' => '3.8%',
+                        '0.035' => '3.5%',
+                        '0.032' => '3.2%',
                         '0.03' => '3%',
+                        '0.028' => '2.8%',
+                        '0.025' => '2.5%',
+                        '0.022' => '2.2%',
                         '0.02' => '2%',
                         '0.018' => '1.8%',
                         '0.015' => '1.5%',
@@ -268,8 +277,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'type' => 'select',
                     'default' => 'ammount',
                     'options' => array(
-                        'ammount' => __('Default Ammount', 'cryptapi'),
                         'without_ammount' => __('Default Without Ammount', 'cryptapi'),
+                        'ammount' => __('Default Ammount', 'cryptapi'),
                         'hide_ammount' => __('Hide Ammount', 'cryptapi'),
                         'hide_without_ammount' => __('Hide Without Ammount', 'cryptapi'),
                     ),
@@ -372,7 +381,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                 $addr = $this->{$val . '_address'};
                                 if (!empty($addr)) { ?>
                                     <option value="<?php echo $val; ?>" <?php
-                                    if(!empty($selected) && $selected === $val) {
+                                    if (!empty($selected) && $selected === $val) {
                                         echo " selected='true'";
                                     }
                                     ?>> <?php echo __('Pay with', 'cryptapi') . ' ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[$val] ?></option>
@@ -499,43 +508,39 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function validate_payment()
     {
-        try {
-            $data = CryptAPI\Helper::process_callback($_GET);
-            $order = new WC_Order($data['order_id']);
+        $data = CryptAPI\Helper::process_callback($_GET);
+        $order = new WC_Order($data['order_id']);
 
-            if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
-                die("*ok*");
-            }
-
-            $paid = floatval($order->get_meta('cryptpi_paid')) + floatval($data['value_coin']);
-            $crypto_coin = strtoupper($order->get_meta('cryptapi_currency'));
-
-            if (!$data['pending']) {
-                $order->add_meta_data('cryptapi_paid', $paid);
-            }
-
-            if ($paid >= $order->get_meta('cryptapi_total')) {
-                if ($data['pending']) {
-                    $order->add_meta_data('cryptapi_pending', "1");
-                } else {
-                    $order->delete_meta_data('cryptapi_pending');
-                    $order->payment_complete($data['address_in']);
-                }
-            }
-
-            $order->add_order_note(
-                ($data['pending'] ? '[PENDING]' : '') .
-                __('User sent a payment of', 'cryptapi') . ' ' .
-                $data['value_coin'] . ' ' . $crypto_coin .
-                '. TXID: ' . $data['txid_in']
-            );
-
-            $order->save_meta_data();
-
+        if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
             die("*ok*");
-        } catch (Exception $e) {
-            die($e->getMessage());
         }
+
+        $paid = floatval($order->get_meta('cryptpi_paid')) + floatval($data['value_coin']);
+        $crypto_coin = strtoupper($order->get_meta('cryptapi_currency'));
+
+        if (!$data['pending']) {
+            $order->add_meta_data('cryptapi_paid', $paid);
+        }
+
+        if ($paid >= $order->get_meta('cryptapi_total')) {
+            if ($data['pending']) {
+                $order->add_meta_data('cryptapi_pending', "1");
+            } else {
+                $order->delete_meta_data('cryptapi_pending');
+                $order->payment_complete($data['address_in']);
+            }
+        }
+
+        $order->add_order_note(
+            ($data['pending'] ? '[PENDING]' : '') .
+            __('User sent a payment of', 'cryptapi') . ' ' .
+            $data['value_coin'] . ' ' . $crypto_coin .
+            '. TXID: ' . $data['txid_in']
+        );
+
+        $order->save_meta_data();
+
+        die("*ok*");
     }
 
     function order_status()
@@ -591,6 +596,22 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         wp_enqueue_script('ca-payment', CRYPTAPI_PLUGIN_URL . 'static/payment.js', array(), CRYPTAPI_PLUGIN_VERSION, true);
         wp_add_inline_script('ca-payment', "jQuery(function() {let ajax_url = '{$ajax_url}'; setTimeout(function(){check_status(ajax_url)}, 500)})");
         wp_enqueue_style('ca-loader-css', CRYPTAPI_PLUGIN_URL . 'static/cryptapi.css', false, CRYPTAPI_PLUGIN_VERSION);
+
+        $allowed_to_value = array(
+            'btc',
+            'eth',
+            'bch',
+            'ltc',
+            'miota',
+            'xml',
+            'trx',
+        );
+
+        $crypto_allowed_value = false;
+
+        if (in_array($crypto_coin, $allowed_to_value, true)) {
+            $crypto_allowed_value = true;
+        }
         ?>
         <div class="ca_payment-panel<?php
         if ($color_scheme == 'auto') {
@@ -613,61 +634,82 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                             echo 'display: none';
                         }
                         ?>; width: <?php echo intval($this->qrcode_size) + 20; ?>px;">
-                            <div class="inner-wrapper">
-                                <figure>
+                            <?php
+                            if ($crypto_allowed_value == true) {
+                                ?>
+                                <div class="inner-wrapper">
+                                    <figure>
+                                        <?php
+                                        if ($qr_code_setting != 'hide_ammount') {
+                                            ?>
+                                            <img class="ca_qrcode no_value" <?php
+                                            if ($qr_code_setting == 'ammount') {
+                                                echo 'style="display:none;"';
+                                            }
+                                            ?> src="data:image/png;base64,<?php echo $qr_code_img; ?>" alt="<?php echo __('QR Code without value', 'cryptapi'); ?>"/>
+                                            <?php
+                                        }
+                                        if ($qr_code_setting != 'hide_without_ammount') {
+                                            ?>
+                                            <img class="ca_qrcode value" <?php
+                                            if ($qr_code_setting == 'without_ammount') {
+                                                echo 'style="display:none;"';
+                                            }
+                                            ?> src="data:image/png;base64,<?php echo $qr_code_img_value; ?>"
+                                                 alt="<?php echo __('QR Code with value', 'cryptapi'); ?>"/>
+                                            <?php
+                                        }
+                                        ?>
+                                    </figure>
                                     <?php
-                                    if ($qr_code_setting != 'hide_ammount') {
+                                    if ($qr_code_setting != 'hide_ammount' && $qr_code_setting != 'hide_without_ammount') {
                                         ?>
-                                        <img class="ca_qrcode no_value" <?php
-                                        if ($qr_code_setting == 'without_ammount') {
-                                            echo 'style="display:none;"';
-                                        }
-                                        ?> src="data:image/png;base64,<?php echo $qr_code_img; ?>" alt="<?php echo __('QR Code without value', 'cryptapi'); ?>"/>
+                                        <div class="ca_qrcode_buttons">
                                         <?php
-                                    }
-                                    if ($qr_code_setting != 'hide_without_ammount') {
-                                        ?>
-                                        <img class="ca_qrcode value" <?php
-                                        if ($qr_code_setting == 'ammount') {
-                                            echo 'style="display:none;"';
+                                        if ($qr_code_setting != 'hide_without_ammount') {
+                                            ?>
+                                            <button class="ca_qrcode_btn no_value<?php
+                                            if ($qr_code_setting == 'without_ammount') {
+                                                echo ' active';
+                                            }
+                                            ?>" aria-label="<?php echo __('Show QR Code without value', 'cryptapi'); ?>">
+                                                <?php echo __('ADDRESS', 'cryptapi'); ?>
+                                            </button>
+                                            <?php
                                         }
-                                        ?> src="data:image/png;base64,<?php echo $qr_code_img_value; ?>"
-                                             alt="<?php echo __('QR Code with value', 'cryptapi'); ?>"/>
-                                        <?php
+                                        if ($qr_code_setting != 'hide_ammount') {
+                                            ?>
+                                            <button class="ca_qrcode_btn value<?php
+                                            if ($qr_code_setting == 'ammount') {
+                                                echo ' active';
+                                            }
+                                            ?>" aria-label="<?php echo __('Show QR Code with value', 'cryptapi'); ?>">
+                                                <?php echo __('WITH AMMOUNT', 'cryptapi'); ?>
+                                            </button>
+                                            </div>
+                                            <?php
+                                        }
                                     }
                                     ?>
-                                </figure>
+                                </div>
                                 <?php
-                                if ($qr_code_setting != 'hide_ammount' && $qr_code_setting != 'hide_without_ammount') {
-                                    ?>
+                            } else {
+                                ?>
+                                <div class="inner-wrapper">
+                                    <figure>
+                                        <img class="ca_qrcode no_value" src="data:image/png;base64,<?php echo $qr_code_img; ?>"
+                                             alt="<?php echo __('QR Code without value', 'cryptapi'); ?>"/>
+                                    </figure>
                                     <div class="ca_qrcode_buttons">
-                                    <?php
-                                    if ($qr_code_setting != 'hide_without_ammount') {
-                                        ?>
-                                        <button class="ca_qrcode_btn no_value<?php
-                                        if ($qr_code_setting == 'ammount') {
-                                            echo ' active';
-                                        }
-                                        ?>" aria-label="<?php echo __('Show QR Code without value', 'cryptapi'); ?>">
+                                        <button class="ca_qrcode_btn no_value active" aria-label="<?php echo __('Show QR Code without value', 'cryptapi'); ?>">
                                             <?php echo __('ADDRESS', 'cryptapi'); ?>
                                         </button>
-                                        <?php
-                                    }
-                                    if ($qr_code_setting != 'hide_ammount') {
-                                        ?>
-                                        <button class="ca_qrcode_btn value<?php
-                                        if ($qr_code_setting == 'without_ammount') {
-                                            echo ' active';
-                                        }
-                                        ?>" aria-label="<?php echo __('Show QR Code with value', 'cryptapi'); ?>">
-                                            <?php echo __('WITH AMMOUNT', 'cryptapi'); ?>
-                                        </button>
-                                        </div>
-                                        <?php
-                                    }
-                                }
-                                ?>
-                            </div>
+                                    </div>
+                                </div>
+
+                                <?php
+                            }
+                            ?>
                         </div>
                         <div class="ca_details_box">
                             <div class="ca_details_text">

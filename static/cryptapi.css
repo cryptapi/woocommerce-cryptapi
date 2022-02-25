@@ -14,7 +14,7 @@
 .ca_details_copy {
     padding: 7px 10px;
     margin: 0 5px;
-    background: #FAFAFA !important;
+    background: #e0e0e0 !important;
     font-weight: bold;
     color: #000 !important;
     border: 0;
@@ -58,20 +58,21 @@
 
 .ca_qrcode_buttons button {
     display: inline-block;
-    width: 50%;
+    width: 100%;
     height: 42px;
     font-size: 12px;
     line-height: 1;
     letter-spacing: .045em;
-    background-color: #FAFAF9 !important;
+    background: #E0E0E0 !important;
+    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.25) !important;
     color: #000 !important;
     border: 0 !important;
 }
 
 .ca_qrcode_buttons button.active {
-    background: #E0E0E0 !important;
+    background-color: #FAFAF9 !important;
     color: #000;
-    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: none !important;
 }
 
 .ca_details_input {
@@ -85,13 +86,14 @@
 }
 
 .ca_details_input span {
-    font-size: 22px;
+    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     height: 100%;
-    padding: 0 8%
+    padding: 0 8%;
+    line-height: 20px;
 }
 
 .ca_copy {
@@ -283,11 +285,13 @@
 .ca_payment_confirmed h2,
 .ca_payment_processing h2,
 .ca_payment_cancelled h2 {
+    display: block;
     text-align: center;
     font-size: 28px;
     text-transform: uppercase;
     font-weight: 700;
     margin-top: 26px;
+    margin-bottom: 15px;
 }
 
 .ca_payment_confirmed .ca_payment_confirmed_icon,
@@ -313,6 +317,11 @@
     margin-top: -10px;
 }
 
+.ca_progress .ca_progress_icon.done {
+    padding: unset !important;
+    margin: unset !important;
+}
+
 @media screen and (max-width: 768.98px) {
     .ca_details_input span {
         font-size: 16px;
@@ -327,16 +336,16 @@
     }
 
     .ca_progress .ca_progress_icon.waiting_network:before,
-    .ca_progress .ca_progress_icon.waiting_network:after {
-        width: 60px;
+    .ca_progress .ca_progress_icon.waiting_payment:before {
+        width: 60px !important;
     }
 
     .ca_progress .ca_progress_icon.waiting_network:before {
-        left: -22%;
+        right: -17%;
     }
 
-    .ca_progress .ca_progress_icon.waiting_network:after {
-        right: -22%;
+    .ca_progress .ca_progress_icon.waiting_payment:before {
+        right: -17%;
     }
 }
 
