@@ -64,7 +64,6 @@
     line-height: 1;
     letter-spacing: .045em;
     background: #E0E0E0 !important;
-    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.25) !important;
     color: #000 !important;
     border: 0 !important;
 }
@@ -83,6 +82,10 @@
     border-radius: 50px;
     margin: 26px 0;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.ca_details_input .ca_copy .ca_tooltip {
+    left: 25%;
 }
 
 .ca_details_input span {
@@ -180,7 +183,7 @@
     padding: 13px 0;
     background-color: #FAFAFA;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-    max-width: 250px;
+    max-width: 180px;
     width: 100%;
     margin: 0 auto;
     border-radius: 50px;
@@ -193,7 +196,7 @@
     color: #2695D3;
     font-weight: 600;
     letter-spacing: .045em;
-    width: 100px;
+    width: 140px;
     height: 38px;
     border-radius: 50px;
     border: 3px solid #2695D3;
@@ -205,6 +208,15 @@
 .ca_buttons_container a:hover {
     color: #FFF;
     background-color: #2695D3;
+}
+
+.ca_buttons_container a span {
+    display: none;
+    white-space: nowrap;
+}
+
+.ca_buttons_container a span.active {
+    display: block;
 }
 
 .ca_branding {
@@ -322,6 +334,53 @@
     margin: unset !important;
 }
 
+.ca_payment_notification {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.ca_history .ca_history_fill {
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    text-align: center;
+    width: 70%;
+    margin: 20px auto;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    border-collapse: collapse;
+}
+
+.ca_history .ca_history_fill th {
+    border: 0;
+}
+
+.ca_history .ca_history_fill td {
+    border: 0;
+    overflow: auto;
+}
+
+.ca_notification_cancel {
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.ca_history_date {
+    font-size: 10px;
+    display: block;
+}
+
+.ca_time_refresh {
+    display: block;
+    text-align: center;
+    margin: 10px 0 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
 @media screen and (max-width: 768.98px) {
     .ca_details_input span {
         font-size: 16px;
@@ -356,7 +415,8 @@
     }
 
     .ca_details_input span {
-        padding: 0 50px 0 8%;
+        padding: 0 60px 0 30px;
+        font-size: 14px;
     }
 
     .ca_progress {
@@ -370,7 +430,7 @@
 
     .ca_progress .ca_progress_icon.waiting_payment:before,
     .ca_progress .ca_progress_icon.waiting_network:before {
-        width: 2px;
+        width: 2px !important;
         height: 40px;
         left: 0;
         right: 0;
@@ -389,10 +449,14 @@
 
     .ca_loader {
         top: unset;
-        bottom: -243px;
+        bottom: -56px;
         right: 0;
         left: 0;
         margin: 0 auto;
+    }
+
+    .ca_copy_icon {
+        right: 0;
     }
 }
 
