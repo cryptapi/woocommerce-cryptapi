@@ -228,8 +228,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'default' => 'none',
                     'options' => array(
                         '0.05' => '5%',
+                        '0.048' => '4.8%',
+                        '0.045' => '4.5%',
+                        '0.042' => '4.2%',
                         '0.04' => '4%',
+                        '0.038' => '3.8%',
+                        '0.035' => '3.5%',
+                        '0.032' => '3.2%',
                         '0.03' => '3%',
+                        '0.028' => '2.8%',
+                        '0.025' => '2.5%',
+                        '0.022' => '2.2%',
                         '0.02' => '2%',
                         '0.018' => '1.8%',
                         '0.015' => '1.5%',
@@ -268,8 +277,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'type' => 'select',
                     'default' => 'ammount',
                     'options' => array(
-                        'ammount' => __('Default Ammount', 'cryptapi'),
                         'without_ammount' => __('Default Without Ammount', 'cryptapi'),
+                        'ammount' => __('Default Ammount', 'cryptapi'),
                         'hide_ammount' => __('Hide Ammount', 'cryptapi'),
                         'hide_without_ammount' => __('Hide Without Ammount', 'cryptapi'),
                     ),
@@ -289,7 +298,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 'refresh_value_interval' => array(
                     'title' => __('Refresh converted value', 'cryptapi'),
                     'type' => 'select',
-                    'default' => '',
+                    'default' => '300',
                     'options' => array(
                         '0' => __('Never', 'cryptapi'),
                         '300' => __('Every 5 Minutes', 'cryptapi'),
@@ -299,12 +308,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                         '2700' => __('Every 45 Minutes', 'cryptapi'),
                         '3600' => __('Every 60 Minutes', 'cryptapi'),
                     ),
-                    'description' => __("The system will automatically update the conversion value of the invoices (with real-time data), every X minutes.<br> This feature is helpful whenever a customer takes long time to pay a generated invoice and the selected crypto a volatile coin/token (not stable coin)", 'cryptapi'),
+                    'description' => __("The system will automatically update the conversion value of the invoices (with real-time data), every X minutes.<br> This feature is helpful whenever a customer takes long time to pay a generated invoice and the selected crypto a volatile coin/token (not stable coin). <br> <strong style='color: #f44336;'>Warning:</strong> Setting this setting to none might create conversion issues, as we advise you to keep it at 5 minutes.</strong>", 'cryptapi'),
                 ),
                 'order_cancelation_timeout' => array(
                     'title' => __('Order cancelation timeout', 'cryptapi'),
                     'type' => 'select',
-                    'default' => '',
+                    'default' => '3600',
                     'options' => array(
                         '0' => __('Never', 'cryptapi'),
                         '3600' => __('1 Hour', 'cryptapi'),
@@ -313,7 +322,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                         '64800' => __('18 Hours', 'cryptapi'),
                         '86400' => __('24 Hours', 'cryptapi'),
                     ),
-                    'description' => __("Selects the ammount of time the user has to  pay for the order.<br>When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored.<br><strong>Notice:</strong> If the user still sends money to the generated address, value will still be redirected to you.", 'cryptapi'),
+                    'description' => __("Selects the ammount of time the user has to  pay for the order.<br>When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored.<br><strong>Notice:</strong> If the user still sends money to the generated address, value will still be redirected to you.<br><strong style='color: #f44336;'>Warning: </strong>We do not advice more than 1 Hour.", 'cryptapi'),
                 ),
                 'disable_conversion' => array(
                     'title' => __('Disable price conversion', 'cryptapi'),
@@ -372,7 +381,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                 $addr = $this->{$val . '_address'};
                                 if (!empty($addr)) { ?>
                                     <option value="<?php echo $val; ?>" <?php
-                                    if(!empty($selected) && $selected === $val) {
+                                    if (!empty($selected) && $selected === $val) {
                                         echo " selected='true'";
                                     }
                                     ?>> <?php echo __('Pay with', 'cryptapi') . ' ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[$val] ?></option>
@@ -452,7 +461,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $info = CryptAPI\Helper::get_info($selected);
                 $min_tx = floatval($info->minimum_transaction_coin);
 
-                $crypto_total = CryptAPI\Helper::get_conversion($selected, $total, $currency, $this->disable_conversion);
+                $crypto_total = CryptAPI\Helper::get_conversion($currency, $selected, $total, $this->disable_conversion);
 
                 if ($crypto_total < $min_tx) {
                     wc_add_notice(__('Payment error:', 'woocommerce') . __('Value too low, minimum is', 'cryptapi') . ' ' . $min_tx . ' ' . strtoupper($selected), 'error');
@@ -469,12 +478,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $order->add_meta_data('cryptapi_nonce', $nonce);
                 $order->add_meta_data('cryptapi_address', $addr_in);
                 $order->add_meta_data('cryptapi_total', $crypto_total);
+                $order->add_meta_data('cryptapi_remaining', $crypto_total);
+                $order->add_meta_data('cryptapi_remaining_pending', $crypto_total);
+                $order->add_meta_data('cryptapi_remaining_fiat', $order->get_total());
                 $order->add_meta_data('cryptapi_currency', $selected);
                 $order->add_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
                 $order->add_meta_data('cryptapi_qr_code', $qr_code_data['qr_code']);
-                $order->add_meta_data('cryptapi_uri', $qr_code_data_value['uri']);
+                // $order->add_meta_data('cryptapi_uri', $qr_code_data['uri']);
                 $order->add_meta_data('cryptapi_last_price_update', time());
                 $order->add_meta_data('cryptapi_cancelled', '0');
+                $order->add_meta_data('cryptapi_min', $min_tx);
+                $order->add_meta_data('cryptapi_history', json_encode([]));
                 $order->save_meta_data();
 
                 $order->update_status('on-hold', __('Awaiting payment', 'cryptapi') . ': ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[$selected]);
@@ -499,43 +513,100 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function validate_payment()
     {
-        try {
-            $data = CryptAPI\Helper::process_callback($_GET);
-            $order = new WC_Order($data['order_id']);
+        $data = CryptAPI\Helper::process_callback($_GET);
+        $order = new WC_Order($data['order_id']);
 
-            if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
-                die("*ok*");
+        if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
+            die("*ok*");
+        }
+
+        $uuiid = true;
+
+        $paid = floatval($data['value_coin']);
+
+        $remaining = floatval($order->get_meta('cryptapi_remaining')) - $paid;
+        $remaining_pending = floatval($order->get_meta('cryptapi_remaining_pending')) - $paid;
+
+        $crypto_coin = strtoupper($order->get_meta('cryptapi_currency'));
+
+        $history = json_decode($order->get_meta('cryptapi_history'), true);
+
+        foreach ($history as $call) {
+            if ((string)$call['uuid'] === (string)$data['uuid']) {
+                $uuiid = false;
+            }
+        }
+
+        if ($data['pending'] === '0') {
+            $order->update_meta_data('cryptapi_remaining', $remaining <= 0 ? 0 : $remaining);
+        }
+
+        if ($remaining <= 0) {
+            if ($data['pending'] === '0') {
+                $order->delete_meta_data('cryptapi_pending');
+                $order->payment_complete($data['address_in']);
             }
 
-            $paid = floatval($order->get_meta('cryptpi_paid')) + floatval($data['value_coin']);
-            $crypto_coin = strtoupper($order->get_meta('cryptapi_currency'));
-
-            if (!$data['pending']) {
-                $order->add_meta_data('cryptapi_paid', $paid);
+            if ($uuiid) {
+                $order->add_meta_data('cryptapi_pending', "1");
+                $order->update_meta_data('cryptapi_remaining_pending', $remaining_pending <= 0 ? 0 : $remaining_pending);
             }
+        } else {
+            if ($uuiid) {
+                $min_tx = floatval($order->get_meta('cryptapi_min'));
 
-            if ($paid >= $order->get_meta('cryptapi_total')) {
-                if ($data['pending']) {
+                if ($remaining_pending <= 0) {
                     $order->add_meta_data('cryptapi_pending', "1");
+                    $order->update_meta_data('cryptapi_remaining_pending', $remaining_pending <= 0 ? 0 : $remaining_pending);
+                    $order->delete_meta_data('cryptapi_show_min_fee');
                 } else {
-                    $order->delete_meta_data('cryptapi_pending');
-                    $order->payment_complete($data['address_in']);
+                    if ($remaining_pending >= $min_tx) {
+                        $order->update_meta_data('cryptapi_remaining_pending', $remaining_pending <= 0 ? 0 : $remaining_pending);
+                        $order->delete_meta_data('cryptapi_show_min_fee');
+                    } else {
+                        $remaining_pending = $remaining_pending + ($min_tx - $remaining);
+
+                        $order->update_meta_data('cryptapi_remaining_pending', $remaining_pending);
+                        $order->add_meta_data('cryptapi_show_min_fee', '1');
+                    }
                 }
+
+                $order->update_meta_data('cryptapi_qr_code_value_updated', '0');
+            }
+        }
+
+        if ($uuiid) {
+            $fiat_conversion = CryptAPI\Helper::get_conversion($order->get_meta('cryptapi_currency'), get_woocommerce_currency(), $paid, $this->disable_conversion);
+
+            if ($remaining_pending <= 0) {
+                $fiat_sub = 0;
+            } else {
+                $fiat_sub = floatval($order->get_meta('cryptapi_remaining_fiat')) - floatval($fiat_conversion);
             }
 
-            $order->add_order_note(
-                ($data['pending'] ? '[PENDING]' : '') .
-                __('User sent a payment of', 'cryptapi') . ' ' .
-                $data['value_coin'] . ' ' . $crypto_coin .
-                '. TXID: ' . $data['txid_in']
+            $order->update_meta_data('cryptapi_remaining_fiat', $fiat_sub <= 0 ? 0 : $fiat_sub);
+
+            $history[] = array(
+                'timestamp' => time(),
+                'value_paid' => $paid,
+                'value_paid_fiat' => $fiat_conversion . ' ' . get_woocommerce_currency(),
+                'remaining' => $fiat_sub <= 0 ? '0' . ' ' . get_woocommerce_currency() : $fiat_sub . ' ' . get_woocommerce_currency(),
+                'uuid' => $data['uuid'],
             );
 
-            $order->save_meta_data();
-
-            die("*ok*");
-        } catch (Exception $e) {
-            die($e->getMessage());
+            $order->update_meta_data('cryptapi_history', json_encode($history));
         }
+
+        $order->save();
+
+        $order->add_order_note(
+            ($data['pending'] ? '[PENDING]' : '') .
+            __('User sent a payment of', 'cryptapi') . ' ' .
+            $paid . ' ' . $crypto_coin .
+            '. TXID: ' . $data['txid_in']
+        );
+
+        die("*ok*");
     }
 
     function order_status()
@@ -545,12 +616,40 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         try {
             $order = new WC_Order($order_id);
 
+            $already_paid = 0;
+            $already_paid_fiat = 0;
+
+            foreach (json_decode($order->get_meta('cryptapi_history'), true) as $order_history) {
+                $already_paid += $order_history['value_paid'];
+                $already_paid_fiat += $order_history['value_paid_fiat'];
+            }
+
+            if ($order->get_meta('cryptapi_qr_code_value_updated') === '0') {
+                $order->update_meta_data('cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $order->get_meta('cryptapi_remaining_pending'), $this->qrcode_size)['qr_code']);
+                $order->update_meta_data('cryptapi_qr_code_value_updated', '1');
+                $order->save();
+            }
+
+            $counter_calc = (int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval - time();
+
+            if ($counter_calc <= 0) {
+                $this->ca_cronjob();
+            }
+
             $data = [
                 'is_paid' => $order->is_paid(),
                 'is_pending' => boolval($order->get_meta('cryptapi_pending')),
                 'crypto_total' => $order->get_meta('cryptapi_total'),
-                'cryptapi_qr_code_value' => $order->get_meta('cryptapi_qr_code_value'),
-                'cryptapi_cancelled' => $order->get_meta('cryptapi_cancelled'),
+                'qr_code_value' => $order->get_meta('cryptapi_qr_code_value'),
+                'cancelled' => $order->get_meta('cryptapi_cancelled'),
+                'remaining' => $order->get_meta('cryptapi_remaining_pending'),
+                'fiat_remaining' => $order->get_meta('cryptapi_remaining_fiat'),
+                'coin' => strtoupper($order->get_meta('cryptapi_currency')),
+                'show_min_fee' => $order->get_meta('cryptapi_show_min_fee'),
+                'order_history' => $order->get_meta('cryptapi_history'),
+                'already_paid' => $already_paid,
+                'already_paid_fiat' => $already_paid_fiat . ' ' . get_woocommerce_currency(),
+                'counter' => (string)$counter_calc,
             ];
 
             echo json_encode($data);
@@ -580,8 +679,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $qr_code_img_value = $order->get_meta('cryptapi_qr_code_value');
         $qr_code_img = $order->get_meta('cryptapi_qr_code');
         $qr_code_setting = $this->get_option('qrcode_setting');
-        $payment_uri = $order->get_meta('cryptapi_uri');
+        // $payment_uri = $order->get_meta('cryptapi_uri');
         $color_scheme = $this->get_option('color_scheme');
+        $min_tx = $order->get_meta('cryptapi_min');
 
         $ajax_url = add_query_arg(array(
             'action' => 'cryptapi_order_status',
@@ -591,6 +691,24 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         wp_enqueue_script('ca-payment', CRYPTAPI_PLUGIN_URL . 'static/payment.js', array(), CRYPTAPI_PLUGIN_VERSION, true);
         wp_add_inline_script('ca-payment', "jQuery(function() {let ajax_url = '{$ajax_url}'; setTimeout(function(){check_status(ajax_url)}, 500)})");
         wp_enqueue_style('ca-loader-css', CRYPTAPI_PLUGIN_URL . 'static/cryptapi.css', false, CRYPTAPI_PLUGIN_VERSION);
+
+        $allowed_to_value = array(
+            'btc',
+            'eth',
+            'bch',
+            'ltc',
+            'miota',
+            'xmr',
+        );
+
+        $crypto_allowed_value = false;
+
+        $conversion_timer = ((int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval) - time();
+        $cancel_timer = $order->get_date_created()->getTimestamp() + (int)$this->order_cancelation_timeout - time();
+
+        if (in_array($crypto_coin, $allowed_to_value, true)) {
+            $crypto_allowed_value = true;
+        }
         ?>
         <div class="ca_payment-panel<?php
         if ($color_scheme == 'auto') {
@@ -613,61 +731,82 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                             echo 'display: none';
                         }
                         ?>; width: <?php echo intval($this->qrcode_size) + 20; ?>px;">
-                            <div class="inner-wrapper">
-                                <figure>
+                            <?php
+                            if ($crypto_allowed_value == true) {
+                                ?>
+                                <div class="inner-wrapper">
+                                    <figure>
+                                        <?php
+                                        if ($qr_code_setting != 'hide_ammount') {
+                                            ?>
+                                            <img class="ca_qrcode no_value" <?php
+                                            if ($qr_code_setting == 'ammount') {
+                                                echo 'style="display:none;"';
+                                            }
+                                            ?> src="data:image/png;base64,<?php echo $qr_code_img; ?>" alt="<?php echo __('QR Code without value', 'cryptapi'); ?>"/>
+                                            <?php
+                                        }
+                                        if ($qr_code_setting != 'hide_without_ammount') {
+                                            ?>
+                                            <img class="ca_qrcode value" <?php
+                                            if ($qr_code_setting == 'without_ammount') {
+                                                echo 'style="display:none;"';
+                                            }
+                                            ?> src="data:image/png;base64,<?php echo $qr_code_img_value; ?>"
+                                                 alt="<?php echo __('QR Code with value', 'cryptapi'); ?>"/>
+                                            <?php
+                                        }
+                                        ?>
+                                    </figure>
                                     <?php
-                                    if ($qr_code_setting != 'hide_ammount') {
+                                    if ($qr_code_setting != 'hide_ammount' && $qr_code_setting != 'hide_without_ammount') {
                                         ?>
-                                        <img class="ca_qrcode no_value" <?php
-                                        if ($qr_code_setting == 'without_ammount') {
-                                            echo 'style="display:none;"';
-                                        }
-                                        ?> src="data:image/png;base64,<?php echo $qr_code_img; ?>" alt="<?php echo __('QR Code without value', 'cryptapi'); ?>"/>
+                                        <div class="ca_qrcode_buttons">
                                         <?php
-                                    }
-                                    if ($qr_code_setting != 'hide_without_ammount') {
-                                        ?>
-                                        <img class="ca_qrcode value" <?php
-                                        if ($qr_code_setting == 'ammount') {
-                                            echo 'style="display:none;"';
+                                        if ($qr_code_setting != 'hide_without_ammount') {
+                                            ?>
+                                            <button class="ca_qrcode_btn no_value<?php
+                                            if ($qr_code_setting == 'without_ammount') {
+                                                echo ' active';
+                                            }
+                                            ?>" aria-label="<?php echo __('Show QR Code without value', 'cryptapi'); ?>">
+                                                <?php echo __('ADDRESS', 'cryptapi'); ?>
+                                            </button>
+                                            <?php
                                         }
-                                        ?> src="data:image/png;base64,<?php echo $qr_code_img_value; ?>"
-                                             alt="<?php echo __('QR Code with value', 'cryptapi'); ?>"/>
-                                        <?php
+                                        if ($qr_code_setting != 'hide_ammount') {
+                                            ?>
+                                            <button class="ca_qrcode_btn value<?php
+                                            if ($qr_code_setting == 'ammount') {
+                                                echo ' active';
+                                            }
+                                            ?>" aria-label="<?php echo __('Show QR Code with value', 'cryptapi'); ?>">
+                                                <?php echo __('WITH AMMOUNT', 'cryptapi'); ?>
+                                            </button>
+                                            </div>
+                                            <?php
+                                        }
                                     }
                                     ?>
-                                </figure>
+                                </div>
                                 <?php
-                                if ($qr_code_setting != 'hide_ammount' && $qr_code_setting != 'hide_without_ammount') {
-                                    ?>
+                            } else {
+                                ?>
+                                <div class="inner-wrapper">
+                                    <figure>
+                                        <img class="ca_qrcode no_value" src="data:image/png;base64,<?php echo $qr_code_img; ?>"
+                                             alt="<?php echo __('QR Code without value', 'cryptapi'); ?>"/>
+                                    </figure>
                                     <div class="ca_qrcode_buttons">
-                                    <?php
-                                    if ($qr_code_setting != 'hide_without_ammount') {
-                                        ?>
-                                        <button class="ca_qrcode_btn no_value<?php
-                                        if ($qr_code_setting == 'ammount') {
-                                            echo ' active';
-                                        }
-                                        ?>" aria-label="<?php echo __('Show QR Code without value', 'cryptapi'); ?>">
+                                        <button class="ca_qrcode_btn no_value active" aria-label="<?php echo __('Show QR Code without value', 'cryptapi'); ?>">
                                             <?php echo __('ADDRESS', 'cryptapi'); ?>
                                         </button>
-                                        <?php
-                                    }
-                                    if ($qr_code_setting != 'hide_ammount') {
-                                        ?>
-                                        <button class="ca_qrcode_btn value<?php
-                                        if ($qr_code_setting == 'without_ammount') {
-                                            echo ' active';
-                                        }
-                                        ?>" aria-label="<?php echo __('Show QR Code with value', 'cryptapi'); ?>">
-                                            <?php echo __('WITH AMMOUNT', 'cryptapi'); ?>
-                                        </button>
-                                        </div>
-                                        <?php
-                                    }
-                                }
-                                ?>
-                            </div>
+                                    </div>
+                                </div>
+
+                                <?php
+                            }
+                            ?>
                         </div>
                         <div class="ca_details_box">
                             <div class="ca_details_text">
@@ -678,8 +817,32 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                     <span class="ca_tooltip ca_copy_icon_tooltip tip"><?php echo __('COPY', 'cryptapi'); ?></span>
                                     <span class="ca_tooltip ca_copy_icon_tooltip success" style="display: none"><?php echo __('COPIED!', 'cryptapi'); ?></span>
                                 </button>
-                                (<?php echo "{$currency_symbol} {$total}"; ?>)
+                                <strong>(<?php echo "{$currency_symbol}" . " <span class='ca_fiat_total'>" . $total . "</span>"; ?>)</strong>
                             </div>
+                            <div style="display: none;" class="ca_payment_notification ca_notification_payment_received" style="display: none;">
+                                <?php echo sprintf(__('So far you sent %1s. Please send a new payment to complete the order, as requested above', 'cryptapi'),
+                                    '<strong><span class="ca_notification_ammount"></span></strong>'
+                                ); ?>
+                            </div>
+                            <div class="ca_payment_notification ca_notification_remaining" style="display: none">
+                                <?php echo '<strong>' . __('Notice', 'cryptapi') . '</strong>: ' . sprintf(__('For technical reasons, the minimum amount for each transaction is %1s, so we adjusted the value by adding the remaining to it.', 'cryptapi'),
+                                        (float)$min_tx . ' ' . strtoupper($crypto_coin),
+                                        '<span class="ca_notification_remaining"></span>'
+                                    ); ?>
+                            </div>
+
+                            <?php
+                            if (intval($this->refresh_value_interval) != 0) {
+                                ?>
+                                <div class="ca_time_refresh">
+                                    <?php echo sprintf(__('The %1s conversion rate will be adjusted in %2s', 'cryptapi'),
+                                        strtoupper($crypto_coin),
+                                        '<span class="ca_time_seconds_count" data-seconds="' . $conversion_timer . '">' . date('i:s', $conversion_timer) . '</span>'
+                                    ); ?>
+                                </div>
+                                <?php
+                            }
+                            ?>
                             <div class="ca_details_input">
                                 <span><?php echo $address_in ?></span>
                                 <button class="ca_copy ca_copy_icon" data-tocopy="<?php echo $address_in; ?>">
@@ -689,12 +852,29 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                 <div class="ca_loader"></div>
                             </div>
                         </div>
+                        <?php
+                        if (intval($this->order_cancelation_timeout) != 0) {
+                            ?>
+                            <span class="ca_notification_cancel" data-text="<?php echo __('Order will be cancelled in less than a minute.', 'cryptapi');?>">
+                                    <?php echo sprintf(__('This order will be valid for %s', 'cryptapi'),
+                                        '<strong><span class="ca_cancel_timer" data-timestamp="' . $cancel_timer . '">' . date('H:i', $cancel_timer) . '</span></strong>',
+                                    ); ?>
+                                </span>
+                            <?php
+                        }
+                        ?>
                         <div class="ca_buttons_container">
-                            <a href="<?php echo $payment_uri ?>" target="_blank">
-                                <?php echo __('WALLET', 'cryptapi'); ?>
-                            </a>
                             <a class="ca_show_qr" href="#" aria-label="<?php echo __('Show the QR code', 'cryptapi'); ?>">
-                                <?php echo __('QR CODE', 'cryptapi'); ?>
+                                <span class="ca_show_qr_open<?php
+                                if (!$this->qrcode_default) {
+                                    echo ' active';
+                                }
+                                ?>"><?php echo __('Open QR CODE', 'cryptapi'); ?></span>
+                                <span class="ca_show_qr_close<?php
+                                if ($this->qrcode_default) {
+                                    echo ' active';
+                                }
+                                ?>"><?php echo __('Close QR CODE', 'cryptapi'); ?></span>
                             </a>
                         </div>
                         <?php
@@ -749,11 +929,20 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     </div>
                     <h2><?php echo __('Order has been cancelled due to lack of payment. Please don\'t send any payment to the address.', 'cryptapi'); ?></h2>
                 </div>
+                <div class="ca_history" style="display: none;">
+                    <table class="ca_history_fill">
+                        <tr class="ca_history_header">
+                            <th><strong><?php echo __('Time', 'cryptapi'); ?></strong></th>
+                            <th><strong><?php echo __('Value Paid', 'cryptapi'); ?></strong></th>
+                            <th><strong><?php echo __('FIAT Value', 'cryptapi'); ?></strong></th>
+                        </tr>
+                    </table>
+                </div>
                 <?php
                 if ($total > 0) {
                     ?>
                     <div class="ca_progress">
-                        <div class="ca_progress_icon waiting_payment">
+                        <div class="ca_progress_icon waiting_payment done">
                             <svg width="60" height="60" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M49.2188 25C49.2188 38.3789 38.3789 49.2188 25 49.2188C11.6211 49.2188 0.78125 38.3789 0.78125 25C0.78125 11.6211 11.6211 0.78125 25 0.78125C38.3789 0.78125 49.2188 11.6211 49.2188 25ZM35.1953 22.1777L28.125 29.5508V11.7188C28.125 10.4199 27.0801 9.375 25.7812 9.375H24.2188C22.9199 9.375 21.875 10.4199 21.875 11.7188V29.5508L14.8047 22.1777C13.8965 21.2305 12.3828 21.2109 11.4551 22.1387L10.3906 23.2129C9.47266 24.1309 9.47266 25.6152 10.3906 26.5234L23.3398 39.4824C24.2578 40.4004 25.7422 40.4004 26.6504 39.4824L39.6094 26.5234C40.5273 25.6055 40.5273 24.1211 39.6094 23.2129L38.5449 22.1387C37.6172 21.2109 36.1035 21.2305 35.1953 22.1777V22.1777Z"
                                       fill="#0B4B70"/>
@@ -773,29 +962,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                       fill="#0B4B70"/>
                             </svg>
                             <p><?php echo __('Payment confirmed', 'cryptapi'); ?></p>
-                        </div>
-                        <div class="ca_notification_text">
-                            <?php
-                            if (intval($this->refresh_value_interval) != 0) {
-                                ?>
-                                <span class="ca_notification_refresh">
-                                    <?php echo sprintf(__('Converted values will be refreshed each %s minutes.', 'cryptapi'),
-                                        ltrim(gmdate("i", $this->refresh_value_interval), '0')
-                                    ); ?>
-                                </span>
-                                <?php
-                            }
-
-                            if (intval($this->order_cancelation_timeout) != 0) {
-                                ?>
-                                <span class="ca_notification_cancel">
-                                    <?php echo sprintf(__('This order has a time limit. You have %s to pay it otherwise will be cancelled.', 'cryptapi'),
-                                        gmdate("H:i", $this->order_cancelation_timeout)
-                                    ); ?>
-                                </span>
-                                <?php
-                            }
-                            ?>
                         </div>
                     </div>
                     <?php
@@ -833,22 +999,27 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             if (($last_price_update + $value_refresh) <= time() && empty($order->get_meta('cryptapi_pending')) && !empty($last_price_update)) {
 
                 $cryptapi_coin = $order->get_meta('cryptapi_currency');
+                $remaining_crypto_fiat = $order->get_meta('cryptapi_remaining_fiat');
 
-                $crypto_total = CryptAPI\Helper::get_conversion($cryptapi_coin, $order->get_total('edit'), get_woocommerce_currency(), $this->disable_conversion);
+                $crypto_total = CryptAPI\Helper::get_conversion(get_woocommerce_currency(), $cryptapi_coin, $order->get_total('edit'), $this->disable_conversion);
+                $crypto_remaining_total = CryptAPI\Helper::get_conversion(get_woocommerce_currency(), $cryptapi_coin, $remaining_crypto_fiat, $this->disable_conversion);
 
-                $qr_code_data_value = CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $crypto_total, $this->qrcode_size);
+                $qr_code_data_value = CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $crypto_remaining_total, $this->qrcode_size);
 
                 $order->update_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
                 $order->update_meta_data('cryptapi_total', $crypto_total);
+                $order->update_meta_data('cryptapi_remaining', $crypto_remaining_total);
+                $order->update_meta_data('cryptapi_remaining_pending', $crypto_remaining_total);
+
                 $order->update_meta_data('cryptapi_last_price_update', time());
 
                 $order->save();
+
             }
 
-            if (($order->get_date_created()->getTimestamp() + $order_timeout) <= time() && empty($order->get_meta('cryptapi_pending')) && $order->get_meta('cryptapi_cancelled')) {
+            if (($order->get_date_created()->getTimestamp() + $order_timeout) <= time() && empty($order->get_meta('cryptapi_pending')) && (float)$order->get_meta('cryptapi_remaining_fiat') >= $order->get_total('edit') && (string)$order->get_meta('cryptapi_cancelled') === '0') {
                 $order->update_status('cancelled', __('Order cancelled due to lack of payment.', 'cryptapi'));
                 $order->update_meta_data('cryptapi_cancelled', '1');
-
                 $order->save();
             }
         }

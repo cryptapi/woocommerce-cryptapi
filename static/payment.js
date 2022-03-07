@@ -9,10 +9,14 @@ function check_status(ajax_url) {
             let waiting_network = jQuery('.waiting_network');
             let payment_done = jQuery('.payment_done');
 
-            if (data.cryptapi_cancelled === '1') {
-                jQuery('.ca_loader').slideUp();
+            jQuery('.ca_value').html(data.remaining);
+            jQuery('.ca_fiat_total').html(data.fiat_remaining);
+            jQuery('.ca_copy.ca_details_copy').attr('data-tocopy', data.remaining);
+
+            if (data.cancelled === '1') {
+                jQuery('.ca_loader').remove();
                 jQuery('.ca_payments_wrapper').slideUp('400');
-                jQuery('.ca_payment_cancelled').slideUp('400');
+                jQuery('.ca_payment_cancelled').slideDown('400');
                 jQuery('.ca_progress').slideUp('400');
                 is_paid = true;
             }
@@ -20,8 +24,9 @@ function check_status(ajax_url) {
             if (data.is_pending) {
                 waiting_payment.addClass('done');
                 waiting_network.addClass('done');
-                jQuery('.ca_loader').slideUp();
+                jQuery('.ca_loader').remove();
                 jQuery('.ca_notification_refresh').remove();
+                jQuery('.ca_notification_cancel').remove();
 
                 setTimeout(function () {
                     jQuery('.ca_payments_wrapper').slideUp('400');
@@ -33,8 +38,12 @@ function check_status(ajax_url) {
                 waiting_payment.addClass('done');
                 waiting_network.addClass('done');
                 payment_done.addClass('done');
+                jQuery('.ca_loader').remove();
+                jQuery('.ca_notification_refresh').remove();
+                jQuery('.ca_notification_cancel').remove();
 
                 setTimeout(function () {
+                    jQuery('.ca_payments_wrapper').slideUp('400');
                     jQuery('.ca_payment_processing').slideUp('400');
                     jQuery('.ca_payment_confirmed').slideDown('400');
                 }, 5000);
@@ -42,15 +51,50 @@ function check_status(ajax_url) {
                 is_paid = true;
             }
 
-            if (data.crypto_total) {
-                jQuery('.ca_value').html(data.crypto_total);
-                jQuery('.ca_copy.ca_details_copy').attr('data-tocopy', data.crypto_total);
+            if (data.qr_code_value) {
+                jQuery('.ca_qrcode.value').attr("src", "data:image/png;base64," + data.qr_code_value);
             }
 
-            if (data.cryptapi_qr_code_value) {
-                jQuery('.ca_qrcode.value').attr("src", "data:image/png;base64," + data.cryptapi_qr_code_value);
+            if (data.show_min_fee === '1') {
+                jQuery('.ca_notification_remaining').show();
+            }
 
+            if (data.remaining !== data.crypto_total) {
+                jQuery('.ca_notification_payment_received').show();
+                jQuery('.ca_notification_cancel').remove();
+                jQuery('.ca_notification_ammount').html(data.already_paid + ' ' + data.coin + ' (<strong>' + data.already_paid_fiat + '<strong>)');
+            }
 
+            if (data.order_history) {
+                let history = JSON.parse(data.order_history);
+
+                if (jQuery('.ca_history_fill tr').length < history.length + 1) {
+                    jQuery('.ca_history').show();
+
+                    jQuery('.ca_history_fill td:not(.ca_history_header)').remove();
+
+                    for (let y = 0; y < history.length; y++) {
+
+                        let time = new Date(history[y].timestamp * 1000).toLocaleTimeString(document.documentElement.lang);
+                        let date = new Date(history[y].timestamp * 1000).toLocaleDateString(document.documentElement.lang);
+
+                        jQuery('.ca_history_fill').append(
+                            '<tr>' +
+                            '<td>' + time + '<span class="ca_history_date">' + date + '</span></td>' +
+                            '<td>' + history[y].value_paid + ' ' + data.coin + '</td>' +
+                            '<td><strong>' + history[y].value_paid_fiat + '</strong></td>' +
+                            '</tr>'
+                        )
+                    }
+                }
+            }
+
+            if (jQuery('.ca_time_refresh')[0]) {
+                var timer = jQuery('.ca_time_seconds_count');
+
+                if (timer.attr('data-seconds') <= 0) {
+                    timer.attr('data-seconds', data.counter);
+                }
             }
         });
 
@@ -62,17 +106,16 @@ function check_status(ajax_url) {
 
 function copyToClipboard(text) {
     if (window.clipboardData && window.clipboardData.setData) {
-        // IE specific code path to prevent textarea being shown while dialog is visible.
         return clipboardData.setData("Text", text);
 
     } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
         var textarea = document.createElement("textarea");
         textarea.textContent = text;
-        textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
+        textarea.style.position = "fixed";
         document.body.appendChild(textarea);
         textarea.select();
         try {
-            return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+            return document.execCommand("copy");
         } catch (ex) {
             console.warn("Copy to clipboard failed.", ex);
             return false;
@@ -83,6 +126,54 @@ function copyToClipboard(text) {
 }
 
 jQuery(function ($) {
+
+    if ($('.ca_time_refresh')[0] || $('.ca_notification_cancel')[0]) {
+        setInterval(function () {
+
+            if ($('.ca_time_refresh')[0]) {
+                var refresh_time_span = $('.ca_time_seconds_count'),
+                    refresh_time = refresh_time_span.attr('data-seconds') - 1;
+
+                if (refresh_time <= 0) {
+                    refresh_time_span.html('00:00');
+                    refresh_time_span.attr('data-seconds', 0);
+                    return;
+                }
+
+                var refresh_minutes = Math.floor(refresh_time % 3600 / 60).toString().padStart(2, '0'),
+                    refresh_seconds = Math.floor(refresh_time % 60).toString().padStart(2, '0');
+
+                refresh_time_span.html(refresh_minutes + ':' + refresh_seconds);
+
+                refresh_time_span.attr('data-seconds', refresh_time);
+            }
+
+            var ca_notification_cancel = $('.ca_notification_cancel');
+
+            if (ca_notification_cancel[0]) {
+                var cancel_time_span = $('.ca_cancel_timer'),
+                    cancel_time = cancel_time_span.attr('data-timestamp') - 1;
+
+                if (cancel_time <= 0) {
+                    cancel_time_span.attr('data-timestamp', 0);
+                    return;
+                }
+
+                var cancel_hours = Math.floor(cancel_time / 3600).toString().padStart(2, '0'),
+                    cancel_minutes = Math.floor(cancel_time % 3600 / 60).toString().padStart(2, '0');
+
+                if (cancel_time <= 60) {
+                    ca_notification_cancel.html('<strong>' + ca_notification_cancel.attr('data-text') + '</strong>');
+                } else {
+                    cancel_time_span.html(cancel_hours + ':' + cancel_minutes);
+
+                }
+                cancel_time_span.attr('data-timestamp', cancel_time);
+            }
+        }, 1000);
+    }
+
+
     $('.ca_qrcode_btn').on('click', function () {
         $('.ca_qrcode_btn').removeClass('active')
         $(this).addClass('active');
@@ -99,12 +190,20 @@ jQuery(function ($) {
     $('.ca_show_qr').on('click', function (e) {
         e.preventDefault();
 
+        let qr_code_close_text = $('.ca_show_qr_close');
+        let qr_code_open_text = $('.ca_show_qr_open');
+
         if ($(this).hasClass('active')) {
             $('.ca_qrcode_wrapper').slideToggle(500);
             $(this).removeClass('active');
+            qr_code_close_text.addClass('active');
+            qr_code_open_text.removeClass('active');
+
         } else {
             $('.ca_qrcode_wrapper').slideToggle(500);
             $(this).addClass('active');
+            qr_code_close_text.removeClass('active');
+            qr_code_open_text.addClass('active');
         }
     });
 
