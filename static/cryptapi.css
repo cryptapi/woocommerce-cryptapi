@@ -224,6 +224,20 @@
     text-align: center;
 }
 
+.ca_branding a {
+    text-decoration: none;
+}
+
+.ca_branding span {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    font-style: italic;
+    margin-bottom: 4px;
+    color: #757575;
+    letter-spacing: 1px;
+}
+
 .ca_branding img {
     display: inline-block !important;
 }

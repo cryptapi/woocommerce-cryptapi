@@ -21,7 +21,7 @@ function check_status(ajax_url) {
                 is_paid = true;
             }
 
-            if (data.is_pending) {
+            if (data.is_pending === '1') {
                 waiting_payment.addClass('done');
                 waiting_network.addClass('done');
                 jQuery('.ca_loader').remove();
@@ -57,35 +57,36 @@ function check_status(ajax_url) {
 
             if (data.show_min_fee === '1') {
                 jQuery('.ca_notification_remaining').show();
+            } else {
+                jQuery('.ca_notification_remaining').hide();
             }
 
             if (data.remaining !== data.crypto_total) {
                 jQuery('.ca_notification_payment_received').show();
                 jQuery('.ca_notification_cancel').remove();
-                jQuery('.ca_notification_ammount').html(data.already_paid + ' ' + data.coin + ' (<strong>' + data.already_paid_fiat + '<strong>)');
+                jQuery('.ca_notification_ammount').html(data.already_paid + ' ' + data.coin + ' (<strong>' + data.already_paid_fiat + ' ' + data.fiat_symbol + '<strong>)');
             }
 
             if (data.order_history) {
-                let history = JSON.parse(data.order_history);
+                let history = data.order_history;
 
-                if (jQuery('.ca_history_fill tr').length < history.length + 1) {
+                if (jQuery('.ca_history_fill tr').length < Object.entries(history).length + 1) {
                     jQuery('.ca_history').show();
 
                     jQuery('.ca_history_fill td:not(.ca_history_header)').remove();
 
-                    for (let y = 0; y < history.length; y++) {
-
-                        let time = new Date(history[y].timestamp * 1000).toLocaleTimeString(document.documentElement.lang);
-                        let date = new Date(history[y].timestamp * 1000).toLocaleDateString(document.documentElement.lang);
+                    Object.entries(history).forEach(([key, value]) => {
+                        let time = new Date(value.timestamp * 1000).toLocaleTimeString(document.documentElement.lang);
+                        let date = new Date(value.timestamp * 1000).toLocaleDateString(document.documentElement.lang);
 
                         jQuery('.ca_history_fill').append(
                             '<tr>' +
                             '<td>' + time + '<span class="ca_history_date">' + date + '</span></td>' +
-                            '<td>' + history[y].value_paid + ' ' + data.coin + '</td>' +
-                            '<td><strong>' + history[y].value_paid_fiat + '</strong></td>' +
+                            '<td>' + value.value_paid + ' ' + data.coin + '</td>' +
+                            '<td><strong>' + value.value_paid_fiat + ' ' + data.fiat_symbol + '</strong></td>' +
                             '</tr>'
                         )
-                    }
+                    });
                 }
             }
 
