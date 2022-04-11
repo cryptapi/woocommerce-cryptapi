@@ -532,15 +532,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
         $history = json_decode($order->get_meta('cryptapi_history'), true);
 
-        $update_history = true;
-
-        foreach ($history as $uuid => $item) {
-            if ($uuid === $data['uuid']) {
-                $update_history = false;
-            }
-        }
-
-        if ($update_history) {
+        if (empty($history[$data['uuid']])) {
             $fiat_conversion = CryptAPI\Helper::get_conversion($order->get_meta('cryptapi_currency'), get_woocommerce_currency(), $paid, $this->disable_conversion);
 
             $history[$data['uuid']] = [
@@ -554,29 +546,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         }
 
         $order->update_meta_data('cryptapi_history', json_encode($history));
-        $order->save();
-
-        $calc = $this->calc_order(json_decode($order->get_meta('cryptapi_history'), true), $order->get_meta('cryptapi_total'), $order->get_meta('cryptapi_total_fiat'));
-
-        $remaining = $calc['remaining']->result();
-        $remaining_pending = $calc['remaining_pending']->result();
-
-        if ($remaining <= 0) {
-            if ($data['pending'] === '0') {
-                $order->payment_complete($data['address_in']);
-                $order->save();
-            }
-        }
-
-        if ($remaining_pending < $min_tx) {
-            $order->update_meta_data('cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $min_tx, $this->qrcode_size)['qr_code']);
-        } else {
-            $order->update_meta_data('cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $remaining_pending, $this->qrcode_size)['qr_code']);
-        }
-
-        $order->update_meta_data('cryptapi_history', json_encode($history));
-
-        $order->save();
+        $order->save_meta_data();
 
         $order->add_order_note(
             ($data['pending'] ? '[PENDING]' : '') .
@@ -584,6 +554,26 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             $paid . ' ' . $crypto_coin .
             '. TXID: ' . $data['txid_in']
         );
+
+        $calc = $this->calc_order(json_decode($order->get_meta('cryptapi_history'), true), $order->get_meta('cryptapi_total'), $order->get_meta('cryptapi_total_fiat'));
+
+        $remaining = $calc['remaining'];
+        $remaining_pending = $calc['remaining_pending'];
+
+        if ($remaining_pending <= 0) {
+            if ($remaining <= 0) {
+                $order->payment_complete($data['address_in']);
+                $order->save();
+            }
+            die("*ok*");
+        }
+
+        if ($remaining_pending < $min_tx) {
+            $order->update_meta_data('cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $min_tx, $this->qrcode_size)['qr_code']);
+        } else {
+            $order->update_meta_data('cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $remaining_pending, $this->qrcode_size)['qr_code']);
+        }
+        $order->save_meta_data();
 
         die("*ok*");
     }
@@ -601,13 +591,13 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
             $calc = $this->calc_order($history, $order->get_meta('cryptapi_total'), $order->get_meta('cryptapi_total_fiat'));
 
-            $already_paid = $calc['already_paid']->result();
-            $already_paid_fiat = $calc['already_paid_fiat']->result();
+            $already_paid = $calc['already_paid'];
+            $already_paid_fiat = $calc['already_paid_fiat'];
 
-            $min_tx = $order->get_meta('cryptapi_min');
+            $min_tx = floatval($order->get_meta('cryptapi_min'));
 
-            $remaining_pending = $calc['remaining_pending']->result();
-            $remaining_fiat = $calc['remaining_fiat']->result();
+            $remaining_pending = $calc['remaining_pending'];
+            $remaining_fiat = $calc['remaining_fiat'];
 
             $cryptapi_pending = '0';
             if ($remaining_pending <= 0 && !$order->is_paid()) {
@@ -620,7 +610,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $this->ca_cronjob();
             }
 
-            if ($remaining_pending <= $min_tx && $remaining_fiat > 0) {
+            if ($remaining_pending <= $min_tx && $remaining_pending > 0) {
                 $remaining_pending = $min_tx;
                 $showMinFee = '1';
             }
@@ -649,7 +639,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             //
         }
 
-        echo json_encode(['status' => 'error', 'error' => 'not a valid order_id']);
+        echo json_encode(['status' => 'error', 'error' => 'Not a valid order_id']);
         die();
     }
 
@@ -823,10 +813,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                             if (intval($this->refresh_value_interval) != 0) {
                                 ?>
                                 <div class="ca_time_refresh">
-                                    <?php echo sprintf(__('The %1s conversion rate will be adjusted in %2s', 'cryptapi'),
-                                        strtoupper($crypto_coin),
-                                        '<span class="ca_time_seconds_count" data-seconds="' . $conversion_timer . '">' . date('i:s', $conversion_timer) . '</span>'
+                                    <?php echo sprintf(__('The %1s conversion rate will be adjusted in', 'cryptapi'),
+                                        strtoupper($crypto_coin)
                                     ); ?>
+                                    <span class="ca_time_seconds_count" data-soon="<?php echo __('a moment', 'cryptapi');?>" data-seconds="<?php echo $conversion_timer; ?>"><?php echo date('i:s', $conversion_timer); ?></span>
                                 </div>
                                 <?php
                             }
@@ -991,11 +981,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
             $calc = $this->calc_order($history, $order->get_meta('cryptapi_total'), $order->get_meta('cryptapi_total_fiat'));
 
-            $remaining = $calc['remaining']->result();
-            $remaining_pending = $calc['remaining_pending']->result();
-            $remaining_fiat = $calc['remaining_fiat']->result();
+            $remaining = $calc['remaining'];
+            $remaining_pending = $calc['remaining_pending'];
+            $remaining_fiat = $calc['remaining_fiat'];
 
-            if (($value_refresh !== 0 && $last_price_update + $value_refresh) <= time() && !empty($last_price_update)) {
+            if ($value_refresh !== 0 && $last_price_update + $value_refresh <= time() && !empty($last_price_update)) {
+
                 if ($remaining === $remaining_pending) {
                     $cryptapi_coin = $order->get_meta('cryptapi_currency');
 
@@ -1003,7 +994,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     $order->update_meta_data('cryptapi_total', $crypto_total);
 
                     $calc_cron = $this->calc_order($history, $order->get_meta('cryptapi_total'), $order->get_meta('cryptapi_total_fiat'));
-                    $crypto_remaining_total = $calc_cron['remaining_pending']->result();
+                    $crypto_remaining_total = $calc_cron['remaining_pending'];
 
                     if ($remaining_pending <= $min_tx && !$remaining_pending <= 0) {
                         $qr_code_data_value = CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $min_tx, $this->qrcode_size);
@@ -1017,7 +1008,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $order->update_meta_data('cryptapi_last_price_update', time());
 
                 $order->save();
-
             }
 
             if ($order_timeout !== 0 && ($order->get_date_created()->getTimestamp() + $order_timeout) <= time() && $remaining_fiat >= $order->get_total('edit') && (string)$order->get_meta('cryptapi_cancelled') === '0') {
@@ -1030,33 +1020,32 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function calc_order($history, $total, $total_fiat)
     {
-        $already_paid = new CryptAPI\Decimal(floatval(0));
-        $already_paid_fiat = new CryptAPI\Decimal(floatval(0));
-        $remaining = new CryptAPI\Decimal(floatval($total));
-        $remaining_pending = new CryptAPI\Decimal(floatval($total));
-        $remaining_fiat = new CryptAPI\Decimal(floatval($total_fiat));
+        $already_paid = 0;
+        $already_paid_fiat = 0;
+        $remaining = $total;
+        $remaining_pending = $total;
+        $remaining_fiat = $total_fiat;
 
-        if (count($history) > 0) {
+        if (!empty($history)) {
             foreach ($history as $uuid => $item) {
                 if ((int)$item['pending'] === 0) {
-                    $remaining = $remaining->sub($item['value_paid']);
+                    $remaining = bcsub($remaining, $item['value_paid'], 18);
                 }
 
-                $remaining_pending = $remaining_pending->sub($item['value_paid']);
-                $remaining_fiat = $remaining_fiat->sub($item['value_paid_fiat']);
+                $remaining_pending = bcsub($remaining_pending, $item['value_paid'], 18);
+                $remaining_fiat = bcsub($remaining_fiat, $item['value_paid_fiat'], 18);
 
-                $already_paid = $already_paid->sum($item['value_paid']);
-                $already_paid_fiat = $already_paid_fiat->sum($item['value_paid_fiat']);
+                $already_paid = bcadd($already_paid, $item['value_paid'], 18);
+                $already_paid_fiat = bcadd($already_paid_fiat, $item['value_paid_fiat'], 18);
             }
         }
 
-
         return [
-            'already_paid' => $already_paid,
-            'already_paid_fiat' => $already_paid_fiat,
-            'remaining' => $remaining,
-            'remaining_pending' => $remaining_pending,
-            'remaining_fiat' => $remaining_fiat
+            'already_paid' => floatval($already_paid),
+            'already_paid_fiat' => floatval($already_paid_fiat),
+            'remaining' => floatval($remaining),
+            'remaining_pending' => floatval($remaining_pending),
+            'remaining_fiat' => floatval($remaining_fiat)
         ];
     }
 
@@ -1219,7 +1208,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         }
         WC_CryptAPI_Gateway::$HAS_TRIGGERED = true;
         if (is_checkout()) {
-            wp_register_script('cryptapi-checkout', '',);
+            wp_register_script('cryptapi-checkout', '');
             wp_enqueue_script('cryptapi-checkout');
             wp_add_inline_script('cryptapi-checkout', "jQuery(function ($) { $('form.checkout').on('change', 'input[name=payment_method], #payment_cryptapi_coin', function () { $(document.body).trigger('update_checkout');});});");
         }

@@ -139,6 +139,8 @@ jQuery(function ($) {
                     refresh_time_span.html('00:00');
                     refresh_time_span.attr('data-seconds', 0);
                     return;
+                } else if (refresh_time <= 30) {
+                    refresh_time_span.html(refresh_time_span.attr('data-soon'));
                 }
 
                 var refresh_minutes = Math.floor(refresh_time % 3600 / 60).toString().padStart(2, '0'),

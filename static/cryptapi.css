@@ -343,11 +343,6 @@
     margin-top: -10px;
 }
 
-.ca_progress .ca_progress_icon.done {
-    padding: unset !important;
-    margin: unset !important;
-}
-
 .ca_payment_notification {
     text-align: center;
     margin-top: 15px;
@@ -471,6 +466,10 @@
 
     .ca_copy_icon {
         right: 0;
+    }
+
+    .ca_history .ca_history_fill {
+        width: 100%;
     }
 }
 

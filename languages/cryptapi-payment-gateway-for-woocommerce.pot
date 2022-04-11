@@ -2,14 +2,14 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: CryptAPI Payment Gateway for WooCommerce 4.2\n"
+"Project-Id-Version: CryptAPI Payment Gateway for WooCommerce 4.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/cryptapi\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-03-23T11:08:18+01:00\n"
+"POT-Creation-Date: 2022-04-11T13:31:16+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: cryptapi\n"
@@ -263,149 +263,157 @@ msgstr ""
 msgid "Payment could not be processed, please try again"
 msgstr ""
 
-#: controllers/CryptAPI.php:583
+#: controllers/CryptAPI.php:553
 msgid "User sent a payment of"
 msgstr ""
 
-#: controllers/CryptAPI.php:735
-#: controllers/CryptAPI.php:787
+#: controllers/CryptAPI.php:725
+#: controllers/CryptAPI.php:777
 msgid "QR Code without value"
 msgstr ""
 
-#: controllers/CryptAPI.php:745
+#: controllers/CryptAPI.php:735
 msgid "QR Code with value"
 msgstr ""
 
-#: controllers/CryptAPI.php:761
-#: controllers/CryptAPI.php:790
+#: controllers/CryptAPI.php:751
+#: controllers/CryptAPI.php:780
 msgid "Show QR Code without value"
 msgstr ""
 
-#: controllers/CryptAPI.php:762
-#: controllers/CryptAPI.php:791
+#: controllers/CryptAPI.php:752
+#: controllers/CryptAPI.php:781
 msgid "ADDRESS"
 msgstr ""
 
-#: controllers/CryptAPI.php:772
+#: controllers/CryptAPI.php:762
 msgid "Show QR Code with value"
 msgstr ""
 
-#: controllers/CryptAPI.php:773
+#: controllers/CryptAPI.php:763
 msgid "WITH AMMOUNT"
 msgstr ""
 
-#: controllers/CryptAPI.php:802
+#: controllers/CryptAPI.php:792
 msgid "PLEASE SEND"
 msgstr ""
 
-#: controllers/CryptAPI.php:806
-#: controllers/CryptAPI.php:837
+#: controllers/CryptAPI.php:796
+#: controllers/CryptAPI.php:827
 msgid "COPY"
 msgstr ""
 
-#: controllers/CryptAPI.php:807
-#: controllers/CryptAPI.php:838
+#: controllers/CryptAPI.php:797
+#: controllers/CryptAPI.php:828
 msgid "COPIED!"
 msgstr ""
 
-#: controllers/CryptAPI.php:812
+#: controllers/CryptAPI.php:802
 msgid "So far you sent %1s. Please send a new payment to complete the order, as requested above"
 msgstr ""
 
-#: controllers/CryptAPI.php:817
+#: controllers/CryptAPI.php:807
 msgid "Notice"
 msgstr ""
 
-#: controllers/CryptAPI.php:817
+#: controllers/CryptAPI.php:807
 msgid "For technical reasons, the minimum amount for each transaction is %1s, so we adjusted the value by adding the remaining to it."
 msgstr ""
 
-#: controllers/CryptAPI.php:826
-msgid "The %1s conversion rate will be adjusted in %2s"
+#: controllers/CryptAPI.php:816
+msgid "The %1s conversion rate will be adjusted in"
 msgstr ""
 
-#: controllers/CryptAPI.php:846
+#: controllers/CryptAPI.php:819
+msgid "a moment"
+msgstr ""
+
+#: controllers/CryptAPI.php:836
 msgid "Order will be cancelled in less than a minute."
 msgstr ""
 
-#: controllers/CryptAPI.php:847
+#: controllers/CryptAPI.php:837
 msgid "This order will be valid for %s"
 msgstr ""
 
-#: controllers/CryptAPI.php:853
+#: controllers/CryptAPI.php:843
 msgid "Show the QR code"
 msgstr ""
 
-#: controllers/CryptAPI.php:858
+#: controllers/CryptAPI.php:848
 msgid "Open QR CODE"
 msgstr ""
 
-#: controllers/CryptAPI.php:863
+#: controllers/CryptAPI.php:853
 msgid "Close QR CODE"
 msgstr ""
 
-#: controllers/CryptAPI.php:896
+#: controllers/CryptAPI.php:886
 msgid "Your payment is being processed!"
 msgstr ""
 
-#: controllers/CryptAPI.php:897
+#: controllers/CryptAPI.php:887
 msgid "Processing can take some time depending on the blockchain."
 msgstr ""
 
-#: controllers/CryptAPI.php:907
+#: controllers/CryptAPI.php:897
 msgid "Your payment has been confirmed!"
 msgstr ""
 
-#: controllers/CryptAPI.php:917
+#: controllers/CryptAPI.php:907
 msgid "Order has been cancelled due to lack of payment. Please don't send any payment to the address."
 msgstr ""
 
-#: controllers/CryptAPI.php:922
+#: controllers/CryptAPI.php:912
 msgid "Time"
 msgstr ""
 
-#: controllers/CryptAPI.php:923
+#: controllers/CryptAPI.php:913
 msgid "Value Paid"
 msgstr ""
 
-#: controllers/CryptAPI.php:924
+#: controllers/CryptAPI.php:914
 msgid "FIAT Value"
 msgstr ""
 
-#: controllers/CryptAPI.php:937
+#: controllers/CryptAPI.php:927
 msgid "Waiting for payment"
 msgstr ""
 
-#: controllers/CryptAPI.php:944
+#: controllers/CryptAPI.php:934
 msgid "Waiting for network confirmation"
 msgstr ""
 
-#: controllers/CryptAPI.php:951
+#: controllers/CryptAPI.php:941
 msgid "Payment confirmed"
 msgstr ""
 
-#: controllers/CryptAPI.php:1024
+#: controllers/CryptAPI.php:1014
 msgid "Order cancelled due to lack of payment."
 msgstr ""
 
-#: controllers/CryptAPI.php:1079
+#: controllers/CryptAPI.php:1068
 msgid "Please renew your subscription"
 msgstr ""
 
-#: controllers/CryptAPI.php:1211
+#: controllers/CryptAPI.php:1200
 msgid "Service Fee"
 msgstr ""
 
-#: controllers/CryptAPI.php:1251
+#: controllers/CryptAPI.php:1240
 msgid "Check your payment status"
 msgstr ""
 
-#: controllers/CryptAPI.php:1262
+#: controllers/CryptAPI.php:1251
 msgid "Pay"
 msgstr ""
 
-#: CryptAPI.php:21
+#: CryptAPI.php:22
 msgid "CryptAPI requires WooCommerce to be installed and active. You can download %s here."
+msgstr ""
+
+#: CryptAPI.php:27
+msgid "CryptAPI requires PHP's BCMath extension. You can know more about it %s."
 msgstr ""
 
 #. translators: %1$s Site title, %2$s Order pay link
