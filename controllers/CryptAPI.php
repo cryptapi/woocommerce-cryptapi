@@ -484,7 +484,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
                 $order->add_meta_data('cryptapi_nonce', $nonce);
                 $order->add_meta_data('cryptapi_address', $addr_in);
-                $order->add_meta_data('cryptapi_total', $crypto_total);
+                $order->add_meta_data('cryptapi_total', CryptAPI\Helper::sig_fig($crypto_total, 6));
                 $order->add_meta_data('cryptapi_total_fiat', $total);
                 $order->add_meta_data('cryptapi_currency', $selected);
                 $order->add_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
@@ -606,7 +606,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
             $counter_calc = (int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval - time();
 
-            if ($counter_calc <= 0) {
+            if ($counter_calc <= 0 && !$order->is_paid()) {
                 $this->ca_cronjob();
             }
 
@@ -816,7 +816,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                     <?php echo sprintf(__('The %1s conversion rate will be adjusted in', 'cryptapi'),
                                         strtoupper($crypto_coin)
                                     ); ?>
-                                    <span class="ca_time_seconds_count" data-soon="<?php echo __('a moment', 'cryptapi');?>" data-seconds="<?php echo $conversion_timer; ?>"><?php echo date('i:s', $conversion_timer); ?></span>
+                                    <span class="ca_time_seconds_count" data-soon="<?php echo __('a moment', 'cryptapi'); ?>"
+                                          data-seconds="<?php echo $conversion_timer; ?>"><?php echo date('i:s', $conversion_timer); ?></span>
                                 </div>
                                 <?php
                             }
@@ -990,10 +991,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 if ($remaining === $remaining_pending) {
                     $cryptapi_coin = $order->get_meta('cryptapi_currency');
 
-                    $crypto_total = CryptAPI\Helper::get_conversion($woocommerce_currency, $cryptapi_coin, $order->get_total('edit'), $this->disable_conversion);
+                    $crypto_total = CryptAPI\Helper::sig_fig(CryptAPI\Helper::get_conversion($woocommerce_currency, $cryptapi_coin, $order->get_total('edit'), $this->disable_conversion), 6);
                     $order->update_meta_data('cryptapi_total', $crypto_total);
 
-                    $calc_cron = $this->calc_order($history, $order->get_meta('cryptapi_total'), $order->get_meta('cryptapi_total_fiat'));
+                    $calc_cron = $this->calc_order($history, $crypto_total, $order->get_meta('cryptapi_total_fiat'));
                     $crypto_remaining_total = $calc_cron['remaining_pending'];
 
                     if ($remaining_pending <= $min_tx && !$remaining_pending <= 0) {
@@ -1029,14 +1030,14 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         if (!empty($history)) {
             foreach ($history as $uuid => $item) {
                 if ((int)$item['pending'] === 0) {
-                    $remaining = bcsub($remaining, $item['value_paid'], 18);
+                    $remaining = bcsub(CryptAPI\Helper::sig_fig($remaining, 6), $item['value_paid'], 8);
                 }
 
-                $remaining_pending = bcsub($remaining_pending, $item['value_paid'], 18);
-                $remaining_fiat = bcsub($remaining_fiat, $item['value_paid_fiat'], 18);
+                $remaining_pending = bcsub(CryptAPI\Helper::sig_fig($remaining_pending, 6), $item['value_paid'], 8);
+                $remaining_fiat = bcsub(CryptAPI\Helper::sig_fig($remaining_fiat, 6), $item['value_paid_fiat'], 8);
 
-                $already_paid = bcadd($already_paid, $item['value_paid'], 18);
-                $already_paid_fiat = bcadd($already_paid_fiat, $item['value_paid_fiat'], 18);
+                $already_paid = bcadd(CryptAPI\Helper::sig_fig($already_paid, 6), $item['value_paid'], 8);
+                $already_paid_fiat = bcadd(CryptAPI\Helper::sig_fig($already_paid_fiat, 6), $item['value_paid_fiat'], 8);
             }
         }
 

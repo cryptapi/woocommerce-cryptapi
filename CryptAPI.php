@@ -4,7 +4,7 @@
 Plugin Name: CryptAPI Payment Gateway for WooCommerce
 Plugin URI: https://github.com/cryptapi/woocommerce-cryptapi
 Description: Accept cryptocurrency payments on your WooCommerce website
-Version: 4.3.1
+Version: 4.3.2
 Requires at least: 4.0
 Tested up to: 5.9.3
 WC requires at least: 2.4
