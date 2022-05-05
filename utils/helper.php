@@ -258,7 +258,7 @@ class Helper
         }
 
         $answer = ($decimalPlaces > 0) ?
-            number_format($value, $decimalPlaces) : round($value, $decimalPlaces);
+            number_format($value, $decimalPlaces, '.', '') : round($value, $decimalPlaces);
         return $answer;
     }
 
