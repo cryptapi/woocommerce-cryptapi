@@ -247,6 +247,21 @@ class Helper
         return $params;
     }
 
+    public static function sig_fig($value, $digits)
+    {
+        if ($value == 0) {
+            $decimalPlaces = $digits - 1;
+        } elseif ($value < 0) {
+            $decimalPlaces = $digits - floor(log10($value * -1)) - 1;
+        } else {
+            $decimalPlaces = $digits - floor(log10($value)) - 1;
+        }
+
+        $answer = ($decimalPlaces > 0) ?
+            number_format($value, $decimalPlaces, '.', '') : round($value, $decimalPlaces);
+        return $answer;
+    }
+
     private static function _request($coin, $endpoint, $params = [], $assoc = false)
     {
 

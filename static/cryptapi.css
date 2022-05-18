@@ -224,6 +224,20 @@
     text-align: center;
 }
 
+.ca_branding a {
+    text-decoration: none;
+}
+
+.ca_branding span {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    font-style: italic;
+    margin-bottom: 4px;
+    color: #757575;
+    letter-spacing: 1px;
+}
+
 .ca_branding img {
     display: inline-block !important;
 }
@@ -327,11 +341,6 @@
     text-transform: uppercase;
     font-weight: 600;
     margin-top: -10px;
-}
-
-.ca_progress .ca_progress_icon.done {
-    padding: unset !important;
-    margin: unset !important;
 }
 
 .ca_payment_notification {
@@ -457,6 +466,10 @@
 
     .ca_copy_icon {
         right: 0;
+    }
+
+    .ca_history .ca_history_fill {
+        width: 100%;
     }
 }
 
