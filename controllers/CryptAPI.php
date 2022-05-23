@@ -1221,7 +1221,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
         $fee_order = WC()->cart->subtotal * $total_fee;
 
-        if ($fee_order) {
+        if ($total_fee !== 'none') {
 
             $selected = WC()->session->get('cryptapi_coin');
 
