@@ -235,6 +235,14 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 #### 4.3.3
 * Minor fixes
 
+#### 4.3.4
+* Feature to enable marking virtual products order as completed instead of processing
+* Minor fixes
+
+#### 4.4
+* Support CryptAPI Pro
+* Minor fixes
+
 ### Upgrade Notice
 #### 4.3
 * Please be sure to enable the PHP extension BCMath before upgrading to this version.

@@ -7,21 +7,23 @@ use Exception;
 class Helper
 {
     private static $base_url = "https://api.cryptapi.io";
+    private static $pro_url = "https://pro-api.cryptapi.io";
     private $own_address = null;
     private $payment_address = null;
     private $callback_url = null;
     private $coin = null;
     private $pending = false;
     private $parameters = [];
+    private $api_key = null;
 
-    public function __construct($coin, $own_address, $callback_url, $parameters = [], $pending = false)
+    public function __construct($coin, $own_address, $api_key, $callback_url, $parameters = [], $pending = false)
     {
         $this->own_address = $own_address;
         $this->callback_url = $callback_url;
+        $this->api_key = $api_key;
         $this->coin = $coin;
         $this->pending = $pending ? 1 : 0;
         $this->parameters = $parameters;
-
     }
 
     public function get_address()
@@ -31,17 +33,28 @@ class Helper
             return null;
         }
 
+        $api_key = $this->api_key;
+
         $callback_url = $this->callback_url;
         if (!empty($this->parameters)) {
             $req_parameters = http_build_query($this->parameters);
             $callback_url = "{$this->callback_url}?{$req_parameters}";
         }
 
-        $ca_params = [
-            'callback' => $callback_url,
-            'address' => $this->own_address,
-            'pending' => $this->pending,
-        ];
+        if (empty($api_key)) {
+            $ca_params = [
+                'callback' => $callback_url,
+                'address' => $this->own_address,
+                'pending' => $this->pending,
+            ];
+        } else {
+            $ca_params = [
+                'apikey' => $api_key,
+                'callback' => $callback_url,
+                'address' => $this->own_address,
+                'pending' => $this->pending,
+            ];
+        }
 
         $response = Helper::_request($this->coin, 'create', $ca_params);
 
@@ -264,8 +277,12 @@ class Helper
 
     private static function _request($coin, $endpoint, $params = [], $assoc = false)
     {
-
         $base_url = Helper::$base_url;
+
+        if (!empty($params['apikey']) && $endpoint !== 'info') {
+            $base_url = Helper::$pro_url;
+        }
+
         if (!empty($params)) {
             $data = http_build_query($params);
         }

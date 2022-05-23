@@ -89,7 +89,7 @@
 }
 
 .ca_details_input span {
-    font-size: 20px;
+    font-size: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,6 +97,8 @@
     height: 100%;
     padding: 0 8%;
     line-height: 20px;
+    white-space: normal;
+    line-break: anywhere;
 }
 
 .ca_copy {
@@ -143,7 +145,8 @@
     width: 24px;
     height: 28px;
     right: 25px;
-    background-size: contain;
+    padding: 0 !important;
+    background-size: contain !important;
     background: transparent url(./files/ca_copy_icon.svg) no-repeat !important;
     border: 0 !important;
 }
@@ -363,10 +366,17 @@
 
 .ca_history .ca_history_fill th {
     border: 0;
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+    padding: 8px 0;
+    font-size: 14px;
 }
 
 .ca_history .ca_history_fill td {
     border: 0;
+    font-size: 14px;
+    text-align: center;
+    padding: 8px 0;
     overflow: auto;
 }
 
@@ -462,10 +472,6 @@
         right: 0;
         left: 0;
         margin: 0 auto;
-    }
-
-    .ca_copy_icon {
-        right: 0;
     }
 
     .ca_history .ca_history_fill {

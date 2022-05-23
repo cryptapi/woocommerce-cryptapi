@@ -1,15 +1,14 @@
 <?php
-
 /*
 Plugin Name: CryptAPI Payment Gateway for WooCommerce
 Plugin URI: https://github.com/cryptapi/woocommerce-cryptapi
 Description: Accept cryptocurrency payments on your WooCommerce website
-Version: 4.3.3
-Requires at least: 4.0
+Version: 4.4
+Requires at least: 5
 Tested up to: 5.9.3
-WC requires at least: 2.4
-WC tested up to: 6.2
-Requires PHP: 5.5
+WC requires at least: 5.8
+WC tested up to: 6.5.1
+Requires PHP: 7.2
 Author: cryptapi
 Author URI: https://cryptapi.io/
 License: MIT
@@ -129,3 +128,44 @@ function cryptapi_deactivation()
     wp_clear_scheduled_hook('cryptapi_cronjob');
 }
 
+add_action('admin_notices', 'cryptapi_pro_notice');
+
+function cryptapi_pro_notice()
+{
+    $user_id = get_current_user_id();
+    if (!get_user_meta($user_id, 'cryptapi_pro_notice_dismissed')) {
+        $curr_page = get_current_screen()->base;
+
+        $allowed_pages = [
+            "dashboard",
+            "plugins"
+        ];
+        if (in_array($curr_page, $allowed_pages)) {
+            ?>
+            <div class="notice notice-info is-dismissible">
+                <p>
+                    Meet CryptAPI Pro, a dashboard to suit all your needs. Get your API Key now: <a href="https://pro.cryptapi.io/" target="_blank">pro.cryptapi.io</a><br/>
+                    <button style="text-decoration: none;" class="notice-dismiss cryptapi-pro-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button>
+                </p>
+            </div>
+            <script>
+                document.querySelector(".cryptapi-pro-dismiss").addEventListener("click", function () {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    urlParams.set('cryptapi-dismissed', '');
+                    window.location.search = urlParams;
+                })
+            </script>
+            <?php
+        }
+    }
+
+}
+
+add_action('admin_init', 'cryptapi_pro_notice_dismissed');
+
+function cryptapi_pro_notice_dismissed()
+{
+    $user_id = get_current_user_id();
+    if (isset($_GET['cryptapi-dismissed']))
+        add_user_meta($user_id, 'cryptapi_pro_notice_dismissed', 'true', true);
+}
