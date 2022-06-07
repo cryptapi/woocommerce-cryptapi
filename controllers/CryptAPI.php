@@ -223,7 +223,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'title' => __('API Key', 'cryptapi'),
                     'type' => 'text',
                     'default' => '',
-                    'description' => __('<strong>NEW: </strong>Insert here your CryptAPI Pro API Key. You can get one here: <a href="https://pro.cryptapi.io/" target="_blank">https://pro.cryptapi.io/</a>. <strong>This field is optional.</strong><br><strong style="color: #f44336;">Notice: </strong>If API permission "Address Override" is not enabled you must set the address in the dashboard otherwise payments may fail.', 'cryptapi')
+                    'description' => __('<strong>NEW: </strong>Insert here your CryptAPI Pro API Key. You can get one here: <a href="https://pro.cryptapi.io/" target="_blank">https://pro.cryptapi.io/</a>. <strong>This field is optional.</strong><br/><strong style="color: #f44336;">Notice: </strong> The API Key permission "address_override" needs to be enabled and addresses must be configured down bellow.', 'cryptapi')
                 ),
                 'show_branding' => array(
                     'title' => __('Show CryptAPI branding', 'cryptapi'),
@@ -292,10 +292,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'type' => 'select',
                     'default' => 'ammount',
                     'options' => array(
-                        'without_ammount' => __('Default Without Ammount', 'cryptapi'),
-                        'ammount' => __('Default Ammount', 'cryptapi'),
-                        'hide_ammount' => __('Hide Ammount', 'cryptapi'),
-                        'hide_without_ammount' => __('Hide Without Ammount', 'cryptapi'),
+                        'without_ammount' => __('Default Without Amount', 'cryptapi'),
+                        'ammount' => __('Default Amount', 'cryptapi'),
+                        'hide_ammount' => __('Hide Amount', 'cryptapi'),
+                        'hide_without_ammount' => __('Hide Without Amount', 'cryptapi'),
                     ),
                     'description' => __('Select how you want to show the QR Code to the user. Either select a default to show first, or hide one of them.', 'cryptapi')
                 ),
@@ -337,7 +337,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                         '64800' => __('18 Hours', 'cryptapi'),
                         '86400' => __('24 Hours', 'cryptapi'),
                     ),
-                    'description' => __("Selects the ammount of time the user has to  pay for the order.<br>When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored.<br><strong>Notice:</strong> If the user still sends money to the generated address, value will still be redirected to you.<br><strong style='color: #f44336;'>Warning: </strong>We do not advice more than 1 Hour.", 'cryptapi'),
+                    'description' => __("Selects the amount of time the user has to  pay for the order.<br>When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored.<br><strong>Notice:</strong> If the user still sends money to the generated address, value will still be redirected to you.<br><strong style='color: #f44336;'>Warning: </strong>We do not advice more than 1 Hour.", 'cryptapi'),
                 ),
                 'virtual_complete' => array(
                     'title' => __('Completed status for virtual products', 'cryptapi'),
@@ -798,7 +798,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                                 echo ' active';
                                             }
                                             ?>" aria-label="<?php echo __('Show QR Code with value', 'cryptapi'); ?>">
-                                                <?php echo __('WITH AMMOUNT', 'cryptapi'); ?>
+                                                <?php echo __('WITH AMOUNT', 'cryptapi'); ?>
                                             </button>
                                             </div>
                                             <?php
