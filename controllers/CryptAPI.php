@@ -219,12 +219,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'default' => '',
                     'description' => __('Payment method description that the customer will see on your checkout', 'cryptapi')
                 ),
-                'api_key' => array(
-                    'title' => __('API Key', 'cryptapi'),
-                    'type' => 'text',
-                    'default' => '',
-                    'description' => __('<strong>NEW: </strong>Insert here your CryptAPI Pro API Key. You can get one here: <a href="https://pro.cryptapi.io/" target="_blank">https://pro.cryptapi.io/</a>. <strong>This field is optional.</strong><br/><strong style="color: #f44336;">Notice: </strong> The API Key permission "address_override" needs to be enabled and addresses must be configured down bellow.', 'cryptapi')
-                ),
                 'show_branding' => array(
                     'title' => __('Show CryptAPI branding', 'cryptapi'),
                     'type' => 'checkbox',
@@ -351,6 +345,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'label' => __("<b>Attention: This option will disable the price conversion for ALL cryptocurrencies!</b><br/>If you check this, pricing will not be converted from the currency of your shop to the cryptocurrency selected by the user, and users will be requested to pay the same value as shown on your shop, regardless of the cryptocurrency selected", 'cryptapi'),
                     'default' => 'no'
                 ),
+                'api_key' => array(
+                    'title' => __('API Key', 'cryptapi'),
+                    'type' => 'text',
+                    'default' => '',
+                    'description' => __('<strong>NEW: </strong>Insert here your CryptAPI Pro API Key. You can get one here: <a href="https://pro.cryptapi.io/" target="_blank">https://pro.cryptapi.io/</a>. <strong>This field is optional.</strong>', 'cryptapi')
+                ),
             );
 
             $coin_description = __('Insert your %s address here. Leave the checkbox unselected if you want to skip this cryptocurrency', 'cryptapi');
@@ -391,11 +391,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     { ?>
         <div class="form-row form-row-wide">
             <p><?php echo $this->description; ?></p>
+            <div><img src="" </div>
             <ul style="list-style: none outside;">
                 <?php
                 if (!empty($this->coins) && is_array($this->coins)) {
                     $selected = WC()->session->get('cryptapi_coin');
-
                     ?>
                     <li>
                         <select name="cryptapi_coin" id="payment_cryptapi_coin" class="input-control" style="display:block; margin-top: 10px">
@@ -403,7 +403,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                             <?php
                             foreach ($this->coins as $val) {
                                 $addr = $this->{$val . '_address'};
-                                if (!empty($addr)) { ?>
+                                $apikey = $this->api_key;
+                                if (!empty($addr) || !empty($apikey)) { ?>
                                     <option value="<?php echo $val; ?>" <?php
                                     if (!empty($selected) && $selected === $val) {
                                         echo " selected='true'";
@@ -434,14 +435,15 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $selected = sanitize_text_field($_POST['cryptapi_coin']);
 
         if ($selected === 'none') {
-            wc_add_notice(__('Payment error:', 'woocommerce') . ' ' . __('Please choose a cryptocurrency', 'cryptapi'), 'error');
+            wc_add_notice(__('Payment error: ', 'woocommerce') . ' ' . __('Please choose a cryptocurrency', 'cryptapi'), 'error');
 
             return null;
         }
 
+        $api_key = $this->api_key;
         $addr = $this->{$selected . '_address'};
 
-        if (!empty($addr)) {
+        if (!empty($addr) || !empty($api_key)) {
 
             $nonce = $this->generate_nonce();
 
@@ -493,7 +495,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     return null;
                 }
 
-                $api_key = $this->api_key;
 
                 $ca = new CryptAPI\Helper($selected, $addr, $api_key, $callback_url, [], true);
 
@@ -1166,12 +1167,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 <td class="forminp forminp-<?php echo esc_attr($data['type']) ?>">
                     <p>
                         <strong>
-                            <?php echo sprintf(__('Addresses optional if using %1s', 'cryptapi'),
-                                '<a href="https://pro.cryptapi.io" target="_blank">CryptAPI Pro</a></strong>'
-                            );
-                            ?>
+                            <?php echo __('Addresses', 'cryptapi');?>
                         </strong><br/>
-                        <?php echo __('You can setup the addresses in your API Key screen.', 'cryptapi'); ?>
+                        <?php echo __("If you are using CryptAPI Pro you can choose if setting the receiving addresses here bellow or in your CryptAPI Pro settings page.<br/>- In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key.<br/>- In order to set the addresses on CryptAPI Pro settings, you need to NOT select “Address Override” while creating the API key.", 'cryptapi'); ?>
                     </p>
                 </td>
             </tr>
