@@ -6,9 +6,9 @@ Accept cryptocurrency payments on your WooCommerce website
 ### Requirements:
 
 ```
-PHP >= 5.5
-Wordpress >= 4.4
-WooCommerce >= 2.4
+PHP >= 7.2
+Wordpress >= 5
+WooCommerce >= 5.8
 ```
 
 ### Description
@@ -233,6 +233,23 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Minor fixes
 
 #### 4.3.3
+* Minor fixes
+
+#### 4.3.4
+* Feature to enable marking virtual products order as completed instead of processing
+* Minor fixes
+
+#### 4.4
+* Support CryptAPI Pro
+* Minor fixes
+
+#### 4.4.1
+* Minor fixes
+
+#### 4.4.2
+* Minor fixes
+
+#### 4.4.3
 * Minor fixes
 
 ### Upgrade Notice
