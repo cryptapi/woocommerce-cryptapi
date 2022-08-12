@@ -50,12 +50,14 @@ class Helper
                 'apikey' => $api_key,
                 'callback' => $callback_url,
                 'pending' => $this->pending,
+                'convert' => 1,
             ];
         } elseif (empty($api_key) && !empty($this->own_address)) {
             $ca_params = [
                 'callback' => $callback_url,
                 'address' => $this->own_address,
                 'pending' => $this->pending,
+                'convert' => 1,
             ];
         } elseif(!empty($api_key) && !empty($this->own_address)) {
             $ca_params = [
@@ -63,6 +65,7 @@ class Helper
                 'callback' => $callback_url,
                 'address' => $this->own_address,
                 'pending' => $this->pending,
+                'convert' => 1,
             ];
         }
 
@@ -168,14 +171,20 @@ class Helper
         foreach ($info as $chain => $data) {
             $is_base_coin = in_array('ticker', array_keys($data));
             if ($is_base_coin) {
-                $coins[$chain] = $data['coin'];
+                $coins[$chain] = [
+                    'name' => $data['coin'],
+                    'logo' => $data['logo'],
+                ];
                 continue;
             }
 
             $base_ticker = "{$chain}_";
             foreach ($data as $token => $subdata) {
                 $chain_upper = strtoupper($chain);
-                $coins[$base_ticker . $token] = "{$subdata['coin']} ({$chain_upper})";
+                $coins[$base_ticker . $token] = [
+                    'name' => "{$subdata['coin']} ({$chain_upper})",
+                    'logo' => $subdata['logo']
+                ];
             }
         }
 

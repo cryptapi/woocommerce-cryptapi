@@ -56,7 +56,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         add_action('woocommerce_email_order_details', array($this, 'add_email_link'), 2, 4);
 
         add_filter('woocommerce_my_account_my_orders_actions', array($this, 'add_order_link'), 10, 2);
-
     }
 
     function load_coins()
@@ -358,7 +357,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             $c = 0;
             foreach (WC_CryptAPI_Gateway::$COIN_OPTIONS as $ticker => $coin) {
                 $this->form_fields["{$ticker}_address"] = array(
-                    'title' => $coin,
+                    'title' => is_array($coin) ? $coin['name'] : $coin,
                     'type' => 'cryptocurrency',
                     'description' => sprintf($coin_description, $coin),
                     'desc_tip' => true,
@@ -387,12 +386,19 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         return true;
     }
 
+    public function get_icon()
+    {
+
+        $icon = $this->show_branding ? '<img style="top: -5px; position:relative" width="120" src="' . plugin_dir_url(dirname(__FILE__)) . 'static/files/200_logo_ca.png' . '" alt="' . esc_attr($this->get_title()) . '" />' : '';
+
+        return apply_filters('woocommerce_gateway_icon', $icon, $this->id);
+    }
+
     function payment_fields()
     { ?>
         <div class="form-row form-row-wide">
             <p><?php echo $this->description; ?></p>
-            <div><img src="" </div>
-            <ul style="list-style: none outside;">
+            <ul style="margin-top: 7px; list-style: none outside;">
                 <?php
                 if (!empty($this->coins) && is_array($this->coins)) {
                     $selected = WC()->session->get('cryptapi_coin');
@@ -405,11 +411,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                 $addr = $this->{$val . '_address'};
                                 $apikey = $this->api_key;
                                 if (!empty($addr) || !empty($apikey)) { ?>
-                                    <option value="<?php echo $val; ?>" <?php
+                                    <option data-image="<?php echo WC_CryptAPI_Gateway::$COIN_OPTIONS[$val]['logo']; ?>" value="<?php echo $val; ?>" <?php
                                     if (!empty($selected) && $selected === $val) {
                                         echo " selected='true'";
                                     }
-                                    ?>> <?php echo __('Pay with', 'cryptapi') . ' ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[$val] ?></option>
+                                    $crypto_name = is_array(WC_CryptAPI_Gateway::$COIN_OPTIONS[$val]) ? WC_CryptAPI_Gateway::$COIN_OPTIONS[$val]['name'] : WC_CryptAPI_Gateway::$COIN_OPTIONS[$val];
+                                    ?>> <?php echo __('Pay with', 'cryptapi') . ' ' . $crypto_name; ?></option>
                                     <?php
                                 }
                             }
@@ -420,6 +427,24 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 } ?>
             </ul>
         </div>
+        <script>
+            jQuery('#payment_cryptapi_coin').selectWoo({
+                minimumResultsForSearch: -1,
+                templateResult: formatState,
+            });
+
+            function formatState(opt) {
+                if (!opt.id) {
+                    return opt.text;
+                }
+                let optImage = jQuery(opt.element).attr('data-image');
+                if (!optImage) {
+                    return opt.text;
+                } else {
+                    return jQuery('<span style="display:flex; align-items:center;"><img style="margin-right: 8px" src="' + optImage + '" width="24px" alt="' + opt.text + '" /> ' + opt.text + '</span>');
+                }
+            }
+        </script>
         <?php
     }
 
@@ -545,6 +570,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     function validate_payment()
     {
         $data = CryptAPI\Helper::process_callback($_GET);
+
         $order = new WC_Order($data['order_id']);
 
         if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
@@ -560,12 +586,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $history = json_decode($order->get_meta('cryptapi_history'), true);
 
         if (empty($history[$data['uuid']])) {
-            $fiat_conversion = CryptAPI\Helper::get_conversion($order->get_meta('cryptapi_currency'), get_woocommerce_currency(), $paid, $this->disable_conversion);
+            $conversion = json_decode(stripcslashes($data['value_coin_convert']), true);
 
             $history[$data['uuid']] = [
                 'timestamp' => time(),
                 'value_paid' => CryptAPI\Helper::sig_fig($paid, 6),
-                'value_paid_fiat' => $fiat_conversion,
+                'value_paid_fiat' => $conversion[get_woocommerce_currency()],
                 'pending' => $data['pending']
             ];
         } else {
@@ -605,6 +631,14 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $order->save();
             }
             die("*ok*");
+        }
+
+        if ($remaining > 0 && (int)$data['pending'] === 0) {
+            if ($remaining < $min_tx) {
+                $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $min_tx . $crypto_coin, false);
+            } else {
+                $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $remaining . $crypto_coin, false);
+            }
         }
 
         if ($remaining_pending < $min_tx) {
@@ -1167,7 +1201,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 <td class="forminp forminp-<?php echo esc_attr($data['type']) ?>">
                     <p>
                         <strong>
-                            <?php echo __('Addresses', 'cryptapi');?>
+                            <?php echo __('Addresses', 'cryptapi'); ?>
                         </strong><br/>
                         <?php echo __("If you are using CryptAPI Pro you can choose if setting the receiving addresses here bellow or in your CryptAPI Pro settings page.<br/>- In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key.<br/>- In order to set the addresses on CryptAPI Pro settings, you need to NOT select “Address Override” while creating the API key.", 'cryptapi'); ?>
                     </p>
@@ -1227,7 +1261,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 return;
             }
 
-            if (!empty($selected) && $selected !='none' && $this->add_blockchain_fee) {
+            if (!empty($selected) && $selected != 'none' && $this->add_blockchain_fee) {
                 $est = CryptAPI\Helper::get_estimate($selected);
 
                 $fee_order += (float)$est->{get_woocommerce_currency()};

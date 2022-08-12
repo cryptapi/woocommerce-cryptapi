@@ -2,14 +2,14 @@
 # This file is distributed under the MIT.
 msgid ""
 msgstr ""
-"Project-Id-Version: CryptAPI Payment Gateway for WooCommerce 4.4.3\n"
+"Project-Id-Version: CryptAPI Payment Gateway for WooCommerce 4.5.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/cryptapi\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2022-06-23T18:07:13+02:00\n"
+"POT-Creation-Date: 2022-08-12T13:45:22+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.6.0\n"
 "X-Domain: cryptapi\n"
@@ -38,401 +38,406 @@ msgstr ""
 msgid "CryptAPI allows customers to pay in cryptocurrency"
 msgstr ""
 
-#: controllers/CryptAPI.php:85
+#: controllers/CryptAPI.php:86
 msgid "If you need any help or have any suggestion, contact us via the <b>live chat</b> on our <b><a href='https://cryptapi.io' target='_blank'>website</a></b> or join our <b><a href='https://discord.gg/cryptapi' target='_blank'>Discord server</a></b>"
 msgstr ""
 
-#: controllers/CryptAPI.php:88
+#: controllers/CryptAPI.php:89
 msgid "If you enjoy this plugin please <b><a href='https://wordpress.org/support/plugin/cryptapi-payment-gateway-for-woocommerce/reviews/#new-post' target='_blank'>rate and review it</a></b>!"
 msgstr ""
 
-#: controllers/CryptAPI.php:204
+#: controllers/CryptAPI.php:205
 msgid "Enabled"
 msgstr ""
 
-#: controllers/CryptAPI.php:206
+#: controllers/CryptAPI.php:207
 msgid "Enable CryptAPI Payments"
 msgstr ""
 
-#: controllers/CryptAPI.php:210
+#: controllers/CryptAPI.php:211
 msgid "Title"
 msgstr ""
 
-#: controllers/CryptAPI.php:212
+#: controllers/CryptAPI.php:213
 msgid "This controls the title which the user sees during checkout."
 msgstr ""
 
-#: controllers/CryptAPI.php:213
+#: controllers/CryptAPI.php:214
 msgid "Cryptocurrency"
 msgstr ""
 
-#: controllers/CryptAPI.php:217
+#: controllers/CryptAPI.php:218
 msgid "Description"
 msgstr ""
 
-#: controllers/CryptAPI.php:220
+#: controllers/CryptAPI.php:221
 msgid "Payment method description that the customer will see on your checkout"
 msgstr ""
 
-#: controllers/CryptAPI.php:223
+#: controllers/CryptAPI.php:224
 msgid "Show CryptAPI branding"
 msgstr ""
 
-#: controllers/CryptAPI.php:225
+#: controllers/CryptAPI.php:226
 msgid "Show CryptAPI logo and credits below the QR code"
 msgstr ""
 
-#: controllers/CryptAPI.php:229
+#: controllers/CryptAPI.php:230
 msgid "Add the blockchain fee to the order"
 msgstr ""
 
-#: controllers/CryptAPI.php:231
+#: controllers/CryptAPI.php:232
 msgid "This will add an estimation of the blockchain fee to the order value"
 msgstr ""
 
-#: controllers/CryptAPI.php:235
+#: controllers/CryptAPI.php:236
 msgid "Service fee manager"
 msgstr ""
 
-#: controllers/CryptAPI.php:270
+#: controllers/CryptAPI.php:271
 msgid "Set the CryptAPI service fee you want to charge the costumer.<br><strong>Note: </strong>Fee you want to charge your costumers (to cover CryptAPI's fees fully or partially)</strong>"
 msgstr ""
 
-#: controllers/CryptAPI.php:273
+#: controllers/CryptAPI.php:274
 msgid "QR Code by default"
 msgstr ""
 
-#: controllers/CryptAPI.php:275
+#: controllers/CryptAPI.php:276
 msgid "Show the QR Code by default"
 msgstr ""
 
-#: controllers/CryptAPI.php:279
+#: controllers/CryptAPI.php:280
 msgid "QR Code size"
 msgstr ""
 
-#: controllers/CryptAPI.php:282
+#: controllers/CryptAPI.php:283
 msgid "QR code image size"
 msgstr ""
 
-#: controllers/CryptAPI.php:285
+#: controllers/CryptAPI.php:286
 msgid "QR Code to show"
 msgstr ""
 
-#: controllers/CryptAPI.php:289
+#: controllers/CryptAPI.php:290
 msgid "Default Without Amount"
 msgstr ""
 
-#: controllers/CryptAPI.php:290
+#: controllers/CryptAPI.php:291
 msgid "Default Amount"
 msgstr ""
 
-#: controllers/CryptAPI.php:291
+#: controllers/CryptAPI.php:292
 msgid "Hide Amount"
 msgstr ""
 
-#: controllers/CryptAPI.php:292
+#: controllers/CryptAPI.php:293
 msgid "Hide Without Amount"
 msgstr ""
 
-#: controllers/CryptAPI.php:294
+#: controllers/CryptAPI.php:295
 msgid "Select how you want to show the QR Code to the user. Either select a default to show first, or hide one of them."
 msgstr ""
 
-#: controllers/CryptAPI.php:297
+#: controllers/CryptAPI.php:298
 msgid "Color Scheme"
 msgstr ""
 
-#: controllers/CryptAPI.php:300
+#: controllers/CryptAPI.php:301
 msgid "Selects the color scheme of the plugin to match your website (Light, Dark and Auto to automatically detect it)"
 msgstr ""
 
-#: controllers/CryptAPI.php:302
+#: controllers/CryptAPI.php:303
 msgid "Light"
 msgstr ""
 
-#: controllers/CryptAPI.php:303
+#: controllers/CryptAPI.php:304
 msgid "Dark"
 msgstr ""
 
-#: controllers/CryptAPI.php:304
+#: controllers/CryptAPI.php:305
 msgid "Auto"
 msgstr ""
 
-#: controllers/CryptAPI.php:308
+#: controllers/CryptAPI.php:309
 msgid "Refresh converted value"
 msgstr ""
 
-#: controllers/CryptAPI.php:312
-#: controllers/CryptAPI.php:327
+#: controllers/CryptAPI.php:313
+#: controllers/CryptAPI.php:328
 msgid "Never"
 msgstr ""
 
-#: controllers/CryptAPI.php:313
+#: controllers/CryptAPI.php:314
 msgid "Every 5 Minutes"
 msgstr ""
 
-#: controllers/CryptAPI.php:314
+#: controllers/CryptAPI.php:315
 msgid "Every 10 Minutes"
 msgstr ""
 
-#: controllers/CryptAPI.php:315
+#: controllers/CryptAPI.php:316
 msgid "Every 15 Minutes"
 msgstr ""
 
-#: controllers/CryptAPI.php:316
+#: controllers/CryptAPI.php:317
 msgid "Every 30 Minutes"
 msgstr ""
 
-#: controllers/CryptAPI.php:317
+#: controllers/CryptAPI.php:318
 msgid "Every 45 Minutes"
 msgstr ""
 
-#: controllers/CryptAPI.php:318
+#: controllers/CryptAPI.php:319
 msgid "Every 60 Minutes"
 msgstr ""
 
-#: controllers/CryptAPI.php:320
+#: controllers/CryptAPI.php:321
 msgid "The system will automatically update the conversion value of the invoices (with real-time data), every X minutes.<br> This feature is helpful whenever a customer takes long time to pay a generated invoice and the selected crypto a volatile coin/token (not stable coin). <br> <strong style='color: #f44336;'>Warning:</strong> Setting this setting to none might create conversion issues, as we advise you to keep it at 5 minutes.</strong>"
 msgstr ""
 
-#: controllers/CryptAPI.php:323
+#: controllers/CryptAPI.php:324
 msgid "Order cancelation timeout"
 msgstr ""
 
-#: controllers/CryptAPI.php:328
+#: controllers/CryptAPI.php:329
 msgid "1 Hour"
 msgstr ""
 
-#: controllers/CryptAPI.php:329
+#: controllers/CryptAPI.php:330
 msgid "6 Hours"
 msgstr ""
 
-#: controllers/CryptAPI.php:330
+#: controllers/CryptAPI.php:331
 msgid "12 Hours"
 msgstr ""
 
-#: controllers/CryptAPI.php:331
+#: controllers/CryptAPI.php:332
 msgid "18 Hours"
 msgstr ""
 
-#: controllers/CryptAPI.php:332
+#: controllers/CryptAPI.php:333
 msgid "24 Hours"
 msgstr ""
 
-#: controllers/CryptAPI.php:334
+#: controllers/CryptAPI.php:335
 msgid "Selects the amount of time the user has to  pay for the order.<br>When this time is over, order will be marked as 'Cancelled' and every paid value will be ignored.<br><strong>Notice:</strong> If the user still sends money to the generated address, value will still be redirected to you.<br><strong style='color: #f44336;'>Warning: </strong>We do not advice more than 1 Hour."
 msgstr ""
 
-#: controllers/CryptAPI.php:337
+#: controllers/CryptAPI.php:338
 msgid "Completed status for virtual products"
 msgstr ""
 
-#: controllers/CryptAPI.php:339
+#: controllers/CryptAPI.php:340
 msgid "When this setting is enabled, the plugin will mark the order as 'completed' then payment is received. <strong>Only for virtual products</strong>"
 msgstr ""
 
-#: controllers/CryptAPI.php:343
+#: controllers/CryptAPI.php:344
 msgid "Disable price conversion"
 msgstr ""
 
-#: controllers/CryptAPI.php:345
+#: controllers/CryptAPI.php:346
 msgid "<b>Attention: This option will disable the price conversion for ALL cryptocurrencies!</b><br/>If you check this, pricing will not be converted from the currency of your shop to the cryptocurrency selected by the user, and users will be requested to pay the same value as shown on your shop, regardless of the cryptocurrency selected"
 msgstr ""
 
-#: controllers/CryptAPI.php:349
+#: controllers/CryptAPI.php:350
 msgid "API Key"
 msgstr ""
 
-#: controllers/CryptAPI.php:352
+#: controllers/CryptAPI.php:353
 msgid "<strong>NEW: </strong>Insert here your CryptAPI Pro API Key. You can get one here: <a href=\"https://pro.cryptapi.io/\" target=\"_blank\">https://pro.cryptapi.io/</a>. <strong>This field is optional.</strong>"
 msgstr ""
 
-#: controllers/CryptAPI.php:356
+#: controllers/CryptAPI.php:357
 msgid "Insert your %s address here. Leave the checkbox unselected if you want to skip this cryptocurrency"
 msgstr ""
 
-#: controllers/CryptAPI.php:402
+#: controllers/CryptAPI.php:410
 msgid "Please select a Cryptocurrency"
 msgstr ""
 
-#: controllers/CryptAPI.php:412
+#: controllers/CryptAPI.php:421
 msgid "Pay with"
 msgstr ""
 
-#: controllers/CryptAPI.php:438
+#: controllers/CryptAPI.php:465
 msgid "Please choose a cryptocurrency"
 msgstr ""
 
-#: controllers/CryptAPI.php:493
+#: controllers/CryptAPI.php:520
 msgid "Value too low, minimum is"
 msgstr ""
 
-#: controllers/CryptAPI.php:504
+#: controllers/CryptAPI.php:531
 msgid "There was an error with the payment. Please try again."
 msgstr ""
 
-#: controllers/CryptAPI.php:525
+#: controllers/CryptAPI.php:552
 msgid "Awaiting payment"
 msgstr ""
 
-#: controllers/CryptAPI.php:534
+#: controllers/CryptAPI.php:561
 msgid "Payment error:"
 msgstr ""
 
-#: controllers/CryptAPI.php:540
+#: controllers/CryptAPI.php:567
 msgid "Payment could not be processed, please try again"
 msgstr ""
 
-#: controllers/CryptAPI.php:580
+#: controllers/CryptAPI.php:608
 msgid "User sent a payment of"
 msgstr ""
 
-#: controllers/CryptAPI.php:764
-#: controllers/CryptAPI.php:816
+#: controllers/CryptAPI.php:640
+#: controllers/CryptAPI.php:642
+msgid "Payment detected and confirmed. Customer still need to send"
+msgstr ""
+
+#: controllers/CryptAPI.php:800
+#: controllers/CryptAPI.php:852
 msgid "QR Code without value"
 msgstr ""
 
-#: controllers/CryptAPI.php:774
+#: controllers/CryptAPI.php:810
 msgid "QR Code with value"
 msgstr ""
 
-#: controllers/CryptAPI.php:790
-#: controllers/CryptAPI.php:819
+#: controllers/CryptAPI.php:826
+#: controllers/CryptAPI.php:855
 msgid "Show QR Code without value"
 msgstr ""
 
-#: controllers/CryptAPI.php:791
-#: controllers/CryptAPI.php:820
+#: controllers/CryptAPI.php:827
+#: controllers/CryptAPI.php:856
 msgid "ADDRESS"
 msgstr ""
 
-#: controllers/CryptAPI.php:801
+#: controllers/CryptAPI.php:837
 msgid "Show QR Code with value"
 msgstr ""
 
-#: controllers/CryptAPI.php:802
+#: controllers/CryptAPI.php:838
 msgid "WITH AMOUNT"
 msgstr ""
 
-#: controllers/CryptAPI.php:831
+#: controllers/CryptAPI.php:867
 msgid "PLEASE SEND"
 msgstr ""
 
-#: controllers/CryptAPI.php:835
-#: controllers/CryptAPI.php:867
+#: controllers/CryptAPI.php:871
+#: controllers/CryptAPI.php:903
 msgid "COPY"
 msgstr ""
 
-#: controllers/CryptAPI.php:836
-#: controllers/CryptAPI.php:868
+#: controllers/CryptAPI.php:872
+#: controllers/CryptAPI.php:904
 msgid "COPIED!"
 msgstr ""
 
-#: controllers/CryptAPI.php:841
+#: controllers/CryptAPI.php:877
 msgid "So far you sent %1s. Please send a new payment to complete the order, as requested above"
 msgstr ""
 
-#: controllers/CryptAPI.php:846
+#: controllers/CryptAPI.php:882
 msgid "Notice"
 msgstr ""
 
-#: controllers/CryptAPI.php:846
+#: controllers/CryptAPI.php:882
 msgid "For technical reasons, the minimum amount for each transaction is %1s, so we adjusted the value by adding the remaining to it."
 msgstr ""
 
-#: controllers/CryptAPI.php:855
+#: controllers/CryptAPI.php:891
 msgid "The %1s conversion rate will be adjusted in"
 msgstr ""
 
-#: controllers/CryptAPI.php:858
+#: controllers/CryptAPI.php:894
 msgid "a moment"
 msgstr ""
 
-#: controllers/CryptAPI.php:876
+#: controllers/CryptAPI.php:912
 msgid "Order will be cancelled in less than a minute."
 msgstr ""
 
-#: controllers/CryptAPI.php:877
+#: controllers/CryptAPI.php:913
 msgid "This order will be valid for %s"
 msgstr ""
 
-#: controllers/CryptAPI.php:883
+#: controllers/CryptAPI.php:919
 msgid "Show the QR code"
 msgstr ""
 
-#: controllers/CryptAPI.php:888
+#: controllers/CryptAPI.php:924
 msgid "Open QR CODE"
 msgstr ""
 
-#: controllers/CryptAPI.php:893
+#: controllers/CryptAPI.php:929
 msgid "Close QR CODE"
 msgstr ""
 
-#: controllers/CryptAPI.php:926
+#: controllers/CryptAPI.php:962
 msgid "Your payment is being processed!"
 msgstr ""
 
-#: controllers/CryptAPI.php:927
+#: controllers/CryptAPI.php:963
 msgid "Processing can take some time depending on the blockchain."
 msgstr ""
 
-#: controllers/CryptAPI.php:937
+#: controllers/CryptAPI.php:973
 msgid "Your payment has been confirmed!"
 msgstr ""
 
-#: controllers/CryptAPI.php:947
+#: controllers/CryptAPI.php:983
 msgid "Order has been cancelled due to lack of payment. Please don't send any payment to the address."
 msgstr ""
 
-#: controllers/CryptAPI.php:952
+#: controllers/CryptAPI.php:988
 msgid "Time"
 msgstr ""
 
-#: controllers/CryptAPI.php:953
+#: controllers/CryptAPI.php:989
 msgid "Value Paid"
 msgstr ""
 
-#: controllers/CryptAPI.php:954
+#: controllers/CryptAPI.php:990
 msgid "FIAT Value"
 msgstr ""
 
-#: controllers/CryptAPI.php:967
+#: controllers/CryptAPI.php:1003
 msgid "Waiting for payment"
 msgstr ""
 
-#: controllers/CryptAPI.php:974
+#: controllers/CryptAPI.php:1010
 msgid "Waiting for network confirmation"
 msgstr ""
 
-#: controllers/CryptAPI.php:981
+#: controllers/CryptAPI.php:1017
 msgid "Payment confirmed"
 msgstr ""
 
-#: controllers/CryptAPI.php:1054
+#: controllers/CryptAPI.php:1090
 msgid "Order cancelled due to lack of payment."
 msgstr ""
 
-#: controllers/CryptAPI.php:1108
+#: controllers/CryptAPI.php:1144
 msgid "Please renew your subscription"
 msgstr ""
 
-#: controllers/CryptAPI.php:1170
+#: controllers/CryptAPI.php:1206
 msgid "Addresses"
 msgstr ""
 
-#: controllers/CryptAPI.php:1172
+#: controllers/CryptAPI.php:1208
 msgid "If you are using CryptAPI Pro you can choose if setting the receiving addresses here bellow or in your CryptAPI Pro settings page.<br/>- In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key.<br/>- In order to set the addresses on CryptAPI Pro settings, you need to NOT select “Address Override” while creating the API key."
 msgstr ""
 
-#: controllers/CryptAPI.php:1240
+#: controllers/CryptAPI.php:1276
 msgid "Service Fee"
 msgstr ""
 
-#: controllers/CryptAPI.php:1280
+#: controllers/CryptAPI.php:1316
 msgid "Check your payment status"
 msgstr ""
 
-#: controllers/CryptAPI.php:1291
+#: controllers/CryptAPI.php:1327
 msgid "Pay"
 msgstr ""
 
