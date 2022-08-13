@@ -359,7 +359,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $this->form_fields["{$ticker}_address"] = array(
                     'title' => is_array($coin) ? $coin['name'] : $coin,
                     'type' => 'cryptocurrency',
-                    'description' => sprintf($coin_description, $coin),
+                    'description' => sprintf($coin_description, is_array($coin) ? $coin['name'] : $coin),
                     'desc_tip' => true,
                     'custom_attributes' => array(
                         'counter' => $c++,
@@ -428,20 +428,22 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             </ul>
         </div>
         <script>
-            jQuery('#payment_cryptapi_coin').selectWoo({
-                minimumResultsForSearch: -1,
-                templateResult: formatState,
-            });
+            if(typeof jQuery.fn.selectWoo !== 'undefined') {
+                jQuery('#payment_cryptapi_coin').selectWoo({
+                    minimumResultsForSearch: -1,
+                    templateResult: formatState,
+                });
 
-            function formatState(opt) {
-                if (!opt.id) {
-                    return opt.text;
-                }
-                let optImage = jQuery(opt.element).attr('data-image');
-                if (!optImage) {
-                    return opt.text;
-                } else {
-                    return jQuery('<span style="display:flex; align-items:center;"><img style="margin-right: 8px" src="' + optImage + '" width="24px" alt="' + opt.text + '" /> ' + opt.text + '</span>');
+                function formatState(opt) {
+                    if (!opt.id) {
+                        return opt.text;
+                    }
+                    let optImage = jQuery(opt.element).attr('data-image');
+                    if (!optImage) {
+                        return opt.text;
+                    } else {
+                        return jQuery('<span style="display:flex; align-items:center;"><img style="margin-right: 8px" src="' + optImage + '" width="24px" alt="' + opt.text + '" /> ' + opt.text + '</span>');
+                    }
                 }
             }
         </script>
