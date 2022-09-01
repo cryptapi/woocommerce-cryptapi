@@ -348,7 +348,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'title' => __('API Key', 'cryptapi'),
                     'type' => 'text',
                     'default' => '',
-                    'description' => __('<strong>NEW: </strong>Insert here your CryptAPI Pro API Key. You can get one here: <a href="https://pro.cryptapi.io/" target="_blank">https://pro.cryptapi.io/</a>. <strong>This field is optional.</strong>', 'cryptapi')
+                    'description' => __('<strong>NEW: </strong>Insert here your BlockBee API Key. You can get one here: <a href="https://dash.blockbee.io/" target="_blank">https://dash.blockbee.io/</a>. <strong>This field is optional.</strong>', 'cryptapi')
                 ),
             );
 
@@ -428,6 +428,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             </ul>
         </div>
         <script>
+            /*
             if(typeof jQuery.fn.selectWoo !== 'undefined') {
                 jQuery('#payment_cryptapi_coin').selectWoo({
                     minimumResultsForSearch: -1,
@@ -446,6 +447,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     }
                 }
             }
+
+             */
         </script>
         <?php
     }
@@ -1062,7 +1065,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             $already_paid = $calc['already_paid'];
 
             if ($value_refresh !== 0 && $last_price_update + $value_refresh <= time() && !empty($last_price_update)) {
-
                 if ($remaining === $remaining_pending) {
                     $cryptapi_coin = $order->get_meta('cryptapi_currency');
 
@@ -1082,7 +1084,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 }
 
                 $order->update_meta_data('cryptapi_last_price_update', time());
-
                 $order->save();
             }
 
@@ -1205,7 +1206,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                         <strong>
                             <?php echo __('Addresses', 'cryptapi'); ?>
                         </strong><br/>
-                        <?php echo __("If you are using CryptAPI Pro you can choose if setting the receiving addresses here bellow or in your CryptAPI Pro settings page.<br/>- In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key.<br/>- In order to set the addresses on CryptAPI Pro settings, you need to NOT select “Address Override” while creating the API key.", 'cryptapi'); ?>
+                        <?php echo __("If you are using BlockBee you can choose if setting the receiving addresses here bellow or in your BlockBee settings page.<br/>- In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key.<br/>- In order to set the addresses on BlockBee settings, you need to NOT select “Address Override” while creating the API key.", 'cryptapi'); ?>
                     </p>
                 </td>
             </tr>

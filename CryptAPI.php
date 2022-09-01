@@ -3,9 +3,9 @@
 Plugin Name: CryptAPI Payment Gateway for WooCommerce
 Plugin URI: https://github.com/cryptapi/woocommerce-cryptapi
 Description: Accept cryptocurrency payments on your WooCommerce website
-Version: 4.5.2
+Version: 4.6.0
 Requires at least: 5
-Tested up to: 6.0.1
+Tested up to: 6.0.2
 WC requires at least: 5.8
 WC tested up to: 6.8.0
 Requires PHP: 7.2
@@ -128,6 +128,7 @@ function cryptapi_deactivation()
     wp_clear_scheduled_hook('cryptapi_cronjob');
 }
 
+/*
 add_action('admin_notices', 'cryptapi_pro_notice');
 
 function cryptapi_pro_notice()
@@ -144,7 +145,7 @@ function cryptapi_pro_notice()
             ?>
             <div class="notice notice-info is-dismissible">
                 <p>
-                    Meet CryptAPI Pro, a dashboard to suit all your needs. Get your API Key now: <a href="https://pro.cryptapi.io/" target="_blank">pro.cryptapi.io</a><br/>
+                    Meet BlockBee, a dashboard to suit all your needs. Get your API Key now: <a href="https://pro.cryptapi.io/" target="_blank">pro.cryptapi.io</a><br/>
                     <button style="text-decoration: none;" class="notice-dismiss cryptapi-pro-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button>
                 </p>
             </div>
@@ -169,3 +170,4 @@ function cryptapi_pro_notice_dismissed()
     if (isset($_GET['cryptapi-dismissed']))
         add_user_meta($user_id, 'cryptapi_pro_notice_dismissed', 'true', true);
 }
+*/

@@ -7,7 +7,7 @@ use Exception;
 class Helper
 {
     private static $base_url = "https://api.cryptapi.io";
-    private static $pro_url = "https://pro-api.cryptapi.io";
+    private static $pro_url = "https://api.blockbee.io";
     private $own_address = null;
     private $payment_address = null;
     private $callback_url = null;
