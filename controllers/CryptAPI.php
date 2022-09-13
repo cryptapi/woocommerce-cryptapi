@@ -321,7 +321,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 'order_cancelation_timeout' => array(
                     'title' => __('Order cancelation timeout', 'cryptapi'),
                     'type' => 'select',
-                    'default' => '3600',
+                    'default' => '0',
                     'options' => array(
                         '0' => __('Never', 'cryptapi'),
                         '3600' => __('1 Hour', 'cryptapi'),
@@ -622,14 +622,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             if ($remaining <= 0) {
                 $order->payment_complete($data['address_in']);
                 if ($this->virtual_complete) {
-                    $is_virtual = false;
+                    $count_products = count($order->get_items());
+                    $count_virtual = 0;
                     foreach ($order->get_items() as $order_item) {
                         $item = wc_get_product($order_item->get_product_id());
-                        if ($item->is_virtual()) {
-                            $is_virtual = true;
+                        $item_obj = $item->get_type() === 'variable' ? wc_get_product($order_item['variation_id']) : $item;
+
+                        if ($item_obj->is_virtual()) {
+                            $count_virtual += 1;
                         }
                     }
-                    if ($is_virtual) {
+                    if ($count_virtual === $count_products) {
                         $order->update_status('completed');
                     }
                 }
