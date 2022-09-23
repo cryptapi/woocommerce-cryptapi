@@ -80,52 +80,24 @@ class Helper
         return null;
     }
 
-    public function check_logs()
+    public static function check_logs($callback, $coin)
     {
 
-        if (empty($this->coin) || empty($this->callback_url)) {
-            return null;
+        if (empty($coin) || empty($callback)) {
+            return false;
         }
 
         $params = [
-            'callback' => $this->callback_url,
+            'callback' => $callback,
         ];
 
-        $response = Helper::_request($this->coin, 'logs', $params);
+        $response = Helper::_request($coin, 'logs', $params);
 
         if ($response->status == 'success') {
-            return $response;
+            return $response->callbacks;
         }
 
-        return null;
-    }
-
-    public function get_qrcode($value, $size = 300)
-    {
-        if (empty($this->coin)) {
-            return null;
-        }
-
-        if (!empty($value)) {
-            $params = [
-                'address' => $this->payment_address,
-                'value' => $value,
-                'size' => $size,
-            ];
-        } else {
-            $params = [
-                'address' => $this->payment_address,
-                'size' => $size,
-            ];
-        }
-
-        $response = Helper::_request($this->coin, 'qrcode', $params);
-
-        if ($response->status == 'success') {
-            return ['qr_code' => $response->qr_code, 'uri' => $response->payment_uri];
-        }
-
-        return null;
+        return false;
     }
 
     public static function get_static_qrcode($address, $coin, $value, $size = 300)

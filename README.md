@@ -274,6 +274,11 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 #### 4.6.1
 * Minor fixes
 
+#### 4.6.2
+* New mechanisms to detect callbacks even if they fail
+* Minor fixes
+* Added new languages
+
 ### Upgrade Notice
 #### 4.3
 * Please be sure to enable the PHP extension BCMath before upgrading to this version.

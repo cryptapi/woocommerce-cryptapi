@@ -13,7 +13,7 @@ function check_status(ajax_url) {
             jQuery('.ca_fiat_total').html(data.fiat_remaining);
             jQuery('.ca_copy.ca_details_copy').attr('data-tocopy', data.remaining);
 
-            if (data.cancelled === '1') {
+            if (data.cancelled === 1) {
                 jQuery('.ca_loader').remove();
                 jQuery('.ca_payments_wrapper').slideUp('400');
                 jQuery('.ca_payment_cancelled').slideDown('400');
@@ -21,7 +21,7 @@ function check_status(ajax_url) {
                 is_paid = true;
             }
 
-            if (data.is_pending === '1') {
+            if (data.is_pending === 1) {
                 waiting_payment.addClass('done');
                 waiting_network.addClass('done');
                 jQuery('.ca_loader').remove();
@@ -55,7 +55,7 @@ function check_status(ajax_url) {
                 jQuery('.ca_qrcode.value').attr("src", "data:image/png;base64," + data.qr_code_value);
             }
 
-            if (data.show_min_fee === '1') {
+            if (data.show_min_fee === 1) {
                 jQuery('.ca_notification_remaining').show();
             } else {
                 jQuery('.ca_notification_remaining').hide();
