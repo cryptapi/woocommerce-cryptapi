@@ -61,6 +61,12 @@ function check_status(ajax_url) {
                 jQuery('.ca_notification_remaining').hide();
             }
 
+            if (data.hide_refresh === 1) {
+                jQuery('.ca_time_refresh').hide();
+            } else {
+                jQuery('.ca_time_refresh').show();
+            }
+
             if (data.remaining !== data.crypto_total) {
                 jQuery('.ca_notification_payment_received').show();
                 jQuery('.ca_notification_cancel').remove();

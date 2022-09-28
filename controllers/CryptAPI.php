@@ -619,12 +619,19 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             $remaining_pending = $calc['remaining_pending'];
             $remaining_fiat = $calc['remaining_fiat'];
 
+            $hide_refresh = 0;
+
             $cryptapi_pending = 0;
+
+            $counter_calc = (int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval - time();
+
+            if($already_paid > 0) {
+                $hide_refresh = 1;
+            }
+
             if ($remaining_pending <= 0 && !$order->is_paid()) {
                 $cryptapi_pending = 1;
             }
-
-            $counter_calc = (int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval - time();
 
             if ($counter_calc <= 0 && !$order->is_paid()) {
                 $this->ca_cronjob();
@@ -653,7 +660,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 'remaining' => $remaining_pending <= 0 ? 0 : $remaining_pending,
                 'fiat_remaining' => $remaining_fiat <= 0 ? 0 : $remaining_fiat,
                 'already_paid_fiat' => floatval($already_paid_fiat) <= 0 ? 0 : floatval($already_paid_fiat),
-                'fiat_symbol' => get_woocommerce_currency_symbol()
+                'fiat_symbol' => get_woocommerce_currency_symbol(),
+                'hide_refresh' => $hide_refresh,
             ];
 
             echo json_encode($data);
@@ -676,8 +684,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             $request_url = parse_url($logs[0]->request_url);
             parse_str($request_url['query'], $data);
 
-            if (empty($history[$callback->uuid]) || (!empty($history[$callback->uuid]) && (int)$data['pending'] === 0)) {
-
+            if (empty($history[$callback->uuid]) || (!empty($history[$callback->uuid]) && (int)$history[$callback->uuid]['pending'] === 1 && (int)$data['pending'] === 0)) {
                 $this->process_callback_data($data, $order, true);
             }
         }
@@ -1120,7 +1127,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             }
 
             if ($value_refresh !== 0 && $last_price_update + $value_refresh <= time() && !empty($last_price_update)) {
-                if ($remaining === $remaining_pending) {
+                if ($already_paid === 0) {
                     $cryptapi_coin = $order->get_meta('cryptapi_currency');
 
                     $crypto_total = CryptAPI\Helper::sig_fig(CryptAPI\Helper::get_conversion($woocommerce_currency, $cryptapi_coin, $order->get_total('edit'), $this->disable_conversion), 6);
