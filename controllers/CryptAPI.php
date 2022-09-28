@@ -591,11 +591,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             die("*ok*");
         }
 
-        // Actually process the callback data
-        $this->process_callback_data($data, $order);
-
         $order->update_meta_data('cryptapi_last_checked', time());
         $order->save_meta_data();
+
+        // Actually process the callback data
+        $this->process_callback_data($data, $order);
     }
 
     function order_status()
@@ -619,15 +619,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             $remaining_pending = $calc['remaining_pending'];
             $remaining_fiat = $calc['remaining_fiat'];
 
-            $hide_refresh = 0;
-
             $cryptapi_pending = 0;
 
             $counter_calc = (int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval - time();
-
-            if($already_paid > 0) {
-                $hide_refresh = 1;
-            }
 
             if ($remaining_pending <= 0 && !$order->is_paid()) {
                 $cryptapi_pending = 1;
@@ -661,7 +655,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 'fiat_remaining' => $remaining_fiat <= 0 ? 0 : $remaining_fiat,
                 'already_paid_fiat' => floatval($already_paid_fiat) <= 0 ? 0 : floatval($already_paid_fiat),
                 'fiat_symbol' => get_woocommerce_currency_symbol(),
-                'hide_refresh' => $hide_refresh,
             ];
 
             echo json_encode($data);
@@ -679,21 +672,22 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     {
         $callbacks = CryptAPI\Helper::check_logs($order->get_meta('cryptapi_callback_url'), $order->get_meta('cryptapi_currency'));
 
+        $order->update_meta_data('cryptapi_last_checked', time());
+        $order->save_meta_data();
+
         foreach ($callbacks as $callback) {
             $logs = $callback->logs;
             $request_url = parse_url($logs[0]->request_url);
             parse_str($request_url['query'], $data);
 
-            if (empty($history[$callback->uuid]) || (!empty($history[$callback->uuid]) && (int)$history[$callback->uuid]['pending'] === 1 && (int)$data['pending'] === 0)) {
+            if (empty($history[$data->uuid]) || (!empty($history[$data->uuid]) && (int)$history[$data->uuid]['pending'] === 1 && (int)$data['pending'] === 0)) {
                 $this->process_callback_data($data, $order, true);
             }
         }
-
-        $order->update_meta_data('cryptapi_last_checked', time());
-        $order->save_meta_data();
     }
 
-    function process_callback_data($data, $order, $validation = false) {
+    function process_callback_data($data, $order, $validation = false)
+    {
         $paid = floatval($data['value_coin']);
 
         $min_tx = floatval($order->get_meta('cryptapi_min'));
@@ -718,17 +712,52 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $order->update_meta_data('cryptapi_history', json_encode($history));
         $order->save_meta_data();
 
-        $order->add_order_note(
-            ($data['pending'] ? '[PENDING]' : '') .
-            __('User sent a payment of', 'cryptapi') . ' ' .
-            $paid . ' ' . $crypto_coin .
-            '. TXID: ' . $data['txid_in']
-        );
-
         $calc = $this->calc_order(json_decode($order->get_meta('cryptapi_history'), true), $order->get_meta('cryptapi_total'), $order->get_meta('cryptapi_total_fiat'));
 
         $remaining = $calc['remaining'];
         $remaining_pending = $calc['remaining_pending'];
+
+        $order_notes = $this->get_private_order_notes($order->get_id());
+
+        $has_pending = false;
+        $has_confirmed = false;
+
+        foreach ($order_notes as $note) {
+            $note_content = $note['note_content'];
+
+            if (strpos((string)$note_content, 'PENDING') && strpos((string)$note_content, $data['txid_in'])) {
+                $has_pending = true;
+            }
+
+            if (strpos((string)$note_content, 'CONFIRMED') && strpos((string)$note_content, $data['txid_in'])) {
+                $has_confirmed = true;
+            }
+        }
+
+        if (!$has_pending) {
+            $order->add_order_note(
+                '[PENDING] ' .
+                __('User sent a payment of', 'cryptapi') . ' ' .
+                $paid . ' ' . $crypto_coin .
+                '. TXID: ' . $data['txid_in']
+            );
+        }
+
+        if (!$has_confirmed && (int)$data['pending'] === 0) {
+            $order->add_order_note(
+                '[CONFIRMED] ' . __('User sent a payment of', 'cryptapi') . ' ' .
+                $paid . ' ' . $crypto_coin .
+                '. TXID: ' . $data['txid_in']
+            );
+
+            if ($remaining > 0) {
+                if ($remaining < $min_tx) {
+                    $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $min_tx . $crypto_coin, false);
+                } else {
+                    $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $remaining . $crypto_coin, false);
+                }
+            }
+        }
 
         if ($remaining_pending <= 0) {
             if ($remaining <= 0) {
@@ -754,14 +783,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 die("*ok*");
             } else {
                 return;
-            }
-        }
-
-        if ($remaining > 0 && (int)$data['pending'] === 0) {
-            if ($remaining < $min_tx) {
-                $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $min_tx . $crypto_coin, false);
-            } else {
-                $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $remaining . $crypto_coin, false);
             }
         }
 
@@ -1126,8 +1147,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $this->validate_logs($order, $history);
             }
 
-            if ($value_refresh !== 0 && $last_price_update + $value_refresh <= time() && !empty($last_price_update)) {
-                if ($already_paid === 0) {
+            if ($value_refresh !== 0 && ((int)$last_price_update + (int)$value_refresh < time()) && !empty($last_price_update)) {
+                if ($remaining === $remaining_pending && $remaining_pending > 0) {
                     $cryptapi_coin = $order->get_meta('cryptapi_currency');
 
                     $crypto_total = CryptAPI\Helper::sig_fig(CryptAPI\Helper::get_conversion($woocommerce_currency, $cryptapi_coin, $order->get_total('edit'), $this->disable_conversion), 6);
@@ -1391,5 +1412,28 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             );
         }
         return $actions;
+    }
+
+    function get_private_order_notes($order_id)
+    {
+        global $wpdb;
+
+        $table_perfixed = $wpdb->prefix . 'comments';
+        $results = $wpdb->get_results("
+        SELECT *
+        FROM $table_perfixed
+        WHERE  `comment_post_ID` = $order_id
+        AND  `comment_type` LIKE  'order_note'
+    ");
+
+        foreach ($results as $note) {
+            $order_note[] = array(
+                'note_id' => $note->comment_ID,
+                'note_date' => $note->comment_date,
+                'note_author' => $note->comment_author,
+                'note_content' => $note->comment_content,
+            );
+        }
+        return $order_note;
     }
 }
