@@ -58,8 +58,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 		add_filter( 'woocommerce_my_account_my_orders_actions', array( $this, 'add_order_link' ), 10, 2 );
 
 		add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'order_detail_validate_logs' ) );
-
-	}
+    }
 
 	function load_coins() {
 		if ( ! empty( WC_CryptAPI_Gateway::$COIN_OPTIONS ) ) {
@@ -1429,8 +1428,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
             return;
         }
 
+		if($order->get_payment_method() !== 'cryptapi') {
+			return;
+		}
+
 		$ajax_url = add_query_arg( array(
-			'action' => 'cryptapi_validate_logs',
+			'action' => 'blockbee_validate_logs',
             'order_id' => $order->get_ID(),
 		), home_url( '/wp-admin/admin-ajax.php' ) );
 		?>
