@@ -1,4 +1,4 @@
-![CryptAPI](https://i.imgur.com/IfMAa7E.png)
+[<img src="https://i.imgur.com/IfMAa7E.png" width="300"/>](image.png)
 
 # CryptAPI Payment Gateway for WooCommerce
 Accept cryptocurrency payments on your WooCommerce website
@@ -293,6 +293,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Minor fixes
 
 #### 4.6.7
+* Minor fixes
+
+#### 4.6.8
 * Minor fixes
 
 ### Upgrade Notice

@@ -618,9 +618,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 				$cryptapi_pending = 1;
 			}
 
-			if ( $counter_calc <= 0 && ! $order->is_paid() ) {
-				$this->ca_cronjob();
-			}
+            if (($counter_calc <= 0 && !$order->is_paid()) || ($remaining_pending <= 0 && empty($history))) {
+                $this->ca_cronjob(true, $order_id);
+            }
 
 			if ( $remaining_pending <= $min_tx && $remaining_pending > 0 ) {
 				$remaining_pending = $min_tx;
@@ -1104,7 +1104,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 	/**
 	 *  Cronjob
 	 */
-	function ca_cronjob() {
+    function ca_cronjob($force = false, $order_id = '') {
 		$order_timeout = intval( $this->order_cancelation_timeout );
 		$value_refresh = intval( $this->refresh_value_interval );
 
@@ -1138,8 +1138,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 
 			$order_timestamp = $order->get_date_created()->getTimestamp();
 
-			if ( $value_refresh !== 0 && ( (int) $last_price_update + (int) $value_refresh < time() ) && ! empty( $last_price_update ) ) {
-				if ( $remaining === $remaining_pending && $remaining_pending > 0 ) {
+            if ( $value_refresh !== 0 && ( (int)$last_price_update + (int)$value_refresh < time() ) && ! empty( $last_price_update ) || ((int)$order_id === $order->get_id() && $force) ) {
+                if ( ($remaining === $remaining_pending && $remaining_pending > 0) || ((int)$order_id === $order->get_id() && $force)) {
 					$cryptapi_coin = $order->get_meta( 'cryptapi_currency' );
 
 					$crypto_total = CryptAPI\Helper::sig_fig( CryptAPI\Helper::get_conversion( $woocommerce_currency, $cryptapi_coin, $order->get_total( 'edit' ), $this->disable_conversion ), 6 );
@@ -1161,8 +1161,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 				$order->save();
 			}
 
-			if ( $order_timeout !== 0 && ( $order_timestamp + $order_timeout ) <= time() && $already_paid <= 0 && (int) $order->get_meta( 'cryptapi_cancelled' ) === 0 ) {
-				$order->update_status( 'cancelled', __( 'Order cancelled due to lack of payment.', 'cryptapi' ) );
+            if ( $order_timeout !== 0 && ( $order_timestamp + $order_timeout ) <= time() && $already_paid <= 0 && (int) $order->get_meta( 'cryptapi_cancelled' ) === 0 ) {
+                $order->update_status( 'cancelled', __( 'Order cancelled due to lack of payment.', 'cryptapi' ) );
 				$order->update_meta_data( 'cryptapi_cancelled', '1' );
 				$order->save();
 			}

@@ -15,9 +15,9 @@ function check_status(ajax_url) {
 
             if (data.cancelled === 1) {
                 jQuery('.ca_loader').remove();
-                jQuery('.ca_payments_wrapper').slideUp('400');
-                jQuery('.ca_payment_cancelled').slideDown('400');
-                jQuery('.ca_progress').slideUp('400');
+                jQuery('.ca_payments_wrapper').slideUp('200');
+                jQuery('.ca_payment_cancelled').slideDown('200');
+                jQuery('.ca_progress').slideUp('200');
                 is_paid = true;
             }
 
@@ -29,9 +29,9 @@ function check_status(ajax_url) {
                 jQuery('.ca_notification_cancel').remove();
 
                 setTimeout(function () {
-                    jQuery('.ca_payments_wrapper').slideUp('400');
-                    jQuery('.ca_payment_processing').slideDown('400');
-                }, 5000);
+                    jQuery('.ca_payments_wrapper').slideUp('200');
+                    jQuery('.ca_payment_processing').slideDown('200');
+                }, 300);
             }
 
             if (data.is_paid) {
@@ -43,10 +43,10 @@ function check_status(ajax_url) {
                 jQuery('.ca_notification_cancel').remove();
 
                 setTimeout(function () {
-                    jQuery('.ca_payments_wrapper').slideUp('400');
-                    jQuery('.ca_payment_processing').slideUp('400');
-                    jQuery('.ca_payment_confirmed').slideDown('400');
-                }, 5000);
+                    jQuery('.ca_payments_wrapper').slideUp('200');
+                    jQuery('.ca_payment_processing').slideUp('200');
+                    jQuery('.ca_payment_confirmed').slideDown('200');
+                }, 300);
 
                 is_paid = true;
             }
@@ -105,7 +105,7 @@ function check_status(ajax_url) {
             }
         });
 
-        setTimeout(status_loop, 5000);
+        setTimeout(status_loop, 2000);
     }
 
     status_loop();
