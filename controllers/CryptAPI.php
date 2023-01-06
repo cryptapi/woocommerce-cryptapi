@@ -539,7 +539,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 				$qr_code_data_value = CryptAPI\Helper::get_static_qrcode( $addr_in, $selected, $crypto_total, $this->qrcode_size );
 				$qr_code_data       = CryptAPI\Helper::get_static_qrcode( $addr_in, $selected, '', $this->qrcode_size );
 
-				$order->add_meta_data( 'cryptapi_nonce', $nonce );
+				$order->add_meta_data( 'cryptapi_version', CRYPTAPI_PLUGIN_VERSION );
+				$order->add_meta_data( 'cryptapi_php_version', PHP_VERSION );
+                $order->add_meta_data( 'cryptapi_nonce', $nonce );
 				$order->add_meta_data( 'cryptapi_address', $addr_in );
 				$order->add_meta_data( 'cryptapi_total', CryptAPI\Helper::sig_fig( $crypto_total, 6 ) );
 				$order->add_meta_data( 'cryptapi_total_fiat', $total );
@@ -605,7 +607,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 			$already_paid      = $calc['already_paid'];
 			$already_paid_fiat = $calc['already_paid_fiat'];
 
-			$min_tx = floatval( $order->get_meta( 'cryptapi_min' ) );
+			$min_tx = (float) $order->get_meta( 'cryptapi_min' );
 
 			$remaining_pending = $calc['remaining_pending'];
 			$remaining_fiat    = $calc['remaining_fiat'];
@@ -636,11 +638,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 				'show_min_fee'      => $showMinFee,
 				'order_history'     => json_decode( $order->get_meta( 'cryptapi_history' ), true ),
 				'counter'           => (string) $counter_calc,
-				'crypto_total'      => floatval( $order->get_meta( 'cryptapi_total' ) ),
+				'crypto_total'      => (float) $order->get_meta( 'cryptapi_total' ),
 				'already_paid'      => $already_paid,
 				'remaining'         => $remaining_pending <= 0 ? 0 : $remaining_pending,
 				'fiat_remaining'    => $remaining_fiat <= 0 ? 0 : $remaining_fiat,
-				'already_paid_fiat' => floatval( $already_paid_fiat ) <= 0 ? 0 : floatval( $already_paid_fiat ),
+				'already_paid_fiat' => $already_paid_fiat <= 0 ? 0 : $already_paid_fiat,
 				'fiat_symbol'       => get_woocommerce_currency_symbol(),
 			];
 
@@ -685,9 +687,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 	}
 
 	function process_callback_data( $data, $order, $validation = false ) {
-		$paid = floatval( $data['value_coin'] );
+		$paid = (float) $data['value_coin'];
 
-		$min_tx = floatval( $order->get_meta( 'cryptapi_min' ) );
+		$min_tx = (float) $order->get_meta( 'cryptapi_min' );
 
 		$crypto_coin = strtoupper( $order->get_meta( 'cryptapi_currency' ) );
 
@@ -756,7 +758,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 			);
 
 			if ( $remaining > 0 ) {
-				if ( $remaining < $min_tx ) {
+				if ( $remaining <= $min_tx ) {
 					$order->add_order_note( __( 'Payment detected and confirmed. Customer still need to send', 'cryptapi' ) . ' ' . $min_tx . $crypto_coin, false );
 				} else {
 					$order->add_order_note( __( 'Payment detected and confirmed. Customer still need to send', 'cryptapi' ) . ' ' . $remaining . $crypto_coin, false );
@@ -764,39 +766,47 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 			}
 		}
 
-		if ( $remaining_pending <= 0 ) {
-			if ( $remaining <= 0 ) {
-				$order->payment_complete( $data['address_in'] );
-				if ( $this->virtual_complete ) {
-					$count_products = count( $order->get_items() );
-					$count_virtual  = 0;
-					foreach ( $order->get_items() as $order_item ) {
-						$item     = wc_get_product( $order_item->get_product_id() );
-						$item_obj = $item->get_type() === 'variable' ? wc_get_product( $order_item['variation_id'] ) : $item;
+		if ( $remaining <= 0 ) {
+            /**
+             * Changes the order Status to Paid
+             */
+            $order->payment_complete( $data['address_in'] );
 
-						if ( $item_obj->is_virtual() ) {
-							$count_virtual += 1;
-						}
-					}
-					if ( $count_virtual === $count_products ) {
-						$order->update_status( 'completed' );
-					}
-				}
-				$order->save();
-			}
-			if ( ! $validation ) {
-				die( "*ok*" );
-			} else {
-				return;
-			}
+            if ( $this->virtual_complete ) {
+                $count_products = count( $order->get_items() );
+                $count_virtual  = 0;
+                foreach ( $order->get_items() as $order_item ) {
+                    $item     = wc_get_product( $order_item->get_product_id() );
+                    $item_obj = $item->get_type() === 'variable' ? wc_get_product( $order_item['variation_id'] ) : $item;
+
+                    if ( $item_obj->is_virtual() ) {
+                        $count_virtual += 1;
+                    }
+                }
+                if ( $count_virtual === $count_products ) {
+                    $order->update_status( 'completed' );
+                }
+            }
+
+            $order->save();
+
+            if ( ! $validation ) {
+                die( "*ok*" );
+            } else {
+                return;
+            }
 		}
 
-		if ( $remaining_pending < $min_tx ) {
+        /**
+         * Refreshes the QR Code. If payment is marked as completed, it won't get here.
+         */
+		if ( $remaining <= $min_tx ) {
 			$order->update_meta_data( 'cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode( $order->get_meta( 'cryptapi_address' ), $order->get_meta( 'cryptapi_currency' ), $min_tx, $this->qrcode_size )['qr_code'] );
 		} else {
 			$order->update_meta_data( 'cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode( $order->get_meta( 'cryptapi_address' ), $order->get_meta( 'cryptapi_currency' ), $remaining_pending, $this->qrcode_size )['qr_code'] );
 		}
-		$order->save_meta_data();
+
+		$order->save();
 
 		if ( ! $validation ) {
 			die( "*ok*" );
@@ -860,7 +870,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 						} else {
 							echo 'display: none';
 						}
-						?>; width: <?php echo intval( $this->qrcode_size ) + 20; ?>px;">
+						?>; width: <?php echo (int) $this->qrcode_size + 20; ?>px;">
 							<?php
 							if ( $crypto_allowed_value == true ) {
 								?>
@@ -961,7 +971,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 									); ?>
                             </div>
 							<?php
-							if ( intval( $this->refresh_value_interval ) != 0 ) {
+							if ( (int) $this->refresh_value_interval != 0 ) {
 								?>
                                 <div class="ca_time_refresh">
 									<?php echo sprintf( esc_attr( __( 'The %1s conversion rate will be adjusted in', 'cryptapi' ) ),
@@ -983,7 +993,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
                             </div>
                         </div>
 						<?php
-						if ( intval( $this->order_cancelation_timeout ) != 0 ) {
+						if ( (int) $this->order_cancelation_timeout !== 0 ) {
 							?>
                             <span class="ca_notification_cancel" data-text="<?php echo __( 'Order will be cancelled in less than a minute.', 'cryptapi' ); ?>">
                                     <?php echo sprintf( esc_attr( __( 'This order will be valid for %s', 'cryptapi' ) ), '<strong><span class="ca_cancel_timer" data-timestamp="' . $cancel_timer . '">' . date( 'H:i', $cancel_timer ) . '</span></strong>' ); ?>
@@ -1020,7 +1030,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
                     </div>
 					<?php
 				}
-				if ( $total == 0 ) {
+				if ( $total === 0 ) {
 					?>
                     <style>
                         .ca_payment_confirmed {
@@ -1105,8 +1115,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 	 *  Cronjob
 	 */
     function ca_cronjob($force = false, $order_id = '') {
-		$order_timeout = intval( $this->order_cancelation_timeout );
-		$value_refresh = intval( $this->refresh_value_interval );
+		$order_timeout = (int) $this->order_cancelation_timeout;
+		$value_refresh = (int) $this->refresh_value_interval;
 
 		if ( $order_timeout === 0 && $value_refresh === 0 ) {
 			return;
@@ -1128,7 +1138,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 
 			$history = json_decode( $order->get_meta( 'cryptapi_history' ), true );
 
-			$min_tx = floatval( $order->get_meta( 'cryptapi_min' ) );
+			$min_tx = (float) $order->get_meta( 'cryptapi_min' );
 
 			$calc = $this->calc_order( $history, $order->get_meta( 'cryptapi_total' ), $order->get_meta( 'cryptapi_total_fiat' ) );
 
@@ -1191,11 +1201,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 		}
 
 		return [
-			'already_paid'      => floatval( $already_paid ),
-			'already_paid_fiat' => floatval( $already_paid_fiat ),
-			'remaining'         => floatval( $remaining ),
-			'remaining_pending' => floatval( $remaining_pending ),
-			'remaining_fiat'    => floatval( $remaining_fiat )
+			'already_paid'      => (float) $already_paid,
+			'already_paid_fiat' => (float) $already_paid_fiat,
+			'remaining'         => (float) $remaining,
+			'remaining_pending' => (float) $remaining_pending,
+			'remaining_fiat'    => (float) $remaining_fiat
 		];
 	}
 
@@ -1284,7 +1294,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 		}
 		?>
         <tr valign="top">
-
             <th scope="row" class="titledesc">
                 <input style="display: inline-block; margin-bottom: -4px;" type="checkbox"
                        name="coins[]" id="<?php echo esc_attr( 'coins_' . $token ); ?>"

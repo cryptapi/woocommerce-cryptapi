@@ -2,11 +2,11 @@
 Contributors: cryptapi
 Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, monero, litecoin, bitcoin cash, shib, doge
 Requires at least: 5
-Tested up to: 6.0.2
-Stable tag: 4.6.8
+Tested up to: 6.1.1
+Stable tag: 4.6.9
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 7.0.0
+WC tested up to: 7.2.2
 License: MIT
 
 Accept cryptocurrency payments on your WooCommerce website
@@ -27,12 +27,12 @@ The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto dire
 * (ETH) Ethereum
 * (BCH) Bitcoin Cash
 * (LTC) Litecoin
-* (XMR) Monero
 * (TRX) Tron
 * (BNB) Binance Coin
 * (USDT) USDT
 * (SHIB) Shiba Inu
 * (DOGE) Dogecoin
+* (MATIC) Matic
 
 
 among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/pricing/).
@@ -306,6 +306,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Minor fixes
 
 = 4.6.8 =
+* Minor fixes
+
+= 4.6.9 =
 * Minor fixes
 
 == Upgrade Notice ==
