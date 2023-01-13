@@ -620,8 +620,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 				$cryptapi_pending = 1;
 			}
 
-            if (($counter_calc <= 0 && !$order->is_paid()) || ($remaining_pending <= 0 && empty($history))) {
-                $this->ca_cronjob(true, $order_id);
+            if (!$order->is_paid()) {
+                if ($counter_calc <= 0) {
+                    $this->ca_cronjob(true, $order_id);
+                }
             }
 
 			if ( $remaining_pending <= $min_tx && $remaining_pending > 0 ) {
@@ -1149,7 +1151,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 			$order_timestamp = $order->get_date_created()->getTimestamp();
 
             if ( $value_refresh !== 0 && ( (int)$last_price_update + (int)$value_refresh < time() ) && ! empty( $last_price_update ) || ((int)$order_id === $order->get_id() && $force) ) {
-                if ( ($remaining === $remaining_pending && $remaining_pending > 0) || ((int)$order_id === $order->get_id() && $force)) {
+                if ( ($remaining === $remaining_pending && $remaining_pending > 0) || ((int)$order_id === $order->get_id() && $force && $remaining === $remaining_pending && $remaining_pending > 0)) {
 					$cryptapi_coin = $order->get_meta( 'cryptapi_currency' );
 
 					$crypto_total = CryptAPI\Helper::sig_fig( CryptAPI\Helper::get_conversion( $woocommerce_currency, $cryptapi_coin, $order->get_total( 'edit' ), $this->disable_conversion ), 6 );
