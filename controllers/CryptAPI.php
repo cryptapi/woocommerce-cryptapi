@@ -859,8 +859,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 		if ( in_array( $crypto_coin, $allowed_to_value, true ) ) {
 			$crypto_allowed_value = true;
 		}
+
 		?>
-        <div class="ca_payment-panel<?php esc_attr( $color_scheme ) ?>">
+        <div class="ca_payment-panel <?php echo esc_attr( $color_scheme ) ?>">
             <div class="ca_payment_details">
 				<?php
 				if ( $total > 0 ) {

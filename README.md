@@ -305,6 +305,10 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Minor fixes
 * Improvements on the callback processing algorithm
 
+#### 4.7.1
+* Minor fixes
+* Improvements on the callback processing algorithm
+
 ### Upgrade Notice
 #### 4.3
 * Please be sure to enable the PHP extension BCMath before upgrading to this version.
