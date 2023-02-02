@@ -3,7 +3,7 @@ Contributors: cryptapi
 Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, monero, litecoin, bitcoin cash, shib, doge
 Requires at least: 5
 Tested up to: 6.1.1
-Stable tag: 4.7.1
+Stable tag: 4.7.2
 Requires PHP: 7.2
 WC requires at least: 5.8
 WC tested up to: 7.2.2
@@ -316,6 +316,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Improvements on the callback processing algorithm
 
 = 4.7.1 =
+* Minor fixes
+
+= 4.7.2 =
 * Minor fixes
 
 == Upgrade Notice ==

@@ -253,17 +253,15 @@ class Helper
 
     public static function sig_fig($value, $digits)
     {
-        if ($value == 0) {
-            $decimalPlaces = $digits - 1;
-        } elseif ($value < 0) {
-            $decimalPlaces = $digits - floor(log10($value * -1)) - 1;
-        } else {
-            $decimalPlaces = $digits - floor(log10($value)) - 1;
+        if (strpos((string) $value, '.') !== false) {
+            if ($value[0] != '-') {
+                return bcadd($value, '0.' . str_repeat('0', $digits) . '5', $digits);
+            }
+
+            return bcsub($value, '0.' . str_repeat('0', $digits) . '5', $digits);
         }
 
-        $answer = ($decimalPlaces > 0) ?
-            number_format($value, $decimalPlaces, '.', '') : round($value, $decimalPlaces);
-        return $answer;
+        return $value;
     }
 
     private static function _request($coin, $endpoint, $params = [], $assoc = false)

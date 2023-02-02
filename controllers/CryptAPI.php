@@ -1333,11 +1333,15 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 			return;
 		}
 
-		$total_fee = $this->get_option( 'fee_order_percentage' ) == 'none' ? 0 : $this->get_option( 'fee_order_percentage' );
+		$total_fee = $this->get_option( 'fee_order_percentage' ) === 'none' ? 0 : (float) $this->get_option( 'fee_order_percentage' );
 
-		$fee_order = WC()->cart->subtotal * $total_fee;
+		$fee_order = 0;
 
-		if ( $total_fee !== 'none' || $this->add_blockchain_fee ) {
+		if ( $total_fee !== 0 || $this->add_blockchain_fee ) {
+
+            if ($total_fee !== 0) {
+                $fee_order = (float) WC()->cart->subtotal * $total_fee;
+            }
 
 			$selected = WC()->session->get( 'cryptapi_coin' );
 
