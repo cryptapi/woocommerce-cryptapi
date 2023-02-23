@@ -214,7 +214,6 @@ class Helper
         $response = Helper::_request($coin, 'estimate', $params);
 
         if ($response->status == 'success') {
-
             return $response->estimated_cost_currency;
         }
 
@@ -267,7 +266,6 @@ class Helper
     private static function _request($coin, $endpoint, $params = [], $assoc = false)
     {
         $base_url = Helper::$base_url;
-
         if (!empty($params['apikey']) && $endpoint !== 'info') {
             $base_url = Helper::$pro_url;
         }
@@ -287,14 +285,18 @@ class Helper
             $url .= "?{$data}";
         }
 
-        $response = wp_remote_retrieve_body(wp_remote_get($url));
+        for ($y = 0; $y < 5; $y++) {
+            try {
+                $response = json_decode(wp_remote_retrieve_body(wp_remote_get($url)), $assoc);
 
-//        $ch = curl_init();
-//        curl_setopt($ch, CURLOPT_URL, $url);
-//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-//        $response = curl_exec($ch);
-//        curl_close($ch);
+                if ($response->status == 'success') {
+                    return $response;
+                }
+            } catch (Exception $e) {
+                //
+            }
+        }
 
-        return json_decode($response, $assoc);
+        return json_decode('{"status": "error"}', $assoc);
     }
 }

@@ -602,7 +602,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 
 			$history = json_decode( $order->get_meta( 'cryptapi_history' ), true );
 
-			$calc = $this->calc_order( $history, $order->get_meta( 'cryptapi_total' ), $order->get_meta( 'cryptapi_total_fiat' ) );
+            $cryptapi_total = $order->get_meta( 'cryptapi_total' );
+            $order_total = $order->get_total( 'edit' );
+
+            $calc = $this->calc_order( $history, $cryptapi_total, $order_total );
 
 			$already_paid      = $calc['already_paid'];
 			$already_paid_fiat = $calc['already_paid_fiat'];
@@ -1143,7 +1146,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 
 			$min_tx = (float) $order->get_meta( 'cryptapi_min' );
 
-			$calc = $this->calc_order( $history, $order->get_meta( 'cryptapi_total' ), $order->get_meta( 'cryptapi_total_fiat' ) );
+            $cryptapi_total = $order->get_meta( 'cryptapi_total' );
+            $order_total = $order->get_total( 'edit' );
+
+			$calc = $this->calc_order( $history, $cryptapi_total,  $order_total);
 
 			$remaining         = $calc['remaining'];
 			$remaining_pending = $calc['remaining_pending'];
@@ -1155,10 +1161,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
                 if ( ($remaining === $remaining_pending && $remaining_pending > 0) || ((int)$order_id === $order->get_id() && $force && $remaining === $remaining_pending && $remaining_pending > 0)) {
 					$cryptapi_coin = $order->get_meta( 'cryptapi_currency' );
 
-					$crypto_total = CryptAPI\Helper::sig_fig( CryptAPI\Helper::get_conversion( $woocommerce_currency, $cryptapi_coin, $order->get_total( 'edit' ), $this->disable_conversion ), 6 );
+                    $crypto_conversion = (float) CryptAPI\Helper::get_conversion( $woocommerce_currency, $cryptapi_coin, $order_total, $this->disable_conversion );
+					$crypto_total = CryptAPI\Helper::sig_fig($crypto_conversion, 6 );
 					$order->update_meta_data( 'cryptapi_total', $crypto_total );
 
-					$calc_cron              = $this->calc_order( $history, $order->get_meta( 'cryptapi_total' ), $order->get_meta( 'cryptapi_total_fiat' ) );
+					$calc_cron              = $this->calc_order( $history, $crypto_total, $order_total );
 					$crypto_remaining_total = $calc_cron['remaining_pending'];
 
 					if ( $remaining_pending <= $min_tx && ! $remaining_pending <= 0 ) {
@@ -1171,7 +1178,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway {
 				}
 
 				$order->update_meta_data( 'cryptapi_last_price_update', time() );
-				$order->save();
+				$order->save_meta_data();
 			}
 
             if ( $order_timeout !== 0 && ( $order_timestamp + $order_timeout ) <= time() && $already_paid <= 0 && (int) $order->get_meta( 'cryptapi_cancelled' ) === 0 ) {
