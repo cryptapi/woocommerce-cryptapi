@@ -34,7 +34,7 @@ The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto dire
 * (DOGE) Dogecoin
 * (MATIC) Matic
 
-among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/pricing/).
+among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/cryptocurrencies/).
 
 = Auto-value conversion =
 
@@ -86,7 +86,7 @@ CryptAPI has no setup fees, no monthly fees, no hidden costs, and you don't even
 Simply set your crypto addresses and you're ready to go. As soon as your customers pay we forward your earnings directly to your own wallet.
 
 CryptAPI has a low 1% fee on the transactions processed. No hidden costs.
-For more info on our fees [click here](https://cryptapi.io/get_started/#fees)
+For more info on our fees [click here](https://cryptapi.io/fees/)
 
 == Installation ==
 
