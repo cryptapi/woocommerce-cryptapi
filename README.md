@@ -20,7 +20,7 @@ All you need is to provide your crypto address.
 
 The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto directly on your store, with a simple setup and no sign-ups required.
 
-####Accepted cryptocurrencies & tokens include:
+#### Accepted cryptocurrencies & tokens include:
 
 * (BTC) Bitcoin
 * (ETH) Ethereum
@@ -43,15 +43,33 @@ Supported currencies for automatic exchange rates are:
 * (USD) United States Dollar
 * (EUR) Euro
 * (GBP) Great Britain Pound
-* (JPY) Japanese Yen
-* (CNY) Chinese Yuan
-* (INR) Indian Rupee
 * (CAD) Canadian Dollar
+* (JPY) Japanese Yen
+* (AED) UAE Dollar
+* (MYR) Malaysian Ringgit
+* (IDR) Indonesian Rupiah
+* (THB) Thai Baht
+* (CHF) Swiss Franc
+* (COP) Colombian Peso
+* (SGD) Singapore Dollar
+* (RUB) Russian Ruble
+* (ZAR) South African Rand
+* (TRY) Turkish Lira
+* (LKR) Sri Lankan Rupee
+* (XAF) CFA Franc
+* (RON) Romanian Leu
+* (BGN) Bulgarian Lev
+* (HUF) Hungarian Forint
+* (CZK) Czech Koruna
+* (PHP) Philippine Peso
+* (PLN) Poland Zloti
+* (UGX) Uganda Shillings
+* (MXN) Mexican Peso
+* (INR) Indian Rupee
 * (HKD) Hong Kong Dollar
+* (CNY) Chinese Yuan
 * (BRL) Brazilian Real
 * (DKK) Danish Krone
-* (MXN) Mexican Peso
-* (AED) United Arab Emirates Dirham
 
 If your WooCommerce's currency is none of the above, the exchange rates will default to USD.
 If you're using WooCommerce in a different currency not listed here and need support, please [contact us](https://cryptapi.io) via our live chat.
@@ -323,6 +341,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 
 #### 4.7.6
 * Performance improvements
+* Minor fixes
+
+#### 4.7.7
 * Minor fixes
 
 ### Upgrade Notice

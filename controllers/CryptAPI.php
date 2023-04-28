@@ -2,6 +2,7 @@
 
 use Cryptapi\Helper;
 
+#[AllowDynamicProperties]
 class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 {
     private static $HAS_TRIGGERED = false;
@@ -364,7 +365,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'title' => esc_attr(__('API Key', 'cryptapi')),
                     'type' => 'text',
                     'default' => '',
-                    'description' => sprintf(esc_attr(__('Insert here your BlockBee API Key. You can get one here: %1$s', 'cryptapi')), '<a href="https://dash.blockbee.io/" target="_blank">https://dash.blockbee.io/</a>')
+                    'description' => sprintf(esc_attr(__('(Optional) Insert here your BlockBee API Key. You can get one here: %1$s', 'cryptapi')), '<a href="https://dash.blockbee.io/" target="_blank">https://dash.blockbee.io/</a>')
                 ),
             );
 
@@ -740,7 +741,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             $history[$data['uuid']] = [
                 'timestamp' => time(),
                 'value_paid' => CryptAPI\Helper::sig_fig($paid, 6),
-                'value_paid_fiat' => $conversion[get_woocommerce_currency()],
+                'value_paid_fiat' => $conversion[strtoupper($order->get_currency())],
                 'pending' => $data['pending']
             ];
         } else {

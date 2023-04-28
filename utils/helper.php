@@ -252,7 +252,8 @@ class Helper
 
     public static function sig_fig($value, $digits)
     {
-        if (strpos((string) $value, '.') !== false) {
+        $value = (string) $value;
+        if (strpos($value, '.') !== false) {
             if ($value[0] != '-') {
                 return bcadd($value, '0.' . str_repeat('0', $digits) . '5', $digits);
             }
@@ -289,7 +290,11 @@ class Helper
             try {
                 $response = json_decode(wp_remote_retrieve_body(wp_remote_get($url)), $assoc);
 
-                if ($response && $response->status == 'success' || !empty($response['btc'])) {
+                if ($assoc && !empty($response['btc'])) {
+                    return $response;
+                }
+
+                if ($response && $response->status === 'success') {
                     return $response;
                 }
             } catch (Exception $e) {
