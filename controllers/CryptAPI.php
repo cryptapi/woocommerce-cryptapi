@@ -719,6 +719,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function process_callback_data($data, $order, $validation = false)
     {
+        $coin = $data['coin'];
+
+        $saved_coin = $order->get_meta('cryptapi_currency');
+
         $paid = (float)$data['value_coin'];
 
         $min_tx = (float)$order->get_meta('cryptapi_min');
@@ -726,6 +730,14 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $crypto_coin = strtoupper($order->get_meta('cryptapi_currency'));
 
         $history = json_decode($order->get_meta('cryptapi_history'), true);
+
+        if ($coin !== $saved_coin) {
+            $order->add_order_note(
+                '[MISSMATCHED PAYMENT] Registered a ' . $paid . ' ' . strtoupper($coin) . '. Order not confirmed because requested currency is ' . $crypto_coin . '. If you wish, you may confirm it manually. (Funds were already forwarded to you).'
+            );
+
+            die("*ok*");
+        }
 
         if (!$data['uuid']) {
             if (!$validation) {
@@ -1478,7 +1490,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         }
 
         $ajax_url = add_query_arg(array(
-            'action' => 'blockbee_validate_logs',
+            'action' => 'cryptapi_validate_logs',
             'order_id' => $order->get_ID(),
         ), home_url('/wp-admin/admin-ajax.php'));
         ?>
