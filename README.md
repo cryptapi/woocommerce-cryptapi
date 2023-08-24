@@ -13,7 +13,7 @@ WooCommerce >= 5.8
 
 ### Description
 
-Accept payments in Bitcoin, Bitcoin Cash, Litecoin, Ethereum, Monero and IOTA directly to your crypto wallet, without any sign-ups or lengthy processes.
+Accept payments in Bitcoin, Bitcoin Cash, Litecoin, Ethereum and USDT directly to your crypto wallet, without any sign-ups or lengthy processes.
 All you need is to provide your crypto address.
 
 #### Allow users to pay with crypto directly on your store
@@ -26,10 +26,12 @@ The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto dire
 * (ETH) Ethereum
 * (BCH) Bitcoin Cash
 * (LTC) Litecoin
-* (XMR) Monero
 * (TRX) Tron
 * (BNB) Binance Coin
 * (USDT) USDT
+* (SHIB) Shiba Inu
+* (DOGE) Dogecoin
+* (MATIC) Matic
 
 among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/pricing/).
 
@@ -347,6 +349,10 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Minor fixes
 
 #### 4.7.8
+* Minor fixes
+
+#### 4.7.9
+* Support for WooCommerce HPOS.
 * Minor fixes
 
 ### Upgrade Notice

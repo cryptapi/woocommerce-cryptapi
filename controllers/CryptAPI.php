@@ -453,18 +453,18 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 if (typeof jQuery.fn.selectWoo !== 'undefined') {
                     jQuery('#payment_cryptapi_coin').selectWoo({
                         minimumResultsForSearch: -1,
-                        templateResult: formatState,
-                    });
+                        templateResult: formatState
+                    })
 
                     function formatState(opt) {
                         if (!opt.id) {
-                            return opt.text;
+                            return opt.text
                         }
-                        let optImage = jQuery(opt.element).attr('data-image');
+                        let optImage = jQuery(opt.element).attr('data-image')
                         if (!optImage) {
-                            return opt.text;
+                            return opt.text
                         } else {
-                            return jQuery('<span style="display:flex; align-items:center;"><img style="margin-right: 8px" src="' + optImage + '" width="24px" alt="' + opt.text + '" /> ' + opt.text + '</span>');
+                            return jQuery('<span style="display:flex; align-items:center;"><img style="margin-right: 8px" src="' + optImage + '" width="24px" alt="' + opt.text + '" /> ' + opt.text + '</span>')
                         }
                     }
                 }
@@ -668,11 +668,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 'show_min_fee' => $showMinFee,
                 'order_history' => json_decode($order->get_meta('cryptapi_history'), true),
                 'counter' => (string)$counter_calc,
-                'crypto_total' => (float) $order->get_meta('cryptapi_total'),
+                'crypto_total' => (float)$order->get_meta('cryptapi_total'),
                 'already_paid' => $already_paid,
-                'remaining' => (float) $remaining_pending <= 0 ? 0 : $remaining_pending,
-                'fiat_remaining' => (float) $remaining_fiat <= 0 ? 0 : $remaining_fiat,
-                'already_paid_fiat' => (float) $already_paid_fiat <= 0 ? 0 : $already_paid_fiat,
+                'remaining' => (float)$remaining_pending <= 0 ? 0 : $remaining_pending,
+                'fiat_remaining' => (float)$remaining_fiat <= 0 ? 0 : $remaining_fiat,
+                'already_paid_fiat' => (float)$already_paid_fiat <= 0 ? 0 : $already_paid_fiat,
                 'fiat_symbol' => get_woocommerce_currency_symbol(),
             ];
 
@@ -768,7 +768,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $remaining = $calc['remaining'];
         $remaining_pending = $calc['remaining_pending'];
 
-        $order_notes = $this->get_private_order_notes($order->get_id());
+        $order_notes = $this->get_private_order_notes($order);
 
         $has_pending = false;
         $has_confirmed = false;
@@ -1451,25 +1451,21 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         return $actions;
     }
 
-    function get_private_order_notes($order_id)
+    function get_private_order_notes($order)
     {
-        global $wpdb;
-
-        $table_perfixed = $wpdb->prefix . 'comments';
-        $results = $wpdb->get_results("
-        SELECT *
-        FROM $table_perfixed
-        WHERE  `comment_post_ID` = $order_id
-        AND  `comment_type` LIKE  'order_note'
-    ");
+        $results = wc_get_order_notes([
+            'order_in' => $order->get_id(),
+            'order__in' => $order->get_id()
+        ]);
 
         foreach ($results as $note) {
-            $order_note[] = array(
-                'note_id' => $note->comment_ID,
-                'note_date' => $note->comment_date,
-                'note_author' => $note->comment_author,
-                'note_content' => $note->comment_content,
-            );
+            if (!$note->customer_note) {
+                $order_note[] = array(
+                    'note_id' => $note->id,
+                    'note_date' => $note->date_created,
+                    'note_content' => $note->content,
+                );
+            }
         }
 
         return $order_note;
@@ -1504,17 +1500,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         </a>
         <script>
             jQuery(function () {
-                const validate_button = jQuery('#validate_callbacks');
+                const validate_button = jQuery('#validate_callbacks')
 
                 validate_button.on('click', function (e) {
-                    e.preventDefault();
-                    validate_callbacks();
-                    validate_button.html('<?php echo esc_attr(__('Checking', 'cryptapi'));?>');
+                    e.preventDefault()
+                    validate_callbacks()
+                    validate_button.html('<?php echo esc_attr(__('Checking', 'cryptapi'));?>')
                 })
 
                 function validate_callbacks() {
                     jQuery.getJSON('<?php echo $ajax_url?>').always(function () {
-                        window.location.reload();
+                        window.location.reload()
                     })
                 }
             })
