@@ -341,6 +341,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     'default' => '0',
                     'options' => array(
                         '0' => esc_attr(__('Never', 'cryptapi')),
+                        '900' => esc_attr(__('15 Minutes', 'cryptapi')),
+                        '1800' => esc_attr(__('30 Minutes', 'cryptapi')),
+                        '2700' => esc_attr(__('45 Minutes', 'cryptapi')),
                         '3600' => esc_attr(__('1 Hour', 'cryptapi')),
                         '21600' => esc_attr(__('6 Hours', 'cryptapi')),
                         '43200' => esc_attr(__('12 Hours', 'cryptapi')),
