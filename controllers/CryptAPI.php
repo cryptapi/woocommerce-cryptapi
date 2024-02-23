@@ -6,7 +6,6 @@ use Cryptapi\Helper;
 class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 {
     private static $HAS_TRIGGERED = false;
-    private static $COIN_OPTIONS = [];
 
     function __construct()
     {
@@ -28,9 +27,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             'subscription_date_changes',
             'multiple_subscriptions',
         );
-
-        $this->load_coins();
-
         $this->init_form_fields();
         $this->init_settings();
         $this->ca_settings();
@@ -65,20 +61,14 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function load_coins()
     {
-        if (!empty(WC_CryptAPI_Gateway::$COIN_OPTIONS)) {
-            return;
-        }
-
         $transient = get_transient('cryptapi_coins');
         if (!empty($transient)) {
-            WC_CryptAPI_Gateway::$COIN_OPTIONS = $transient;
-
-            return;
+            return $transient;
         }
 
         $coins = CryptAPI\Helper::get_supported_coins();
         set_transient('cryptapi_coins', $coins, 86400);
-        WC_CryptAPI_Gateway::$COIN_OPTIONS = $coins;
+        return $coins;
     }
 
     function admin_options()
@@ -179,6 +169,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     private function ca_settings()
     {
+        $load_coins = $this->load_coins();
+
         $this->enabled = $this->get_option('enabled');
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
@@ -198,8 +190,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $this->disable_conversion = $this->get_option('disable_conversion') === 'yes';
         $this->icon = '';
 
-        if (!empty(WC_CryptAPI_Gateway::$COIN_OPTIONS)) {
-            foreach (array_keys(WC_CryptAPI_Gateway::$COIN_OPTIONS) as $coin) {
+        if (!empty($load_coins)) {
+            foreach (array_keys($load_coins) as $coin) {
                 $this->{$coin . '_address'} = $this->get_option($coin . '_address');
             }
         }
@@ -207,8 +199,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function init_form_fields()
     {
+        $load_coins = $this->load_coins();
 
-        if (!empty(WC_CryptAPI_Gateway::$COIN_OPTIONS)) {
+        if (!empty($load_coins)) {
             $this->form_fields = array(
                 'enabled' => array(
                     'title' => esc_attr(__('Enabled', 'cryptapi')),
@@ -375,7 +368,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             $coin_description = esc_attr(__('Insert your %s address here. Leave the checkbox unselected if you want to skip this cryptocurrency', 'cryptapi'));
 
             $c = 0;
-            foreach (WC_CryptAPI_Gateway::$COIN_OPTIONS as $ticker => $coin) {
+            foreach ($load_coins as $ticker => $coin) {
                 $this->form_fields["{$ticker}_address"] = array(
                     'title' => is_array($coin) ? $coin['name'] : $coin,
                     'type' => 'cryptocurrency',
@@ -415,7 +408,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     }
 
     function payment_fields()
-    { ?>
+    {
+        $load_coins = $this->load_coins();
+        ?>
         <div class="form-row form-row-wide">
             <p><?php echo esc_attr($this->description); ?></p>
             <ul style="margin-top: 7px; list-style: none outside;">
@@ -432,12 +427,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                 $addr = $this->{$val . '_address'};
                                 $apikey = $this->api_key;
                                 if (!empty($addr) || !empty($apikey)) { ?>
-                                    <option data-image="<?php echo esc_url(WC_CryptAPI_Gateway::$COIN_OPTIONS[$val]['logo']); ?>"
+                                    <option data-image="<?php echo esc_url($load_coins[$val]['logo']); ?>"
                                             value="<?php echo esc_attr($val); ?>" <?php
                                     if (!empty($selected) && $selected === $val) {
                                         echo esc_attr("selected='true'");
                                     }
-                                    $crypto_name = is_array(WC_CryptAPI_Gateway::$COIN_OPTIONS[$val]) ? WC_CryptAPI_Gateway::$COIN_OPTIONS[$val]['name'] : WC_CryptAPI_Gateway::$COIN_OPTIONS[$val];
+                                    $crypto_name = is_array($load_coins[$val]) ? $load_coins[$val]['name'] : $load_coins[$val];
                                     ?>> <?php echo esc_attr(__('Pay with', 'cryptapi') . ' ' . $crypto_name); ?></option>
                                     <?php
                                 }
@@ -478,7 +473,8 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function validate_fields()
     {
-        return array_key_exists(sanitize_text_field($_POST['cryptapi_coin']), WC_CryptAPI_Gateway::$COIN_OPTIONS);
+        $load_coins = $this->load_coins();
+        return array_key_exists(sanitize_text_field($_POST['cryptapi_coin']), $load_coins);
     }
 
     function process_payment($order_id)
@@ -578,7 +574,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $order->add_meta_data('cryptapi_last_checked', $order->get_date_created()->getTimestamp());
                 $order->save_meta_data();
 
-                $order->update_status('on-hold', __('Awaiting payment', 'cryptapi') . ': ' . WC_CryptAPI_Gateway::$COIN_OPTIONS[$selected]);
+                $load_coins = $this->load_coins();
+
+                $order->update_status('on-hold', __('Awaiting payment', 'cryptapi') . ': ' . $load_coins[$selected]);
                 $woocommerce->cart->empty_cart();
 
                 return array(
