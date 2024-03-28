@@ -7,7 +7,7 @@ Accept cryptocurrency payments on your WooCommerce website
 
 ```
 PHP >= 7.2
-Wordpress >= 5
+Wordpress >= 5.8
 WooCommerce >= 5.8
 ```
 
@@ -33,7 +33,7 @@ The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto dire
 * (DOGE) Dogecoin
 * (MATIC) Matic
 
-among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/pricing/).
+among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/fees/).
 
 #### Auto-value conversion
 
@@ -84,7 +84,7 @@ CryptAPI has no setup fees, no monthly fees, no hidden costs, and you don't even
 Simply set your crypto addresses and you're ready to go. As soon as your customers pay we forward your earnings directly to your own wallet.
 
 CryptAPI has a low 1% fee on the transactions processed. No hidden costs.
-For more info on our fees [click here](https://cryptapi.io/pricing/)
+For more info on our fees [click here](https://cryptapi.io/fees/)
 
 ### Installation
 
@@ -138,17 +138,17 @@ This depends on the cryptocurrency you're using. Bitcoin usually takes up to 11 
 
 #### Is there a minimum for a payment?
 
-Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/get_started/#fees).
+Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/cryptocurrencies/).
 If the WooCommerce order total is below the chosen cryptocurrency's minimum, an error is raised to the user.
 
 #### Where can I find more documentation on your service?
 
-You can find more documentation about our service on our [get started](https://cryptapi.io/get_started) page, our [technical documentation](https://cryptapi.io/docs/) page or our [resources](https://cryptapi.io/resources/) page.
+You can find more documentation about our service on our [get started](https://cryptapi.io/get-started) page, our [technical documentation](https://docs.cryptapi.io/) page or our [eCommerce](https://cryptapi.io/ecommerce/) page.
 If there's anything else you need that is not covered on those pages, please get in touch with us, we're here to help you!
 
 #### Where can I get support? 
 
-The easiest and fastest way is via our live chat on our [website](https://cryptapi.io) or via our [contact form](https://cryptapi.io/contact/).
+The easiest and fastest way is via our live chat on our [website](https://cryptapi.io) or via our [contact form](https://cryptapi.io/contacts/).
 
 ### Screenshots
 
@@ -359,6 +359,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Add new choices for order cancellation.
 
 #### 4.7.11
+* Minor fixes and improvements
+
+#### 4.7.12
 * Minor fixes and improvements
 
 ### Upgrade Notice

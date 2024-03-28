@@ -1,9 +1,9 @@
 === CryptAPI Payment Gateway for WooCommerce ===
 Contributors: cryptapi
 Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, litecoin, bitcoin cash, shib, doge
-Requires at least: 5
-Tested up to: 6.4.3
-Stable tag: 4.7.11
+Requires at least: 5.8
+Tested up to: 6.5
+Stable tag: 4.7.12
 Requires PHP: 7.2
 WC requires at least: 5.8
 WC tested up to: 8.6.1
@@ -140,17 +140,17 @@ This depends on the cryptocurrency you're using. Bitcoin usually takes up to 11 
 
 = Is there a minimum for a payment? =
 
-Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/pricing/).
+Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/fees/).
 If the WooCommerce order total is below the chosen cryptocurrency's minimum, an error is raised to the user.
 
 = Where can I find more documentation on your service? =
 
-You can find more documentation about our service on our [get started](https://cryptapi.io/get_started) page, our [technical documentation](https://cryptapi.io/docs/) page or our [resources](https://cryptapi.io/resources/) page.
+You can find more documentation about our service on our [get started](https://cryptapi.io/get-started) page, our [technical documentation](https://docs.cryptapi.io/) page or our [eCommerce](https://cryptapi.io/ecommerce/) page.
 If there's anything else you need that is not covered on those pages, please get in touch with us, we're here to help you!
 
 = Where can I get support? =
 
-The easiest and fastest way is via our live chat on our [website](https://cryptapi.io), via our [contact form](https://cryptapi.io/contact/), via [discord](https://discord.gg/pQaJ32SGrR) or via [telegram](https://t.me/cryptapi_support).
+The easiest and fastest way is via our live chat on our [website](https://cryptapi.io), via our [contact form](https://cryptapi.io/contacts/), via [discord](https://discord.gg/pQaJ32SGrR) or via [telegram](https://t.me/cryptapi_support).
 
 == Screenshots ==
 
@@ -357,6 +357,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Add new choices for order cancellation.
 
 = 4.7.11 =
+* Minor fixes and improvements
+
+= 4.7.12 =
 * Minor fixes and improvements
 
 == Upgrade Notice ==
