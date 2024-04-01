@@ -10,12 +10,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2022-02-11T16:36:51+01:00\n"
-"PO-Revision-Date: 2023-08-25 18:04+0000\n"
+"PO-Revision-Date: 2024-04-01 14:58+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: cryptapi\n"
 "Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Loco-Version: 2.6.1; wp-6.0"
+"X-Loco-Version: 2.6.7; wp-6.4.3"
 
 #: controllers/CryptAPI.php:364
 #| msgid ""
@@ -44,7 +44,7 @@ msgid ""
 "(Optional) Insert here your BlockBee API Key. You can get one here: %1$s"
 msgstr ""
 "(Opcional) Insira aqui sua chave de API BlockBee. Você pode obter um aqui: "
-"%1$s\n"
+"%1$s"
 
 #: controllers/CryptAPI.php:347
 msgid "1 Hour"
