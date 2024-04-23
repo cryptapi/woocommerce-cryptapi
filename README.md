@@ -1,4 +1,4 @@
-[<img src="https://i.imgur.com/IfMAa7E.png" width="300"/>](image.png)
+[<img src="https://i.imgur.com/IfMAa7E.png" width="300"/>](image.png) photo_2024-04-23_12-31-33.jpg
 
 # Cryptopadie Payment Gateway for WooCommerce
 Accept cryptocurrency payments on your WooCommerce website
