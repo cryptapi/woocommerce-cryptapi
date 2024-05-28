@@ -73,6 +73,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
         $coins = CryptAPI\Helper::get_supported_coins();
         set_transient('cryptapi_coins', $coins, 86400);
+
+        if (empty($coins)) {
+            throw new Exception(__('No cryptocurrencies available at the moment. Please choose a different payment method or try again later.', 'cryptapi'));
+        }
+
         return $coins;
     }
 
@@ -174,7 +179,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     private function ca_settings()
     {
-        $load_coins = $this->load_coins();
+        $load_coins = [];
+        try {
+            $load_coins = $this->load_coins();
+        } catch (Exception $e) {
+            //
+        }
 
         $this->enabled = $this->get_option('enabled');
         $this->title = $this->get_option('title');
@@ -204,7 +214,12 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function init_form_fields()
     {
-        $load_coins = $this->load_coins();
+        $load_coins = [];
+        try {
+            $load_coins = $this->load_coins();
+        } catch (Exception $e) {
+            //
+        }
 
         if (!empty($load_coins)) {
             $this->form_fields = array(
@@ -414,7 +429,16 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function payment_fields()
     {
-        $load_coins = $this->load_coins();
+        try {
+            $load_coins = $this->load_coins();
+        } catch (Exception $e) {
+            ?>
+            <div class="woocommerce-error">
+                <?php echo __('Sorry, there has been an error.', 'woocommerce'); ?>
+            </div>
+            <?php
+            return;
+        }
         ?>
         <div class="form-row form-row-wide">
             <p><?php echo esc_attr($this->description); ?></p>
