@@ -79,8 +79,6 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             }
         }
 
-        $coins['eth']['name'] = $coins['eth']['name'] . ' (ERC20)';
-
         # Disabling XMR since it is not supported anymore.
         unset($coins['xmr']);
 
@@ -909,6 +907,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         }
 
         $total = $order->get_total();
+        $coins = $this->load_coins();
         $currency_symbol = get_woocommerce_currency_symbol();
         $address_in = $order->get_meta('cryptapi_address');
         $crypto_value = $order->get_meta('cryptapi_total');
@@ -987,6 +986,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                             <?php
                                         }
                                         ?>
+                                        <div class="ca_qrcode_coin">
+                                            <?php echo esc_attr(strtoupper($coins[$crypto_coin]['name'])); ?>
+                                        </div>
                                     </figure>
                                     <?php
                                     if ($qr_code_setting != 'hide_ammount' && $qr_code_setting != 'hide_without_ammount') {
@@ -1029,6 +1031,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                         <img class="ca_qrcode no_value"
                                              src="data:image/png;base64,<?php echo esc_attr($qr_code_img); ?>"
                                              alt="<?php echo esc_attr(__('QR Code without value', 'cryptapi')); ?>"/>
+                                        <div class="ca_qrcode_coin">
+                                            <?php echo esc_attr(strtoupper($coins[$crypto_coin]['name'])); ?>
+                                        </div>
                                     </figure>
                                     <div class="ca_qrcode_buttons">
                                         <button class="ca_qrcode_btn no_value active"
@@ -1064,7 +1069,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                             </div>
                             <div class="ca_payment_notification ca_notification_remaining" style="display: none">
                                 <?php echo '<strong>' . esc_attr(__('Notice', 'cryptapi')) . '</strong>: ' . sprintf(esc_attr(__('For technical reasons, the minimum amount for each transaction is %1s, so we adjusted the value by adding the remaining to it.', 'cryptapi')),
-                                        $min_tx . ' ' . strtoupper($crypto_coin),
+                                        $min_tx . ' ' . esc_attr(strtoupper($coins[$crypto_coin]['name'])),
                                         '<span class="ca_notification_remaining"></span>'
                                     ); ?>
                             </div>
@@ -1073,7 +1078,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                 ?>
                                 <div class="ca_time_refresh">
                                     <?php echo sprintf(esc_attr(__('The %1s conversion rate will be adjusted in', 'cryptapi')),
-                                        strtoupper($crypto_coin)
+                                        esc_attr(strtoupper($coins[$crypto_coin]['name']))
                                     ); ?>
                                     <span class="ca_time_seconds_count"
                                           data-soon="<?php echo esc_attr(__('a moment', 'cryptapi')); ?>"
