@@ -67,16 +67,22 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     function load_coins()
     {
         $transient = get_transient('cryptapi_coins');
+
         if (!empty($transient)) {
-            return $transient;
+            $coins = $transient;
+        } else {
+            $coins = CryptAPI\Helper::get_supported_coins();
+            set_transient('cryptapi_coins', $coins, 86400);
+
+            if (empty($coins)) {
+                throw new Exception(__('No cryptocurrencies available at the moment. Please choose a different payment method or try again later.', 'cryptapi'));
+            }
         }
 
-        $coins = CryptAPI\Helper::get_supported_coins();
-        set_transient('cryptapi_coins', $coins, 86400);
+        $coins['eth']['name'] = $coins['eth']['name'] . ' (ERC20)';
 
-        if (empty($coins)) {
-            throw new Exception(__('No cryptocurrencies available at the moment. Please choose a different payment method or try again later.', 'cryptapi'));
-        }
+        # Disabling XMR since it is not supported anymore.
+        unset($coins['xmr']);
 
         return $coins;
     }
