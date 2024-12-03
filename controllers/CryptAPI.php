@@ -837,9 +837,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
             if ($remaining > 0) {
                 if ($remaining <= $min_tx) {
-                    $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $min_tx . $crypto_coin, false);
+                    $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $min_tx . ' ' . $crypto_coin, false);
                 } else {
-                    $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $remaining . $crypto_coin, false);
+                    $order->add_order_note(__('Payment detected and confirmed. Customer still need to send', 'cryptapi') . ' ' . $remaining . ' ' . $crypto_coin, false);
                 }
             }
         }
@@ -1087,6 +1087,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                                 <?php
                             }
                             ?>
+                            <div class="ca_send_warning">
+                                <?php echo esc_attr(__('Note: If using an exchange please add the exchange fee to the sent amount. Exchanges usually deduct the fee from the sent amount.', 'cryptapi')); ?>
+                            </div>
                             <div class="ca_details_input">
                                 <span><?php echo esc_attr($address_in) ?></span>
                                 <button class="ca_copy ca_copy_icon" data-tocopy="<?php echo esc_attr($address_in); ?>">
@@ -1474,9 +1477,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         }
 
         if ($email->id == 'customer_on_hold_order') {
-            WC_CryptAPI_Gateway::$HAS_TRIGGERED = true;
             echo '<a style="display:block;text-align:center;margin: 40px auto; font-size: 16px; font-weight: bold;" href="' . esc_url($this->get_return_url($order)) . '" target="_blank">' . __('Check your payment status', 'cryptapi') . '</a>';
         }
+
+        WC_CryptAPI_Gateway::$HAS_TRIGGERED = true;
     }
 
     function add_order_link($actions, $order)

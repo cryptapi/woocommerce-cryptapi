@@ -290,6 +290,11 @@ class Helper
             try {
                 $response = json_decode(wp_remote_retrieve_body(wp_remote_get($url)), $assoc);
 
+                if ($response->status === 'error') {
+                    // If API is giving error, no point is keeping retrying since result will be the same.
+                    return $response;
+                }
+
                 if ($assoc && !empty($response['btc'])) {
                     return $response;
                 }
