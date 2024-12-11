@@ -1485,7 +1485,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function add_order_link($actions, $order)
     {
-        if ($order->has_status('on-hold')) {
+        if ($order->has_status('on-hold') && $order->get_payment_method() === 'cryptapi') {
             $action_slug = 'ca_payment_url';
 
             $actions[$action_slug] = array(
