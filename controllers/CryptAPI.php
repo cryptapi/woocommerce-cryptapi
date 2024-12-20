@@ -1,11 +1,37 @@
 <?php
 
-use Cryptapi\Helper;
+namespace CryptAPI\Controllers;
+
+require_once CRYPTAPI_PLUGIN_PATH . 'utils/Api.php';
+require_once CRYPTAPI_PLUGIN_PATH . 'utils/Helper.php';
+
+use AllowDynamicProperties;
+use Exception;
 
 #[AllowDynamicProperties]
-class WC_CryptAPI_Gateway extends WC_Payment_Gateway
+class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 {
     private static $HAS_TRIGGERED = false;
+
+    public $id;
+    public $enabled;
+    public $title;
+    public $description;
+    public $api_key;
+    public $qrcode_size;
+    public $qrcode_default;
+    public $qrcode_setting;
+    public $coins;
+    public $show_branding;
+    public $show_crypto_logos;
+    public $color_scheme;
+    public $refresh_value_interval;
+    public $order_cancelation_timeout;
+    public $add_blockchain_fee;
+    public $fee_order_percentage;
+    public $virtual_complete;
+    public $disable_conversion;
+    public $icon;
 
     function __construct()
     {
@@ -61,17 +87,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function reset_load_coins() {
         delete_transient('cryptapi_coins');
-        $this->load_coins();
+        self::load_coins();
     }
 
-    function load_coins()
+    static function load_coins()
     {
         $transient = get_transient('cryptapi_coins');
 
         if (!empty($transient)) {
             $coins = $transient;
         } else {
-            $coins = CryptAPI\Helper::get_supported_coins();
+            $coins = \CryptAPI\Utils\Api::get_supported_coins();
             set_transient('cryptapi_coins', $coins, 86400);
 
             if (empty($coins)) {
@@ -185,7 +211,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     {
         $load_coins = [];
         try {
-            $load_coins = $this->load_coins();
+            $load_coins = self::load_coins();
         } catch (Exception $e) {
             //
         }
@@ -220,7 +246,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     {
         $load_coins = [];
         try {
-            $load_coins = $this->load_coins();
+            $load_coins = self::load_coins();
         } catch (Exception $e) {
             //
         }
@@ -434,7 +460,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     function payment_fields()
     {
         try {
-            $load_coins = $this->load_coins();
+            $load_coins = self::load_coins();
         } catch (Exception $e) {
             ?>
             <div class="woocommerce-error">
@@ -506,7 +532,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function validate_fields()
     {
-        $load_coins = $this->load_coins();
+        $load_coins = self::load_coins();
         return array_key_exists(sanitize_text_field($_POST['cryptapi_coin']), $load_coins);
     }
 
@@ -536,15 +562,15 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             ), home_url('/')));
 
             try {
-                $order = new WC_Order($order_id);
+                $order = new \WC_Order($order_id);
 
                 if (in_array('woocommerce-subscriptions/woocommerce-subscriptions.php', apply_filters('active_plugins', get_option('active_plugins')))) {
 
                     if (wcs_order_contains_subscription($order_id)) {
 
-                        $sign_up_fee = (WC_Subscriptions_Order::get_sign_up_fee($order)) ? 0 : WC_Subscriptions_Order::get_sign_up_fee($order);
-                        $initial_payment = (WC_Subscriptions_Order::get_total_initial_payment($order)) ? 0 : WC_Subscriptions_Order::get_total_initial_payment($order);
-                        $price_per_period = (WC_Subscriptions_Order::get_recurring_total($order)) ? 0 : WC_Subscriptions_Order::get_recurring_total($order);
+                        $sign_up_fee = (\WC_Subscriptions_Order::get_sign_up_fee($order)) ? 0 : \WC_Subscriptions_Order::get_sign_up_fee($order);
+                        $initial_payment = (\WC_Subscriptions_Order::get_total_initial_payment($order)) ? 0 : \WC_Subscriptions_Order::get_total_initial_payment($order);
+                        $price_per_period = (\WC_Subscriptions_Order::get_recurring_total($order)) ? 0 : \WC_Subscriptions_Order::get_recurring_total($order);
 
                         $total = $sign_up_fee + $initial_payment + $price_per_period + $order->get_total('edit');
 
@@ -566,10 +592,10 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
                 $currency = get_woocommerce_currency();
 
-                $info = CryptAPI\Helper::get_info($selected);
-                $min_tx = CryptAPI\Helper::sig_fig($info->minimum_transaction_coin, 8);
+                $info = \CryptAPI\Utils\Api::get_info($selected);
+                $min_tx = \CryptAPI\Utils\Helper::sig_fig($info->minimum_transaction_coin, 8);
 
-                $crypto_total = CryptAPI\Helper::get_conversion($currency, $selected, $total, $this->disable_conversion);
+                $crypto_total = \CryptAPI\Utils\Api::get_conversion($currency, $selected, $total, $this->disable_conversion);
 
                 if ($crypto_total < $min_tx) {
                     wc_add_notice(__('Payment error:', 'woocommerce') . ' ' . __('Value too low, minimum is', 'cryptapi') . ' ' . $min_tx . ' ' . strtoupper($selected), 'error');
@@ -577,7 +603,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     return null;
                 }
 
-                $ca = new CryptAPI\Helper($selected, $addr, $api_key, $callback_url, [], true);
+                $ca = new \CryptAPI\Utils\Api($selected, $addr, $api_key, $callback_url, [], true);
 
                 $addr_in = $ca->get_address();
 
@@ -587,14 +613,14 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     return null;
                 }
 
-                $qr_code_data_value = CryptAPI\Helper::get_static_qrcode($addr_in, $selected, $crypto_total, $this->qrcode_size);
-                $qr_code_data = CryptAPI\Helper::get_static_qrcode($addr_in, $selected, '', $this->qrcode_size);
+                $qr_code_data_value = \CryptAPI\Utils\Api::get_static_qrcode($addr_in, $selected, $crypto_total, $this->qrcode_size);
+                $qr_code_data = \CryptAPI\Utils\Api::get_static_qrcode($addr_in, $selected, '', $this->qrcode_size);
 
                 $order->add_meta_data('cryptapi_version', CRYPTAPI_PLUGIN_VERSION);
                 $order->add_meta_data('cryptapi_php_version', PHP_VERSION);
                 $order->add_meta_data('cryptapi_nonce', $nonce);
                 $order->add_meta_data('cryptapi_address', $addr_in);
-                $order->add_meta_data('cryptapi_total', CryptAPI\Helper::sig_fig($crypto_total, 8));
+                $order->add_meta_data('cryptapi_total', \CryptAPI\Utils\Helper::sig_fig($crypto_total, 8));
                 $order->add_meta_data('cryptapi_total_fiat', $total);
                 $order->add_meta_data('cryptapi_currency', $selected);
                 $order->add_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
@@ -607,7 +633,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                 $order->add_meta_data('cryptapi_last_checked', $order->get_date_created()->getTimestamp());
                 $order->save_meta_data();
 
-                $load_coins = $this->load_coins();
+                $load_coins = self::load_coins();
 
                 $order->update_status('on-hold', __('Awaiting payment', 'cryptapi') . ': ' . $load_coins[$selected]);
                 $woocommerce->cart->empty_cart();
@@ -631,9 +657,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
     function validate_payment()
     {
-        $data = CryptAPI\Helper::process_callback($_GET);
+        $data = \CryptAPI\Utils\Api::process_callback($_GET);
 
-        $order = new WC_Order($data['order_id']);
+        $order = new \WC_Order($data['order_id']);
 
         if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
             die("*ok*");
@@ -651,7 +677,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $order_id = sanitize_text_field($_REQUEST['order_id']);
 
         try {
-            $order = new WC_Order($order_id);
+            $order = new \WC_Order($order_id);
             $counter_calc = (int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval - time();
 
             if (!$order->is_paid()) {
@@ -659,7 +685,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
                     $updated = $this->refresh_value($order);
 
                     if ($updated) {
-                        $order = new WC_Order($order_id);
+                        $order = new \WC_Order($order_id);
                         $counter_calc = (int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval - time();
                     }
                 }
@@ -724,11 +750,11 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
     function validate_logs()
     {
         $order_id = sanitize_text_field($_REQUEST['order_id']);
-        $order = new WC_Order($order_id);
+        $order = new \WC_Order($order_id);
 
         try {
 
-            $callbacks = CryptAPI\Helper::check_logs($order->get_meta('cryptapi_callback_url'), $order->get_meta('cryptapi_currency'));
+            $callbacks = \CryptAPI\Utils\Api::check_logs($order->get_meta('cryptapi_callback_url'), $order->get_meta('cryptapi_currency'));
 
             $order->update_meta_data('cryptapi_last_checked', time());
             $order->save_meta_data();
@@ -786,7 +812,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
 
             $history[$data['uuid']] = [
                 'timestamp' => time(),
-                'value_paid' => CryptAPI\Helper::sig_fig($paid, 8),
+                'value_paid' => \CryptAPI\Utils\Helper::sig_fig($paid, 8),
                 'value_paid_fiat' => $conversion[strtoupper($order->get_currency())],
                 'pending' => $data['pending']
             ];
@@ -879,9 +905,9 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
          * Refreshes the QR Code. If payment is marked as completed, it won't get here.
          */
         if ($remaining <= $min_tx) {
-            $order->update_meta_data('cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $min_tx, $this->qrcode_size)['qr_code']);
+            $order->update_meta_data('cryptapi_qr_code_value', \CryptAPI\Utils\Api::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $min_tx, $this->qrcode_size)['qr_code']);
         } else {
-            $order->update_meta_data('cryptapi_qr_code_value', CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $remaining_pending, $this->qrcode_size)['qr_code']);
+            $order->update_meta_data('cryptapi_qr_code_value', \CryptAPI\Utils\Api::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), $remaining_pending, $this->qrcode_size)['qr_code']);
         }
 
         $order->save();
@@ -898,16 +924,16 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         }
         WC_CryptAPI_Gateway::$HAS_TRIGGERED = true;
 
-        $order = new WC_Order($order_id);
+        $order = new \WC_Order($order_id);
         // run value conversion
         $updated = $this->refresh_value($order);
 
         if ($updated) {
-            $order = new WC_Order($order_id);
+            $order = new \WC_Order($order_id);
         }
 
         $total = $order->get_total();
-        $coins = $this->load_coins();
+        $coins = self::load_coins();
         $currency_symbol = get_woocommerce_currency_symbol();
         $address_in = $order->get_meta('cryptapi_address');
         $crypto_value = $order->get_meta('cryptapi_total');
@@ -1265,14 +1291,14 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         if (!empty($history)) {
             foreach ($history as $uuid => $item) {
                 if ((int)$item['pending'] === 0) {
-                    $remaining = bcsub(CryptAPI\Helper::sig_fig($remaining, 8), $item['value_paid'], 8);
+                    $remaining = bcsub(\CryptAPI\Utils\Helper::sig_fig($remaining, 8), $item['value_paid'], 8);
                 }
 
-                $remaining_pending = bcsub(CryptAPI\Helper::sig_fig($remaining_pending, 8), $item['value_paid'], 8);
-                $remaining_fiat = bcsub(CryptAPI\Helper::sig_fig($remaining_fiat, 8), $item['value_paid_fiat'], 8);
+                $remaining_pending = bcsub(\CryptAPI\Utils\Helper::sig_fig($remaining_pending, 8), $item['value_paid'], 8);
+                $remaining_fiat = bcsub(\CryptAPI\Utils\Helper::sig_fig($remaining_fiat, 8), $item['value_paid_fiat'], 8);
 
-                $already_paid = bcadd(CryptAPI\Helper::sig_fig($already_paid, 8), $item['value_paid'], 8);
-                $already_paid_fiat = bcadd(CryptAPI\Helper::sig_fig($already_paid_fiat, 8), $item['value_paid_fiat'], 8);
+                $already_paid = bcadd(\CryptAPI\Utils\Helper::sig_fig($already_paid, 8), $item['value_paid'], 8);
+                $already_paid_fiat = bcadd(\CryptAPI\Utils\Helper::sig_fig($already_paid_fiat, 8), $item['value_paid_fiat'], 8);
             }
         }
 
@@ -1294,7 +1320,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         $order = $renewal_order;
 
         $costumer_id = get_post_meta($order->get_id(), '_customer_user', true);
-        $customer = new WC_Customer($costumer_id);
+        $customer = new \WC_Customer($costumer_id);
 
         if (empty($order->get_meta('cryptapi_paid'))) {
             $mailer = WC()->mailer();
@@ -1428,7 +1454,7 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
             }
 
             if (!empty($selected) && $selected != 'none' && $this->add_blockchain_fee) {
-                $est = CryptAPI\Helper::get_estimate($selected);
+                $est = \CryptAPI\Utils\Api::get_estimate($selected);
 
                 $fee_order += (float)$est->{get_woocommerce_currency()};
             }
@@ -1587,17 +1613,17 @@ class WC_CryptAPI_Gateway extends WC_Payment_Gateway
         if ((int)$last_price_update + $value_refresh < time() && !empty($last_price_update) && $remaining === $remaining_pending && $remaining_pending > 0) {
             $cryptapi_coin = $order->get_meta('cryptapi_currency');
 
-            $crypto_conversion = (float)CryptAPI\Helper::get_conversion($woocommerce_currency, $cryptapi_coin, $order_total, $this->disable_conversion);
-            $crypto_total = CryptAPI\Helper::sig_fig($crypto_conversion, 8);
+            $crypto_conversion = (float)\CryptAPI\Utils\Api::get_conversion($woocommerce_currency, $cryptapi_coin, $order_total, $this->disable_conversion);
+            $crypto_total = \CryptAPI\Utils\Helper::sig_fig($crypto_conversion, 8);
             $order->update_meta_data('cryptapi_total', $crypto_total);
 
             $calc_cron = $this->calc_order($history, $crypto_total, $order_total);
             $crypto_remaining_total = $calc_cron['remaining_pending'];
 
             if ($remaining_pending <= $min_tx && !$remaining_pending <= 0) {
-                $qr_code_data_value = CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $min_tx, $this->qrcode_size);
+                $qr_code_data_value = \CryptAPI\Utils\Api::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $min_tx, $this->qrcode_size);
             } else {
-                $qr_code_data_value = CryptAPI\Helper::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $crypto_remaining_total, $this->qrcode_size);
+                $qr_code_data_value = \CryptAPI\Utils\Api::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $crypto_remaining_total, $this->qrcode_size);
             }
 
             $order->update_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);

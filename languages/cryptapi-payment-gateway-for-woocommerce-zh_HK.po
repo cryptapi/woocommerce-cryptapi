@@ -5,20 +5,20 @@ msgstr ""
 "Project-Id-Version: CryptAPI Payment Gateway for WooCommerce 4.7.9\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/cryptapi-payment-"
 "gateway-for-woocommerce\n"
-"Last-Translator: \n"
+"Last-Translator: Test Test\n"
 "Language-Team: Chinese (Hong Kong)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2023-08-25T17:58:31+00:00\n"
-"PO-Revision-Date: 2024-12-03 17:22+0000\n"
+"PO-Revision-Date: 2024-12-20 15:19+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: cryptapi\n"
 "Language: zh_HK\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Loco-Version: 2.6.7; wp-6.4.3"
+"X-Loco-Version: 2.6.14; wp-6.7.1"
 
-#: controllers/CryptAPI.php:381
+#: controllers/CryptAPI.php:407
 msgid ""
 "%2$s Attention: This option will disable the price conversion for ALL "
 "cryptocurrencies! %3$s %1$s If you check this, pricing will not be converted "
@@ -29,44 +29,44 @@ msgstr ""
 "%2$s 注意：此选项将禁用所有加密货币的价格转换！%3$s %1$s "
 "如果您选中此项，定价将不会从您商店的货币转换为用户选择的加密货币，且无论选择哪种加密货币，用户都将被要求支付与您商店显示的相同价值"
 
-#: controllers/CryptAPI.php:388
+#: controllers/CryptAPI.php:414
 msgid ""
 "(Optional) Insert here your BlockBee API Key. You can get one here: %1$s"
 msgstr "(可选）在此处输入您的BlockBee API密钥。您可以在这里获取一个：%1$s"
 
-#: controllers/CryptAPI.php:364
+#: controllers/CryptAPI.php:390
 msgid "1 Hour"
 msgstr "1小时"
 
-#: controllers/CryptAPI.php:366
+#: controllers/CryptAPI.php:392
 msgid "12 Hours"
 msgstr "12小时"
 
-#: controllers/CryptAPI.php:361
+#: controllers/CryptAPI.php:387
 msgid "15 Minutes"
 msgstr "15分钟"
 
-#: controllers/CryptAPI.php:367
+#: controllers/CryptAPI.php:393
 msgid "18 Hours"
 msgstr "18小时"
 
-#: controllers/CryptAPI.php:368
+#: controllers/CryptAPI.php:394
 msgid "24 Hours"
 msgstr "24小时"
 
-#: controllers/CryptAPI.php:362
+#: controllers/CryptAPI.php:388
 msgid "30 Minutes"
 msgstr "30分钟"
 
-#: controllers/CryptAPI.php:363
+#: controllers/CryptAPI.php:389
 msgid "45 Minutes"
 msgstr "45分钟"
 
-#: controllers/CryptAPI.php:365
+#: controllers/CryptAPI.php:391
 msgid "6 Hours"
 msgstr "6小时"
 
-#: controllers/CryptAPI.php:1084
+#: controllers/CryptAPI.php:1110
 msgid "a moment"
 msgstr "片刻后调整"
 
@@ -75,59 +75,59 @@ msgstr "片刻后调整"
 msgid "Accept cryptocurrency payments on your WooCommerce website"
 msgstr "在您的WooCommerce网站上接受加密货币支付"
 
-#: controllers/CryptAPI.php:262
+#: controllers/CryptAPI.php:288
 msgid "Add the blockchain fee to the order"
 msgstr "将区块链费用加到订单中"
 
-#: controllers/CryptAPI.php:1006 controllers/CryptAPI.php:1041
+#: controllers/CryptAPI.php:1032 controllers/CryptAPI.php:1067
 msgid "ADDRESS"
 msgstr "地址"
 
-#: controllers/CryptAPI.php:1366
+#: controllers/CryptAPI.php:1392
 msgid "Addresses"
 msgstr "地址"
 
-#: controllers/CryptAPI.php:385
+#: controllers/CryptAPI.php:411
 msgid "API Key"
 msgstr "API密钥"
 
-#: controllers/CryptAPI.php:337
+#: controllers/CryptAPI.php:363
 msgid "Auto"
 msgstr "自动"
 
-#: controllers/CryptAPI.php:612
+#: controllers/CryptAPI.php:638
 msgid "Awaiting payment"
 msgstr "等待支付"
 
-#: controllers/CryptAPI.php:1545
+#: controllers/CryptAPI.php:1571
 msgid "Check for Callbacks"
 msgstr "检查回调"
 
-#: controllers/CryptAPI.php:1480
+#: controllers/CryptAPI.php:1506
 msgid "Check your payment status"
 msgstr "检查您的支付状态"
 
-#: controllers/CryptAPI.php:1554
+#: controllers/CryptAPI.php:1580
 msgid "Checking"
 msgstr "正在检查"
 
-#: controllers/CryptAPI.php:1125
+#: controllers/CryptAPI.php:1151
 msgid "Close QR CODE"
 msgstr "关闭二维码"
 
-#: controllers/CryptAPI.php:330
+#: controllers/CryptAPI.php:356
 msgid "Color Scheme"
 msgstr "配色方案"
 
-#: controllers/CryptAPI.php:373
+#: controllers/CryptAPI.php:399
 msgid "Completed status for virtual products"
 msgstr "虚拟产品的完成状态"
 
-#: controllers/CryptAPI.php:1059 controllers/CryptAPI.php:1098
+#: controllers/CryptAPI.php:1085 controllers/CryptAPI.php:1124
 msgid "COPIED!"
 msgstr "已复制！"
 
-#: controllers/CryptAPI.php:1057 controllers/CryptAPI.php:1096
+#: controllers/CryptAPI.php:1083 controllers/CryptAPI.php:1122
 msgid "COPY"
 msgstr "复制"
 
@@ -136,7 +136,7 @@ msgstr "复制"
 msgid "cryptapi"
 msgstr "cryptapi"
 
-#: controllers/CryptAPI.php:16
+#: controllers/CryptAPI.php:42
 msgid "CryptAPI allows customers to pay in cryptocurrency"
 msgstr "CryptAPI允许客户使用加密货币支付"
 
@@ -145,94 +145,94 @@ msgstr "CryptAPI允许客户使用加密货币支付"
 msgid "CryptAPI Payment Gateway for WooCommerce"
 msgstr "CryptAPI WooCommerce支付网关"
 
-#: CryptAPI.php:26
+#: CryptAPI.php:52
 msgid ""
 "CryptAPI requires PHP's BCMath extension. You can know more about it %s."
 msgstr "CryptAPI需要PHP的BCMath扩展。您可以了解更多关于它的信息%s。"
 
-#: CryptAPI.php:21
+#: CryptAPI.php:45
 msgid ""
 "CryptAPI requires WooCommerce to be installed and active. You can download "
 "%s here."
 msgstr "CryptAPI需要WooCommerce被安装并激活。您可以在这里下载%s。"
 
-#: controllers/CryptAPI.php:240
+#: controllers/CryptAPI.php:266
 msgid "Cryptocurrency"
 msgstr "加密货币"
 
-#: controllers/CryptAPI.php:336
+#: controllers/CryptAPI.php:362
 msgid "Dark"
 msgstr "深色"
 
-#: controllers/CryptAPI.php:323
+#: controllers/CryptAPI.php:349
 msgid "Default Amount"
 msgstr "默认金额"
 
-#: controllers/CryptAPI.php:322
+#: controllers/CryptAPI.php:348
 msgid "Default Without Amount"
 msgstr "默认不带金额"
 
-#: controllers/CryptAPI.php:244
+#: controllers/CryptAPI.php:270
 msgid "Description"
 msgstr "描述"
 
-#: controllers/CryptAPI.php:379
+#: controllers/CryptAPI.php:405
 msgid "Disable price conversion"
 msgstr "禁用价格转换"
 
-#: controllers/CryptAPI.php:233
+#: controllers/CryptAPI.php:259
 msgid "Enable CryptAPI Payments"
 msgstr "启用CryptAPI支付"
 
-#: controllers/CryptAPI.php:258
+#: controllers/CryptAPI.php:284
 msgid ""
 "Enable this to show the cryptocurrencies logos in the checkout %1$s %2$s "
 "Notice: %3$s It may break in some templates. Use at your own risk."
 msgstr "启用此功能在结账时显示加密货币标志 %1$s %2$s 注意：%3$s 这可能会破坏某些模板。请自行承担风险。"
 
-#: controllers/CryptAPI.php:231
+#: controllers/CryptAPI.php:257
 msgid "Enabled"
 msgstr "已启用"
 
-#: controllers/CryptAPI.php:347
+#: controllers/CryptAPI.php:373
 msgid "Every 10 Minutes"
 msgstr "每10分钟"
 
-#: controllers/CryptAPI.php:348
+#: controllers/CryptAPI.php:374
 msgid "Every 15 Minutes"
 msgstr "每15分钟"
 
-#: controllers/CryptAPI.php:349
+#: controllers/CryptAPI.php:375
 msgid "Every 30 Minutes"
 msgstr "每30分钟"
 
-#: controllers/CryptAPI.php:350
+#: controllers/CryptAPI.php:376
 msgid "Every 45 Minutes"
 msgstr "每45分钟"
 
-#: controllers/CryptAPI.php:346
+#: controllers/CryptAPI.php:372
 msgid "Every 5 Minutes"
 msgstr "每5分钟"
 
-#: controllers/CryptAPI.php:351
+#: controllers/CryptAPI.php:377
 msgid "Every 60 Minutes"
 msgstr "每60分钟"
 
-#: controllers/CryptAPI.php:1188
+#: controllers/CryptAPI.php:1214
 msgid "FIAT Value"
 msgstr "法定货币价值"
 
-#: controllers/CryptAPI.php:1071
+#: controllers/CryptAPI.php:1097
 msgid ""
 "For technical reasons, the minimum amount for each transaction is %1s, so we "
 "adjusted the value by adding the remaining to it."
 msgstr "出于技术原因，每笔交易的最小金额为 %1s，因此我们通过增加剩余金额来调整值。"
 
-#: controllers/CryptAPI.php:324
+#: controllers/CryptAPI.php:350
 msgid "Hide Amount"
 msgstr "隐藏金额"
 
-#: controllers/CryptAPI.php:325
+#: controllers/CryptAPI.php:351
 msgid "Hide Without Amount"
 msgstr "隐藏不带金额"
 
@@ -246,7 +246,7 @@ msgstr "https://cryptapi.io/"
 msgid "https://github.com/cryptapi/woocommerce-cryptapi"
 msgstr "https://github.com/cryptapi/woocommerce-cryptapi"
 
-#: controllers/CryptAPI.php:1541
+#: controllers/CryptAPI.php:1567
 msgid ""
 "If the order is not being updated, your ISP is probably blocking our IPs "
 "(%1$s and %2$s): please try to get them whitelisted and feel free to contact "
@@ -256,7 +256,7 @@ msgstr ""
 "如果订单没有更新，您的ISP可能正在阻止我们的IP（%1$s 和 "
 "%2$s）：请尝试将它们列入白名单，并随时联系我们以获取支持（链接到我们的联系页面）。同时，您可以通过点击下面的按钮刷新任何支付的状态："
 
-#: controllers/CryptAPI.php:1368
+#: controllers/CryptAPI.php:1394
 msgid ""
 "If you are using BlockBee you can choose if setting the receiving addresses "
 "here bellow or in your BlockBee settings page. %1$s - In order to set the "
@@ -268,7 +268,7 @@ msgstr ""
 "如果您使用的是BlockBee，您可以选择在下方设置接收地址或在BlockBee设置页面设置。%1$s - "
 "为了在插件设置中设置地址，创建API密钥时需要选择“地址覆盖”。%1$s - 为了在BlockBee设置中设置地址，创建API密钥时不要选择“地址覆盖”。"
 
-#: controllers/CryptAPI.php:96
+#: controllers/CryptAPI.php:122
 msgid ""
 "If you enjoy this plugin please <b><a href='https://wordpress."
 "org/support/plugin/cryptapi-payment-gateway-for-woocommerce/reviews/#new-"
@@ -277,7 +277,7 @@ msgstr ""
 "如果您喜欢这个插件，请<b><a href='https://wordpress.org/support/plugin/cryptapi-payment-"
 "gateway-for-woocommerce/reviews/#new-post' target='_blank'>评价并审查它</a></b>！"
 
-#: controllers/CryptAPI.php:93
+#: controllers/CryptAPI.php:119
 msgid ""
 "If you need any help or have any suggestion, contact us via the <b>live "
 "chat</b> on our <b><a href='https://cryptapi.io' target='_blank'>website</a>"
@@ -288,91 +288,91 @@ msgstr ""
 "</b>上的<b>实时聊天</b>与我们联系，或加入我们的<b><a href='https://discord.gg/cryptapi' "
 "target='_blank'>Discord服务器</a></b>"
 
-#: controllers/CryptAPI.php:392
+#: controllers/CryptAPI.php:418
 msgid ""
 "Insert your %s address here. Leave the checkbox unselected if you want to "
 "skip this cryptocurrency"
 msgstr "在此处输入您的%s地址。如果您想跳过这种加密货币，请不要选中复选框"
 
-#: controllers/CryptAPI.php:335
+#: controllers/CryptAPI.php:361
 msgid "Light"
 msgstr "浅色"
 
-#: controllers/CryptAPI.php:345 controllers/CryptAPI.php:360
+#: controllers/CryptAPI.php:371 controllers/CryptAPI.php:386
 msgid "Never"
 msgstr "从不"
 
-#: controllers/CryptAPI.php:78
+#: controllers/CryptAPI.php:104
 msgid ""
 "No cryptocurrencies available at the moment. Please choose a different "
 "payment method or try again later."
 msgstr "目前沒有可用的加密貨幣。請選擇其他付款方式或稍後再試。"
 
-#: controllers/CryptAPI.php:1091
+#: controllers/CryptAPI.php:1117
 msgid ""
 "Note: If using an exchange please add the exchange fee to the sent amount. "
 "Exchanges usually deduct the fee from the sent amount."
 msgstr "注意：如果使用交易所，請將交易所手續費添加到發送金額中。交易所通常會從發送金額中扣除手續費。"
 
-#: controllers/CryptAPI.php:1071
+#: controllers/CryptAPI.php:1097
 msgid "Notice"
 msgstr "注意"
 
-#: controllers/CryptAPI.php:1120
+#: controllers/CryptAPI.php:1146
 msgid "Open QR CODE"
 msgstr "打开二维码"
 
-#: controllers/CryptAPI.php:356
+#: controllers/CryptAPI.php:382
 msgid "Order cancelation timeout"
 msgstr "订单取消超时"
 
-#: controllers/CryptAPI.php:1251
+#: controllers/CryptAPI.php:1277
 msgid "Order cancelled due to lack of payment."
 msgstr "由于缺乏支付，订单已取消。"
 
-#: controllers/CryptAPI.php:1181
+#: controllers/CryptAPI.php:1207
 msgid ""
 "Order has been cancelled due to lack of payment. Please don't send any "
 "payment to the address."
 msgstr "由于缺乏支付，订单已被取消。请不要向该地址发送任何支付。"
 
-#: controllers/CryptAPI.php:1107
+#: controllers/CryptAPI.php:1133
 msgid "Order will be cancelled in less than a minute."
 msgstr "订单将在不到一分钟内取消。"
 
-#: controllers/CryptAPI.php:1493
+#: controllers/CryptAPI.php:1519
 msgid "Pay"
 msgstr "支付"
 
-#: controllers/CryptAPI.php:469
+#: controllers/CryptAPI.php:495
 msgid "Pay with"
 msgstr "支付方式"
 
-#: controllers/CryptAPI.php:1218
+#: controllers/CryptAPI.php:1244
 msgid "Payment confirmed"
 msgstr "支付已确认"
 
-#: controllers/CryptAPI.php:627
+#: controllers/CryptAPI.php:653
 msgid "Payment could not be processed, please try again"
 msgstr "支付无法处理，请再试一次"
 
-#: controllers/CryptAPI.php:840 controllers/CryptAPI.php:842
+#: controllers/CryptAPI.php:866 controllers/CryptAPI.php:868
 msgid "Payment detected and confirmed. Customer still need to send"
 msgstr "支付已检测并确认。客户仍需发送"
 
-#: controllers/CryptAPI.php:621
+#: controllers/CryptAPI.php:647
 msgid "Payment error:"
 msgstr "支付错误："
 
-#: controllers/CryptAPI.php:247
+#: controllers/CryptAPI.php:273
 msgid "Payment method description that the customer will see on your checkout"
 msgstr "客户在您的结账页面上将看到的支付方式描述"
 
-#: controllers/CryptAPI.php:520
+#: controllers/CryptAPI.php:546
 msgid "Please choose a cryptocurrency"
 msgstr "请选择一种加密货币"
 
-#: controllers/CryptAPI.php:1304
+#: controllers/CryptAPI.php:1330
 msgid "Please renew your subscription"
 msgstr "请续订您的订阅"
 
@@ -383,54 +383,53 @@ msgid ""
 "ready: %2$s"
 msgstr "请在%1$s上续订您的订阅。您可以在准备好时支付续订费用：%2$s。"
 
-#: controllers/CryptAPI.php:457
+#: blocks/CryptAPI.php:86 controllers/CryptAPI.php:483
 msgid "Please select a Cryptocurrency"
 msgstr "请选择一种加密货币"
 
-#: controllers/CryptAPI.php:1052
+#: controllers/CryptAPI.php:1078
 msgid "PLEASE SEND"
 msgstr "请发送"
 
-#: controllers/CryptAPI.php:1161
+#: controllers/CryptAPI.php:1187
 msgid "Processing can take some time depending on the blockchain."
 msgstr "处理时间可能根据区块链的不同而有所不同。"
 
-#: controllers/CryptAPI.php:306
+#: controllers/CryptAPI.php:332
 msgid "QR Code by default"
 msgstr "默认二维码"
 
-#: controllers/CryptAPI.php:315
+#: controllers/CryptAPI.php:341
 msgid "QR code image size"
 msgstr "二维码图像大小"
 
-#: controllers/CryptAPI.php:312
+#: controllers/CryptAPI.php:338
 msgid "QR Code size"
 msgstr "二维码大小"
 
-#: controllers/CryptAPI.php:318
+#: controllers/CryptAPI.php:344
 msgid "QR Code to show"
 msgstr "要显示的二维码"
 
-#: controllers/CryptAPI.php:985
+#: controllers/CryptAPI.php:1011
 msgid "QR Code with value"
 msgstr "带有金额的二维码"
 
-#: controllers/CryptAPI.php:975 controllers/CryptAPI.php:1033
+#: controllers/CryptAPI.php:1001 controllers/CryptAPI.php:1059
 msgid "QR Code without value"
 msgstr "无金额的二维码"
 
-#: controllers/CryptAPI.php:341
+#: controllers/CryptAPI.php:367
 msgid "Refresh converted value"
 msgstr "刷新转换值"
 
-#: controllers/CryptAPI.php:327
+#: controllers/CryptAPI.php:353
 msgid ""
 "Select how you want to show the QR Code to the user. Either select a default "
 "to show first, or hide one of them."
 msgstr "选择您想如何向用户显示二维码。选择一个默认显示，或隐藏其中一个。"
 
-#: controllers/CryptAPI.php:370
-#, fuzzy
+#: controllers/CryptAPI.php:396
 #| msgid ""
 #| "Selects the amount of time the user has to pay for the order. %1$s When "
 #| "this time is over, order will be marked as \"Cancelled\" and every paid "
@@ -447,21 +446,21 @@ msgstr ""
 "选择用户必须支付订单的时间量。%1$s 当这段时间结束时，订单将被标记为“已取消”，并且每一笔已支付的金额都将被忽略。%1$s %2$s 注意：%3$s "
 "如果用户仍然向生成的地址发送资金，价值仍将被重定向给您。%1$s %4$s 警告：%3$s 我们不建议超过1小时。"
 
-#: controllers/CryptAPI.php:333
+#: controllers/CryptAPI.php:359
 msgid ""
 "Selects the color scheme of the plugin to match your website (Light, Dark "
 "and Auto to automatically detect it)"
 msgstr "选择插件的配色方案以匹配您的网站（浅色，深色和自动以自动检测）"
 
-#: controllers/CryptAPI.php:1440
+#: controllers/CryptAPI.php:1466
 msgid "Service Fee"
 msgstr "服务费"
 
-#: controllers/CryptAPI.php:268
+#: controllers/CryptAPI.php:294
 msgid "Service fee manager"
 msgstr "服务费管理器"
 
-#: controllers/CryptAPI.php:303
+#: controllers/CryptAPI.php:329
 msgid ""
 "Set the CryptAPI service fee you want to charge the costumer. %1$s %2$s Note:"
 " %3$s Fee you want to charge your costumers (to cover CryptAPI's fees fully "
@@ -469,45 +468,49 @@ msgid ""
 msgstr ""
 "设置您想向客户收取的CryptAPI服务费。%1$s %2$s 注意：%3$s 您想向客户收取的费用（完全或部分覆盖CryptAPI的费用）。"
 
-#: controllers/CryptAPI.php:250
+#: controllers/CryptAPI.php:276
 msgid "Show CryptAPI branding"
 msgstr "显示CryptAPI品牌"
 
-#: controllers/CryptAPI.php:252
+#: controllers/CryptAPI.php:278
 msgid "Show CryptAPI logo and credits below the QR code"
 msgstr "在二维码下方显示CryptAPI标志和版权信息"
 
-#: controllers/CryptAPI.php:256
+#: controllers/CryptAPI.php:282
 msgid "Show crypto logos in checkout"
 msgstr "在结账时显示加密货币标志"
 
-#: controllers/CryptAPI.php:1017
+#: controllers/CryptAPI.php:1043
 msgid "Show QR Code with value"
 msgstr "显示带有金额的二维码"
 
-#: controllers/CryptAPI.php:1005 controllers/CryptAPI.php:1040
+#: controllers/CryptAPI.php:1031 controllers/CryptAPI.php:1066
 msgid "Show QR Code without value"
 msgstr "显示无金额的二维码"
 
-#: controllers/CryptAPI.php:1115
+#: controllers/CryptAPI.php:1141
 msgid "Show the QR code"
 msgstr "显示二维码"
 
-#: controllers/CryptAPI.php:308
+#: controllers/CryptAPI.php:334
 msgid "Show the QR Code by default"
 msgstr "默认显示二维码"
 
-#: controllers/CryptAPI.php:1066
+#: controllers/CryptAPI.php:1092
 msgid ""
 "So far you sent %1s. Please send a new payment to complete the order, as "
 "requested above"
 msgstr "到目前为止，您已发送 %1s。请根据上述请求发送新的支付以完成订单"
 
-#: controllers/CryptAPI.php:1080
+#: controllers/CryptAPI.php:1106
 msgid "The %1s conversion rate will be adjusted in"
 msgstr "%1s 的汇率将在"
 
-#: controllers/CryptAPI.php:353
+#: blocks/CryptAPI.php:88
+msgid "The cart total must be higher to use this cryptocurrency."
+msgstr "購物車總金額必須更高才能使用這種加密貨幣。"
+
+#: controllers/CryptAPI.php:379
 msgid ""
 "The system will automatically update the conversion value of the invoices "
 "(with real-time data), every X minutes. %1$s This feature is helpful "
@@ -520,64 +523,64 @@ msgstr ""
 "当客户支付生成的发票需要很长时间，且选定的加密货币是波动的币/代币（非稳定币）时，此功能很有帮助。%1$s %4$s 警告：%3$s "
 "将此设置设置为无可能会创建转换问题，因为我们建议您将其保持在5分钟。%3$s"
 
-#: controllers/CryptAPI.php:585
+#: blocks/CryptAPI.php:87 controllers/CryptAPI.php:611
 msgid "There was an error with the payment. Please try again."
 msgstr "支付时出错。请再试一次。"
 
-#: controllers/CryptAPI.php:239
+#: controllers/CryptAPI.php:265
 msgid "This controls the title which the user sees during checkout."
 msgstr "这控制了用户在结账时看到的标题。"
 
-#: controllers/CryptAPI.php:1108
+#: controllers/CryptAPI.php:1134
 msgid "This order will be valid for %s"
 msgstr "此订单将有效期为 %s"
 
-#: controllers/CryptAPI.php:264
+#: controllers/CryptAPI.php:290
 msgid "This will add an estimation of the blockchain fee to the order value"
 msgstr "这将在订单价值中加入一个区块链费用的估算"
 
-#: controllers/CryptAPI.php:1186
+#: controllers/CryptAPI.php:1212
 msgid "Time"
 msgstr "时间"
 
-#: controllers/CryptAPI.php:237
+#: controllers/CryptAPI.php:263
 msgid "Title"
 msgstr "标题"
 
-#: controllers/CryptAPI.php:825 controllers/CryptAPI.php:833
+#: controllers/CryptAPI.php:851 controllers/CryptAPI.php:859
 msgid "User sent a payment of"
 msgstr "用户已发送支付金额"
 
-#: controllers/CryptAPI.php:1187
+#: controllers/CryptAPI.php:1213
 msgid "Value Paid"
 msgstr "支付的金额"
 
-#: controllers/CryptAPI.php:575
+#: controllers/CryptAPI.php:601
 msgid "Value too low, minimum is"
 msgstr "价值过低，最低为"
 
-#: controllers/CryptAPI.php:1210
+#: controllers/CryptAPI.php:1236
 msgid "Waiting for network confirmation"
 msgstr "等待网络确认"
 
-#: controllers/CryptAPI.php:1202
+#: controllers/CryptAPI.php:1228
 msgid "Waiting for payment"
 msgstr "等待支付"
 
-#: controllers/CryptAPI.php:375
+#: controllers/CryptAPI.php:401
 msgid ""
 "When this setting is enabled, the plugin will mark the order as "
 "\"completed\" then payment is received. %1$s Only for virtual products %2$s."
 msgstr "当此设置启用时，插件将在接收到付款后将订单标记为“已完成”。%1$s 仅适用于虚拟产品%2$s。"
 
-#: controllers/CryptAPI.php:1018
+#: controllers/CryptAPI.php:1044
 msgid "WITH AMOUNT"
 msgstr "带金额"
 
-#: controllers/CryptAPI.php:1171
+#: controllers/CryptAPI.php:1197
 msgid "Your payment has been confirmed!"
 msgstr "您的支付已被确认！"
 
-#: controllers/CryptAPI.php:1160
+#: controllers/CryptAPI.php:1186
 msgid "Your payment is being processed!"
 msgstr "您的支付正在处理中！"

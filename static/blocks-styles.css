@@ -1,0 +1,37 @@
+.cryptapi-payment-selection {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.cryptapi-payment-selection .wc-block-components-payment-method-icons {
+    display: flex;
+    align-items: center;
+    margin: 0 0 5px 0;
+}
+
+.cryptapi-payment-selection .wc-block-components-payment-method-icons img {
+    max-height: 40px;
+    height: 40px;
+    max-width: 100%;
+    margin: 0;
+}
+
+.cryptapi-payment-selection select {
+    padding: 5px;
+    width: 100%;
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.cryptapi-payment-selection ul,
+.cryptapi-payment-selection li {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.cryptapi-payment-selection > p {
+    margin: 0;
+}

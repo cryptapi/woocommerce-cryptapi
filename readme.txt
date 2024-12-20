@@ -1,12 +1,12 @@
 === CryptAPI Payment Gateway for WooCommerce ===
 Contributors: cryptapi
-Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, litecoin, bitcoin cash, shib, doge
+Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, litecoin, bitcoin cash, shib, doge, solana
 Requires at least: 5.8
-Tested up to: 6.7
-Stable tag: 4.8.8
+Tested up to: 6.7.1
+Stable tag: 5.0.0
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 9.4.1
+WC tested up to: 9.5.1
 License: MIT
 
 Accept cryptocurrency payments on your WooCommerce website
@@ -32,7 +32,8 @@ The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto dire
 * (USDT) USDT
 * (SHIB) Shiba Inu
 * (DOGE) Dogecoin
-* (MATIC) Matic
+* (POL) Polygon
+* (SOL) Solana
 
 among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/cryptocurrencies/).
 
@@ -390,6 +391,10 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 = 4.8.8 =
 * Minor fixes
 * Minor improvements
+
+= 5.0.0 =
+* Now supports WordPress Blocks.
+* Bug fixes.
 
 == Upgrade Notice ==
 
