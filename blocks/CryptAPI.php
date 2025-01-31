@@ -64,10 +64,10 @@ class WC_CryptAPI_Payments extends AbstractPaymentMethodType {
         $output_coins = [];
 
         foreach ($this->get_setting('coins') as $coin) {
-            $output_coins[] = [
-                'ticker' => $coin,
-                ...$load_coins[$coin]
-            ];
+            $output_coins[] = array_merge(
+                ['ticker' => $coin],
+                $load_coins[$coin]
+            );
         }
 
         return [
