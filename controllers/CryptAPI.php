@@ -1498,15 +1498,16 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
     function add_email_link($order, $sent_to_admin, $plain_text, $email)
     {
-        if (WC_CryptAPI_Gateway::$HAS_TRIGGERED) {
+        if ($order->get_meta('_cryptapi_email_link_added') === 'yes') {
             return;
         }
 
         if ($email->id == 'customer_on_hold_order') {
-            echo '<a style="display:block;text-align:center;margin: 40px auto; font-size: 16px; font-weight: bold;" href="' . esc_url($this->get_return_url($order)) . '" target="_blank">' . __('Check your payment status', 'cryptapi') . '</a>';
-        }
+            echo '<a style="display:block;text-align:center;margin: 40px auto; font-size: 16px; font-weight: bold;" href="' . esc_url($order->get_checkout_order_received_url()) . '" target="_blank">' . __('Check your payment status', 'cryptapi') . '</a>';
 
-        WC_CryptAPI_Gateway::$HAS_TRIGGERED = true;
+            $order->update_meta_data('_cryptapi_email_link_added', 'yes');
+            $order->save();
+        }
     }
 
     function add_order_link($actions, $order)
@@ -1515,7 +1516,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
             $action_slug = 'ca_payment_url';
 
             $actions[$action_slug] = array(
-                'url' => $this->get_return_url($order),
+                'url' => esc_url($order->get_checkout_order_received_url()),
                 'name' => __('Pay', 'cryptapi'),
             );
         }
