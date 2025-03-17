@@ -552,14 +552,13 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         $addr = $this->{$selected . '_address'};
 
         if (!empty($addr) || !empty($api_key)) {
-
             $nonce = $this->generate_nonce();
 
-            $callback_url = str_replace('https:', 'http:', add_query_arg(array(
+            $callback_url = add_query_arg(array(
                 'wc-api' => 'WC_Gateway_CryptAPI',
                 'order_id' => $order_id,
                 'nonce' => $nonce,
-            ), home_url('/')));
+            ), trailingslashit(home_url('')));
 
             try {
                 $order = new \WC_Order($order_id);
@@ -658,8 +657,11 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
     function validate_payment()
     {
         $data = \CryptAPI\Utils\Api::process_callback($_GET);
-
         $order = new \WC_Order($data['order_id']);
+
+        if (!$this->verify_signature($_SERVER)) {
+            die('Sig not valid');
+        }
 
         if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
             die("*ok*");
@@ -670,6 +672,41 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
         // Actually process the callback data
         $this->process_callback_data($data, $order);
+    }
+
+    static function load_pubkey() {
+        $transient = get_transient('cryptapi_pubkey');
+
+        if (!empty($transient)) {
+            $pubkey = $transient;
+        } else {
+            $pubkey = \CryptAPI\Utils\Api::get_pubkey();
+            set_transient('cryptapi_pubkey', $pubkey, 86400);
+
+            if (empty($pubkey)) {
+                throw new Exception('Failed fetching the pubkey.');
+            }
+        }
+
+        return $pubkey;
+    }
+
+    function verify_signature($server) {
+        $pubkey = $this->load_pubkey();
+
+        if (!array_key_exists( 'HTTP_X_CA_SIGNATURE', $server )) {
+            return false;
+        }
+
+        $signature = base64_decode($server['HTTP_X_CA_SIGNATURE']);
+
+        $algo = OPENSSL_ALGO_SHA256;
+
+        $home_url = home_url('');
+
+        $data = "$home_url$server[REQUEST_URI]";
+
+        return (bool) openssl_verify($data, $signature, $pubkey, $algo);
     }
 
     function order_status()
@@ -1345,18 +1382,6 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         }
     }
 
-    private function generate_nonce($len = 32)
-    {
-        $data = str_split('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
-
-        $nonce = [];
-        for ($i = 0; $i < $len; $i++) {
-            $nonce[] = $data[mt_rand(0, sizeof($data) - 1)];
-        }
-
-        return implode('', $nonce);
-    }
-
     public function generate_cryptocurrency_html($key, $data)
     {
         $field_key = $this->get_field_key($key);
@@ -1423,6 +1448,18 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
         <?php
         return ob_get_clean();
+    }
+
+    private function generate_nonce($len = 32)
+    {
+        $data = str_split('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+
+        $nonce = [];
+        for ($i = 0; $i < $len; $i++) {
+            $nonce[] = $data[mt_rand(0, sizeof($data) - 1)];
+        }
+
+        return implode('', $nonce);
     }
 
     function handling_fee()

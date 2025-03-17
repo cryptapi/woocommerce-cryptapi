@@ -204,7 +204,6 @@ class Api {
 
     public static function get_estimate($coin)
     {
-
         $params = [
             'addresses' => 1,
             'priority' => 'default',
@@ -214,6 +213,16 @@ class Api {
 
         if ($response->status == 'success') {
             return $response->estimated_cost_currency;
+        }
+
+        return null;
+    }
+
+    public static function get_pubkey() {
+        $response = self::_request(null, 'pubkey', []);
+
+        if ($response->status == 'success') {
+            return $response->pubkey;
         }
 
         return null;
