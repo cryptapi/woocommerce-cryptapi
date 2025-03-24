@@ -408,6 +408,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Callback improvements
 * Minor bugfixes
 
+#### 5.1.1
+* Callback improvements
+
 ### Upgrade Notice
 #### 4.3
 * Please be sure to enable the PHP extension BCMath before upgrading to this version.

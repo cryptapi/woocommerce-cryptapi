@@ -1602,7 +1602,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         ?>
         <p class="form-field form-field-wide wc-customer-user">
             <small style="display: block;">
-                <?php echo sprintf(esc_attr(__('If the order is not being updated, your ISP is probably blocking our IPs (%1$s and %2$s): please try to get them whitelisted and feel free to contact us anytime to get support (link to our contact page). In the meantime you can refresh the status of any payment by clicking this button below:', 'cryptapi')), '145.239.119.223', '135.125.112.47'); ?>
+                <?php echo sprintf(esc_attr(__('If the order is not being updated, your ISP is probably blocking our IPs (%1$s and %2$s): please try to get them whitelisted and feel free to contact us anytime to get support (link to our contact page). In the meantime you can refresh the status of any payment by clicking this button below:', 'cryptapi')), '51.77.105.132', '135.125.112.47'); ?>
             </small>
         </p>
         <a style="margin-top: 1rem;margin-bottom: 1rem;" id="validate_callbacks" class="button action" href="#">
