@@ -78,6 +78,7 @@ class WC_CryptAPI_Payments extends AbstractPaymentMethodType {
             'button'   => $this->get_setting('order_button_text'),
             'description'   => $this->get_setting('description'),
             'coins' => $output_coins,
+            'show_branding' => $this-> get_setting('show_branding') === 'yes',
             'show_crypto_logos' => $this-> get_setting('show_crypto_logos') === 'yes',
             'add_blockchain_fee' => $this-> get_setting('add_blockchain_fee') === 'yes',
             'fee_order_percentage' => (float) $this-> get_setting('fee_order_percentage'),
@@ -99,7 +100,7 @@ class WC_CryptAPI_Payments extends AbstractPaymentMethodType {
             [
                 'id'  => $this->name,
                 'alt' => $this->get_setting('title'),
-                'src' => esc_url(CRYPTAPI_PLUGIN_URL) . 'static/files/200_logo_ca.png'
+                'src' => $this->get_setting('show_crypto_logos') === 'yes' ? esc_url(CRYPTAPI_PLUGIN_URL) . 'static/files/200_logo_ca.png' : ''
             ]
         ];
     }
