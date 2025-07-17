@@ -3,11 +3,11 @@
 Plugin Name: CryptAPI Payment Gateway for WooCommerce
 Plugin URI: https://github.com/cryptapi/woocommerce-cryptapi
 Description: Accept cryptocurrency payments on your WooCommerce website
-Version: 5.1.2
+Version: 5.1.3
 Requires at least: 5.8
-Tested up to: 6.8.1
+Tested up to: 6.8.2
 WC requires at least: 5.8
-WC tested up to: 9.8.3
+WC tested up to: 10.0.2
 Requires PHP: 7.2
 Author: cryptapi
 Author URI: https://cryptapi.io/
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-define('CRYPTAPI_PLUGIN_VERSION', '5.1.2');
+define('CRYPTAPI_PLUGIN_VERSION', '5.1.3');
 define('CRYPTAPI_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('CRYPTAPI_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -36,6 +36,15 @@ spl_autoload_register(function ($class) {
 
     if (file_exists($file)) {
         require $file;
+    }
+});
+
+add_action('init', function () {
+    $plugin_dir = plugin_dir_path(__FILE__);
+    $mo_file_path = $plugin_dir . 'languages/cryptapi-payment-gateway-for-woocommerce-' . get_locale() . '.mo';
+
+    if (file_exists($mo_file_path)) {
+        load_textdomain('cryptapi', $mo_file_path);
     }
 });
 
