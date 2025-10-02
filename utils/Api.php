@@ -282,19 +282,25 @@ class Api {
 
         for ($y = 0; $y < 5; $y++) {
             try {
-                $response = json_decode(wp_remote_retrieve_body(wp_remote_get($url)), $assoc);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $response = curl_exec($ch);
+                curl_close($ch);
 
-                if (isset($response->status) && $response->status === 'error') {
+                $response_json = json_decode($response, $assoc);
+
+                if (isset($response_json->status) && $response_json->status === 'error') {
                     // If API is giving error, no point is keeping retrying since result will be the same.
-                    return $response;
+                    return $response_json;
                 }
 
-                if ($assoc && !empty($response['btc'])) {
-                    return $response;
+                if ($assoc && !empty($response_json['btc'])) {
+                    return $response_json;
                 }
 
-                if ($response && $response->status === 'success') {
-                    return $response;
+                if ($response_json && $response_json->status === 'success') {
+                    return $response_json;
                 }
             } catch (Exception $e) {
                 //

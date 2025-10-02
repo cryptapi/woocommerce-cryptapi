@@ -83,38 +83,100 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         add_filter('woocommerce_my_account_my_orders_actions', array($this, 'add_order_link'), 10, 2);
 
         add_action('woocommerce_admin_order_data_after_order_details', array($this, 'order_detail_validate_logs'));
+
+        add_action('admin_post_cryptapi_refresh_coins', [$this, 'handle_admin_refresh_coins']);
     }
 
     function reset_load_coins() {
-        delete_transient('cryptapi_coins');
-        self::load_coins();
+        $now   = time();
+
+        try {
+            $coins = \CryptAPI\Utils\Api::get_supported_coins();
+            if (empty($coins)) {
+                throw new Exception('No cryptocurrencies available at the moment. Please choose a different payment method or try again later.');
+            }
+
+            update_option('cryptapi_coins_cache', [
+                'coins'   => $coins,
+                'expires' => $now + 3600,
+            ], false);
+        } catch (Exception $e) {
+            // We don't want to reset the cache if we can't load the coins.
+        }
     }
 
-    static function load_coins()
-    {
-        $transient = get_transient('cryptapi_coins');
+    static function load_coins() {
+        $cache = get_option('cryptapi_coins_cache', []);
+        $now   = time();
 
-        if (!empty($transient)) {
-            $coins = $transient;
-        } else {
-            $coins = \CryptAPI\Utils\Api::get_supported_coins();
-            set_transient('cryptapi_coins', $coins, 86400);
+        try {
+            if (!empty($cache['coins']) && isset($cache['expires']) && $cache['expires'] > $now) {
+                $coins = $cache['coins'];
+            } else {
+                $coins = \CryptAPI\Utils\Api::get_supported_coins();
 
-            if (empty($coins)) {
-                throw new Exception(__('No cryptocurrencies available at the moment. Please choose a different payment method or try again later.', 'cryptapi'));
+                if (empty($coins)) {
+                    throw new Exception('No cryptocurrencies available at the moment. Please choose a different payment method or try again later.');
+                }
+
+                update_option('cryptapi_coins_cache', [
+                    'coins'   => $coins,
+                    'expires' => $now + 3600,
+                ], false);
             }
+
+            if (isset($coins['xmr'])) {
+                unset($coins['xmr']);
+            }
+
+            return $coins;
+        } catch (Exception $e) {
+            if (!empty($cache['coins'])) {
+                return $cache['coins'];
+            }
+            return [];
+        }
+    }
+
+    public function handle_admin_refresh_coins() {
+        if ( ! current_user_can('manage_woocommerce') ) {
+            wp_die(__('You do not have permission to do this.', 'cryptapi'));
         }
 
-        # Disabling XMR since it is not supported anymore.
-        unset($coins['xmr']);
+        check_admin_referer('cryptapi_refresh_coins');
 
-        return $coins;
+        $this->reset_load_coins();
+
+        $back = wp_get_referer();
+        if (!$back) {
+            $back = admin_url('admin.php?page=wc-settings&tab=checkout&section=' . $this->id);
+        }
+        $back = add_query_arg('cryptapi_refreshed', '1', $back);
+        wp_safe_redirect($back);
+        exit;
     }
 
     function admin_options()
     {
         parent::admin_options();
+        if (!empty($_GET['cryptapi_refreshed'])) {
+            echo '<div class="notice notice-success is-dismissible"><p>' .
+                esc_html__('Cryptocurrency cache refreshed successfully', 'cryptapi') .
+                '</p></div>';
+        }
+        $refresh_url = wp_nonce_url(
+            admin_url('admin-post.php?action=cryptapi_refresh_coins'),
+            'cryptapi_refresh_coins'
+        );
         ?>
+        <div style="margin-top:1rem; display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+            <a href="<?php echo esc_url($refresh_url); ?>" class="button button-secondary">
+                <?php echo esc_html__('Refresh Cryptocurrencies', 'cryptapi'); ?>
+            </a>
+            <span class="description">
+            <?php echo esc_html__('Update the cryptocurrency cache fetching the latest cryptocurrencies. Use this if there is a new token on CryptAPI and you can\'t find in the plugin.', 'cryptapi'); ?>
+        </span>
+        </div>
         <div style='margin-top: 2rem;'>
             <?php echo __("If you need any help or have any suggestion, contact us via the <b>live chat</b> on our <b><a href='https://cryptapi.io' target='_blank'>website</a></b> or join our <b><a href='https://discord.gg/cryptapi' target='_blank'>Discord server</a></b>", "cryptapi"); ?>
         </div>

@@ -63,11 +63,13 @@ class WC_CryptAPI_Payments extends AbstractPaymentMethodType {
         $load_coins = \CryptAPI\Controllers\WC_CryptAPI_Gateway::load_coins();
         $output_coins = [];
 
-        foreach ($this->get_setting('coins') as $coin) {
-            $output_coins[] = array_merge(
-                ['ticker' => $coin],
-                $load_coins[$coin]
-            );
+        if ($load_coins) {
+            foreach ($this->get_setting('coins') as $coin) {
+                $output_coins[] = array_merge(
+                    ['ticker' => $coin],
+                    $load_coins[$coin]
+                );
+            }
         }
 
         return [
