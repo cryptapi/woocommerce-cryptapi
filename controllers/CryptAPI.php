@@ -31,6 +31,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
     public $fee_order_percentage;
     public $virtual_complete;
     public $disable_conversion;
+    public $tolerance;
     public $icon;
 
     function __construct()
@@ -183,6 +184,46 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         <div style='margin-top: .5rem;'>
             <?php echo __("If you enjoy this plugin please <b><a href='https://wordpress.org/support/plugin/cryptapi-payment-gateway-for-woocommerce/reviews/#new-post' target='_blank'>rate and review it</a></b>!", "cryptapi") ?>
         </div>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                // Tolerance field validation
+                var $toleranceField = $('#woocommerce_cryptapi_tolerance');
+
+                if ($toleranceField.length) {
+                    // Validate on input
+                    $toleranceField.on('input change', function() {
+                        var value = $(this).val();
+                        var numValue = parseInt(value, 10);
+
+                        // Check if it's a valid integer
+                        if (value !== '' && (!Number.isInteger(parseFloat(value)) || numValue < 0 || numValue > 10)) {
+                            $(this).css('border-color', 'red');
+
+                            // Show error message if it doesn't exist
+                            if (!$(this).next('.tolerance-error').length) {
+                                $(this).after('<p class="tolerance-error" style="color: red; margin-top: 5px;"><?php echo esc_js(__("Tolerance must be an integer between 0 and 10.", "cryptapi")); ?></p>');
+                            }
+                        } else {
+                            $(this).css('border-color', '');
+                            $(this).next('.tolerance-error').remove();
+                        }
+                    });
+
+                    // Validate on form submit
+                    $('form').on('submit', function(e) {
+                        var value = $toleranceField.val();
+                        var numValue = parseInt(value, 10);
+
+                        if (value !== '' && (!Number.isInteger(parseFloat(value)) || numValue < 0 || numValue > 10)) {
+                            e.preventDefault();
+                            $toleranceField.focus();
+                            alert('<?php echo esc_js(__("Please enter a valid tolerance percentage (0-10).", "cryptapi")); ?>');
+                            return false;
+                        }
+                    });
+                }
+            });
+        </script>
         <div style="margin-top: 1.5rem">
             <a href="https://uk.trustpilot.com/review/cryptapi.io" target="_blank">
                 <svg width="145" viewBox="0 0 200 39" xmlns="http://www.w3.org/2000/svg"
@@ -295,6 +336,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         $this->fee_order_percentage = $this->get_option('fee_order_percentage');
         $this->virtual_complete = $this->get_option('virtual_complete') === 'yes';
         $this->disable_conversion = $this->get_option('disable_conversion') === 'yes';
+        $this->tolerance = $this->get_option('tolerance');
         $this->icon = '';
 
         if (!empty($load_coins)) {
@@ -351,6 +393,18 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                     'type' => 'checkbox',
                     'label' => esc_attr(__("This will add an estimation of the blockchain fee to the order value", 'cryptapi')),
                     'default' => 'no'
+                ),
+                'tolerance' => array(
+                    'title' => __('Payment tolerance (%)', 'cryptapi'),
+                    'type' => 'number',
+                    'description' => __('Set the payment tolerance percentage to handle minor payment discrepancies. <strong>Recommended: 1% is the safest option to prevent payment failures when customers miss a decimal, make small errors, or when exchanges deduct withdrawal fees from the sent amount.</strong><br/><strong>Warning:</strong> This allows the system to accept underpayments. For example, with 5% tolerance on a $100 order, payments of $95 or more will be accepted as complete. <strong>Higher percentages may result in fund loss if customers underpay.</strong> Set to 0 to require exact payment amounts. Range: 0-10%.', 'cryptapi'),
+                    'default' => 0,
+                    'placeholder' => '0',
+                    'custom_attributes' => array(
+                        'min' => '0',
+                        'max' => '10',
+                        'step' => '1',
+                    ),
                 ),
                 'fee_order_percentage' => array(
                     'title' => esc_attr(__('Service fee manager', 'cryptapi')),
@@ -690,6 +744,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                 $order->add_meta_data('cryptapi_cancelled', '0');
                 $order->add_meta_data('cryptapi_min', $min_tx);
                 $order->add_meta_data('cryptapi_history', json_encode([]));
+                $order->add_meta_data('cryptapi_tolerance', $this->tolerance);
                 $order->add_meta_data('cryptapi_callback_url', $callback_url);
                 $order->add_meta_data('cryptapi_last_checked', $order->get_date_created()->getTimestamp());
                 $order->save_meta_data();
@@ -922,7 +977,11 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         $order->update_meta_data('cryptapi_history', json_encode($history));
         $order->save_meta_data();
 
-        $calc = $this->calc_order(json_decode($order->get_meta('cryptapi_history'), true), $order->get_meta('cryptapi_total'), $order->get_meta('cryptapi_total_fiat'));
+        $calc = $this->calc_order(
+            json_decode($order->get_meta('cryptapi_history'), true),
+            $order->get_meta('cryptapi_total') * (1 - (int) $order->get_meta('cryptapi_tolerance') / 100), // Calculate based on the tolerance. If tolerance is 0, no tolerance is applied.,
+            $order->get_meta('cryptapi_total_fiat')
+        );
 
         $remaining = $calc['remaining'];
         $remaining_pending = $calc['remaining_pending'];

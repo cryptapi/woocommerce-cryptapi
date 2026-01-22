@@ -421,6 +421,10 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Minor bugfixes
 * Add a refresh coins option
 
+#### 5.1.5
+* Added payment tolerance option to handle minor payment discrepancies
+* Minor bugfixes
+
 ### Upgrade Notice
 #### 4.3
 * Please be sure to enable the PHP extension BCMath before upgrading to this version.
