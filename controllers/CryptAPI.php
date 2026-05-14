@@ -1283,6 +1283,21 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                                 </button>
                                 <div class="ca_loader"></div>
                             </div>
+                            <?php
+                            if (!empty($min_tx) && (float)$min_tx > 0) {
+                                $min_tx_display = (strpos($min_tx, '.') !== false)
+                                    ? rtrim(rtrim($min_tx, '0'), '.')
+                                    : $min_tx;
+                                ?>
+                                <div class="ca_min_amount">
+                                    <?php echo sprintf(
+                                        esc_html__('Minimum amount per transaction: %s', 'cryptapi'),
+                                        '<strong>' . esc_html($min_tx_display) . ' ' . esc_html(strtoupper($coins[$crypto_coin]['name'])) . '</strong>'
+                                    ); ?>
+                                </div>
+                                <?php
+                            }
+                            ?>
                         </div>
                         <?php
                         if ((int)$this->order_cancelation_timeout !== 0) {

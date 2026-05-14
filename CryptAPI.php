@@ -3,21 +3,23 @@
 Plugin Name: CryptAPI Payment Gateway for WooCommerce
 Plugin URI: https://github.com/cryptapi/woocommerce-cryptapi
 Description: Accept cryptocurrency payments on your WooCommerce website
-Version: 5.1.5
+Version: 5.1.6
 Requires at least: 5.8
-Tested up to: 6.9
+Tested up to: 6.9.4
 WC requires at least: 5.8
-WC tested up to: 10.4.3
+WC tested up to: 10.7.0
 Requires PHP: 7.2
 Author: cryptapi
 Author URI: https://cryptapi.io/
 License: MIT
+Text Domain: cryptapi
+Domain Path: /languages
 */
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-define('CRYPTAPI_PLUGIN_VERSION', '5.1.5');
+define('CRYPTAPI_PLUGIN_VERSION', '5.1.6');
 define('CRYPTAPI_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('CRYPTAPI_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -40,13 +42,8 @@ spl_autoload_register(function ($class) {
 });
 
 add_action('init', function () {
-    $plugin_dir = plugin_dir_path(__FILE__);
-    $mo_file_path = $plugin_dir . 'languages/cryptapi-payment-gateway-for-woocommerce-' . get_locale() . '.mo';
-
-    if (file_exists($mo_file_path)) {
-        load_textdomain('cryptapi', $mo_file_path);
-    }
-});
+    load_plugin_textdomain('cryptapi', false, dirname(plugin_basename(__FILE__)) . '/languages');
+}, 1);
 
 add_action('plugins_loaded', function () {
     if (!class_exists('WooCommerce')) {
@@ -69,7 +66,12 @@ add_action('plugins_loaded', function () {
     $initialize = new \CryptAPI\Initialize();
     $initialize->initialize();
 
-    $cryptapi = new \CryptAPI\Controllers\WC_CryptAPI_Gateway();
+    // Instantiate the gateway on `init` (not `plugins_loaded`) so that __() calls
+    // inside the constructor and init_form_fields() run after the textdomain is
+    // available. WP 6.7+ refuses to JIT-load translations before `init`.
+    add_action('init', function () {
+        new \CryptAPI\Controllers\WC_CryptAPI_Gateway();
+    }, 5);
 });
 
 

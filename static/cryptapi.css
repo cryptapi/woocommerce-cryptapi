@@ -101,6 +101,15 @@
     line-break: anywhere;
 }
 
+.ca_min_amount {
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    opacity: .8;
+    line-break: anywhere;
+}
+
 .ca_copy {
     position: relative;
 }
