@@ -3,7 +3,7 @@
 Plugin Name: CryptAPI Payment Gateway for WooCommerce
 Plugin URI: https://github.com/cryptapi/woocommerce-cryptapi
 Description: Accept cryptocurrency payments on your WooCommerce website
-Version: 5.1.6
+Version: 5.2.1
 Requires at least: 5.8
 Tested up to: 6.9.4
 WC requires at least: 5.8
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-define('CRYPTAPI_PLUGIN_VERSION', '5.1.6');
+define('CRYPTAPI_PLUGIN_VERSION', '5.2.1');
 define('CRYPTAPI_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('CRYPTAPI_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -75,13 +75,16 @@ add_action('plugins_loaded', function () {
 });
 
 
-add_filter('cron_schedules', function ($cryptapi_interval) {
-    $cryptapi_interval['cryptapi_interval'] = array(
+add_filter('cron_schedules', function ($schedules) {
+    // Frequent interval so the order-cancellation timeout (as short as 15 min)
+    // is honoured promptly. The cron body is a single lightweight
+    // wc_get_orders() query, so a 60s cadence is cheap.
+    $schedules['cryptapi_interval'] = array(
         'interval' => 60,
-        'display' => esc_html__('CryptAPI Interval'),
+        'display'  => esc_html__('CryptAPI Interval', 'cryptapi'),
     );
 
-    return $cryptapi_interval;
+    return $schedules;
 });
 
 register_activation_hook(__FILE__, function () {
@@ -119,13 +122,12 @@ add_action('rest_api_init', function () {
 });
 
 function cryptapi_verify_nonce(WP_REST_Request $request) {
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    if ($origin !== home_url()) {
-        return false;
-    }
-
+    // The wp_rest nonce is the real CSRF control here. The previous
+    // Origin === home_url() check was dropped: it was spoofable (non-browser
+    // clients set any Origin) and it broke sub-directory installs, where the
+    // browser Origin (scheme+host, no path) never equals home_url().
     $nonce = $request->get_header('X-WP-Nonce');
-    return wp_verify_nonce($nonce, 'wp_rest');
+    return (bool) wp_verify_nonce($nonce, 'wp_rest');
 }
 
 function cryptapi_get_minimum(WP_REST_Request $request) {
@@ -133,7 +135,9 @@ function cryptapi_get_minimum(WP_REST_Request $request) {
     $fiat = sanitize_text_field($request->get_param('fiat'));
     $value = sanitize_text_field($request->get_param('value'));
 
-    if (!$coin) {
+    // Only allow currently-supported coins: $coin flows into an outbound API
+    // URL path, so never forward an arbitrary caller-supplied string.
+    if (!$coin || !array_key_exists($coin, \CryptAPI\Controllers\WC_CryptAPI_Gateway::load_coins())) {
         return new WP_REST_Response(['status' => 'error'], 400);
     }
 
@@ -168,8 +172,11 @@ function cryptapi_update_coin(WP_REST_Request $request) {
         return new WP_REST_Response(['success' => true, 'coin' => $coin], 200);
     }
 
-    if (!$coin) {
-        return new WP_REST_Response(['error' => 'Coin not specified'], 400);
+    // Only accept 'none' or a currently-supported coin; never store an
+    // arbitrary caller-supplied string in the session — it later flows into
+    // fee estimation (handling_fee) and outbound API calls.
+    if ($coin !== 'none' && !array_key_exists($coin, \CryptAPI\Controllers\WC_CryptAPI_Gateway::load_coins())) {
+        return new WP_REST_Response(['error' => 'Invalid coin'], 400);
     }
 
     // Set the session value

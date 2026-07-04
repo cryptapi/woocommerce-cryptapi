@@ -64,8 +64,6 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
         add_action('woocommerce_scheduled_subscription_payment_' . $this->id, array($this, 'scheduled_subscription_mail'), 10, 2);
 
-        add_action('wcs_create_pending_renewal', array($this, 'subscription_send_email'));
-
         add_action('wp_ajax_nopriv_' . $this->id . '_order_status', array($this, 'order_status'));
         add_action('wp_ajax_' . $this->id . '_order_status', array($this, 'order_status'));
 
@@ -336,7 +334,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         $this->fee_order_percentage = $this->get_option('fee_order_percentage');
         $this->virtual_complete = $this->get_option('virtual_complete') === 'yes';
         $this->disable_conversion = $this->get_option('disable_conversion') === 'yes';
-        $this->tolerance = $this->get_option('tolerance');
+        $this->tolerance = min(10, max(0, (int) $this->get_option('tolerance'))); // clamp 0-10% server-side
         $this->icon = '';
 
         if (!empty($load_coins)) {
@@ -649,16 +647,26 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
     function validate_fields()
     {
         $load_coins = self::load_coins();
-        return array_key_exists(sanitize_text_field($_POST['cryptapi_coin']), $load_coins);
+        return array_key_exists(sanitize_text_field($_POST['cryptapi_coin'] ?? ''), $load_coins);
     }
 
     function process_payment($order_id)
     {
         global $woocommerce;
 
-        $selected = sanitize_text_field($_POST['cryptapi_coin']);
+        $selected = sanitize_text_field($_POST['cryptapi_coin'] ?? '');
 
-        if ($selected === 'none') {
+        if ($selected === 'none' || $selected === '') {
+            wc_add_notice(__('Payment error: ', 'woocommerce') . ' ' . __('Please choose a cryptocurrency', 'cryptapi'), 'error');
+
+            return null;
+        }
+
+        // Whitelist the submitted coin. validate_fields() only runs on the
+        // classic checkout; the Blocks/Store-API path reaches process_payment
+        // directly, so this is the single server-side check covering both flows
+        // before $selected is used as a dynamic property and in outbound API URLs.
+        if (!array_key_exists($selected, self::load_coins())) {
             wc_add_notice(__('Payment error: ', 'woocommerce') . ' ' . __('Please choose a cryptocurrency', 'cryptapi'), 'error');
 
             return null;
@@ -702,6 +710,11 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                         }
                     }
                 }
+
+                // The blockchain fee was estimated from the session coin during
+                // cart calculation; re-assert it here for the coin actually being
+                // charged so a mismatched session coin cannot underpay it (P2).
+                $this->reconcile_blockchain_fee($order, $selected);
 
                 $total = $order->get_total('edit');
 
@@ -774,13 +787,29 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
     function validate_payment()
     {
         $data = \CryptAPI\Utils\Api::process_callback($_GET);
-        $order = new \WC_Order($data['order_id']);
 
         if (!$this->verify_signature($_SERVER)) {
             die('Sig not valid');
         }
 
-        if ($order->is_paid() || $order->get_status() === 'cancelled' || $data['nonce'] != $order->get_meta('cryptapi_nonce')) {
+        // Serialize concurrent callbacks for the same order so the
+        // read-modify-write on cryptapi_history / cryptapi_total cannot race
+        // and clobber a payment record. The named lock is released
+        // automatically when this request ends (every exit below is a die(),
+        // which closes the DB connection and releases the lock).
+        global $wpdb;
+        $lock_name = 'cryptapi_order_' . (int) $data['order_id'];
+        $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, %d)', $lock_name, 10));
+
+        $order = new \WC_Order($data['order_id']);
+
+        $expected_nonce = (string) $order->get_meta('cryptapi_nonce');
+        $given_nonce = isset($data['nonce']) ? (string) $data['nonce'] : '';
+
+        // Constant-time compare; reject when the order has no stored nonce so
+        // an empty/absent nonce can never satisfy a loose comparison.
+        if ($order->is_paid() || $order->get_status() === 'cancelled'
+            || $expected_nonce === '' || !hash_equals($expected_nonce, $given_nonce)) {
             die("*ok*");
         }
 
@@ -811,11 +840,15 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
     function verify_signature($server) {
         $pubkey = $this->load_pubkey();
 
-        if (!array_key_exists( 'HTTP_X_CA_SIGNATURE', $server )) {
+        if (empty($pubkey) || !array_key_exists('HTTP_X_CA_SIGNATURE', $server)) {
             return false;
         }
 
-        $signature = base64_decode($server['HTTP_X_CA_SIGNATURE']);
+        $signature = base64_decode($server['HTTP_X_CA_SIGNATURE'], true);
+
+        if ($signature === false) {
+            return false;
+        }
 
         $algo = OPENSSL_ALGO_SHA256;
 
@@ -823,15 +856,30 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
         $data = "$home_url$server[REQUEST_URI]";
 
-        return (bool) openssl_verify($data, $signature, $pubkey, $algo);
+        // openssl_verify() returns 1 (valid), 0 (invalid) or -1 (error).
+        // Only 1 is a valid signature; 0 and -1 must both fail closed.
+        // NOTE: never cast to (bool) here — (bool)(-1) === true would treat
+        // a verification error as a valid signature.
+        return openssl_verify($data, $signature, $pubkey, $algo) === 1;
     }
 
     function order_status()
     {
-        $order_id = sanitize_text_field($_REQUEST['order_id']);
+        $order_id = absint($_REQUEST['order_id'] ?? 0);
+        $order_key = isset($_REQUEST['key']) ? sanitize_text_field(wp_unslash($_REQUEST['key'])) : '';
+
+        $order = $order_id ? wc_get_order($order_id) : false;
+
+        // This endpoint is unauthenticated (nopriv). Require the order key from
+        // the customer's order-received URL as proof of ownership so it cannot
+        // be used to enumerate and read arbitrary orders' payment data or to
+        // force refresh_value() writes / outbound API calls on other orders.
+        if (!$order || $order_key === '' || !hash_equals((string) $order->get_order_key(), $order_key)) {
+            echo json_encode(['status' => 'error', 'error' => 'Not a valid order_id']);
+            die();
+        }
 
         try {
-            $order = new \WC_Order($order_id);
             $counter_calc = (int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval - time();
 
             if (!$order->is_paid()) {
@@ -903,8 +951,18 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
     function validate_logs()
     {
-        $order_id = sanitize_text_field($_REQUEST['order_id']);
-        $order = new \WC_Order($order_id);
+        check_ajax_referer('cryptapi_validate_logs');
+
+        if (!current_user_can('edit_shop_orders')) {
+            wp_send_json_error('forbidden', 403);
+        }
+
+        $order_id = absint($_REQUEST['order_id'] ?? 0);
+        $order = $order_id ? wc_get_order($order_id) : false;
+
+        if (!$order) {
+            wp_send_json_error('invalid order', 404);
+        }
 
         try {
 
@@ -979,7 +1037,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
         $calc = $this->calc_order(
             json_decode($order->get_meta('cryptapi_history'), true),
-            $order->get_meta('cryptapi_total') * (1 - (int) $order->get_meta('cryptapi_tolerance') / 100), // Calculate based on the tolerance. If tolerance is 0, no tolerance is applied.,
+            $order->get_meta('cryptapi_total') * (1 - min(10, max(0, (int) $order->get_meta('cryptapi_tolerance'))) / 100), // Calculate based on the tolerance (clamped 0-10%). If tolerance is 0, no tolerance is applied.
             $order->get_meta('cryptapi_total_fiat')
         );
 
@@ -994,11 +1052,11 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         foreach ($order_notes as $note) {
             $note_content = $note['note_content'];
 
-            if (strpos((string)$note_content, 'PENDING') && strpos((string)$note_content, $data['txid_in'])) {
+            if (strpos((string)$note_content, 'PENDING') !== false && strpos((string)$note_content, (string)$data['txid_in']) !== false) {
                 $has_pending = true;
             }
 
-            if (strpos((string)$note_content, 'CONFIRMED') && strpos((string)$note_content, $data['txid_in'])) {
+            if (strpos((string)$note_content, 'CONFIRMED') !== false && strpos((string)$note_content, (string)$data['txid_in']) !== false) {
                 $has_confirmed = true;
             }
         }
@@ -1039,13 +1097,21 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                 $count_virtual = 0;
                 foreach ($order->get_items() as $order_item) {
                     $item = wc_get_product($order_item->get_product_id());
-                    $item_obj = $item->get_type() === 'variable' ? wc_get_product($order_item['variation_id']) : $item;
 
-                    if ($item_obj->is_virtual()) {
+                    if (!$item) {
+                        continue;
+                    }
+
+                    $variation_id = $order_item->get_variation_id();
+                    $item_obj = ($item->get_type() === 'variable' && $variation_id)
+                        ? wc_get_product($variation_id)
+                        : $item;
+
+                    if ($item_obj && $item_obj->is_virtual()) {
                         $count_virtual += 1;
                     }
                 }
-                if ($count_virtual === $count_products) {
+                if ($count_products > 0 && $count_virtual === $count_products) {
                     $order->update_status('completed');
                 }
             }
@@ -1105,6 +1171,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         $ajax_url = add_query_arg(array(
             'action' => 'cryptapi_order_status',
             'order_id' => $order_id,
+            'key' => $order->get_order_key(),
         ), home_url('/wp-admin/admin-ajax.php'));
 
         wp_enqueue_script('ca-payment', CRYPTAPI_PLUGIN_URL . 'static/payment.js', array(), CRYPTAPI_PLUGIN_VERSION, true);
@@ -1155,7 +1222,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                                             if ($qr_code_setting == 'ammount') {
                                                 echo 'style="display:none;"';
                                             }
-                                            ?> src="data:image/png;base64,<?php echo $qr_code_img; ?>"
+                                            ?> src="data:image/png;base64,<?php echo esc_attr($qr_code_img); ?>"
                                                  alt="<?php echo esc_attr(__('QR Code without value', 'cryptapi')); ?>"/>
                                             <?php
                                         }
@@ -1165,7 +1232,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                                             if ($qr_code_setting == 'without_ammount') {
                                                 echo 'style="display:none;"';
                                             }
-                                            ?> src="data:image/png;base64,<?php echo $qr_code_img_value; ?>"
+                                            ?> src="data:image/png;base64,<?php echo esc_attr($qr_code_img_value); ?>"
                                                  alt="<?php echo esc_attr(__('QR Code with value', 'cryptapi')); ?>"/>
                                             <?php
                                         }
@@ -1436,17 +1503,34 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
             return;
         }
 
-        $orders = wc_get_orders(array(
+        $order_ids = wc_get_orders(array(
             'status' => array('wc-on-hold'),
             'payment_method' => 'cryptapi',
             'date_created' => '<' . (time() - $order_timeout),
+            'limit' => -1,
+            'return' => 'ids',
         ));
 
-        if (empty($orders)) {
+        if (empty($order_ids)) {
             return;
         }
 
-        foreach ($orders as $order) {
+        foreach ($order_ids as $order_id) {
+            $order = wc_get_order($order_id);
+
+            if (!$order) {
+                continue;
+            }
+
+            // Do not cancel an order that already received a (pending or
+            // confirmed) crypto payment: the customer paid and funds were
+            // forwarded, so it must not be silently killed. Only orders with
+            // no recorded payment at all are timed out.
+            $history = json_decode($order->get_meta('cryptapi_history'), true);
+            if (!empty($history)) {
+                continue;
+            }
+
             $order->update_status('cancelled', __('Order cancelled due to lack of payment.', 'cryptapi'));
             $order->update_meta_data('cryptapi_cancelled', '1');
             $order->save();
@@ -1492,16 +1576,20 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
         $order = $renewal_order;
 
-        $costumer_id = get_post_meta($order->get_id(), '_customer_user', true);
-        $customer = new \WC_Customer($costumer_id);
-
         if (empty($order->get_meta('cryptapi_paid'))) {
             $mailer = WC()->mailer();
 
-            $recipient = $customer->get_email();
+            // HPOS-safe recipient resolution. get_post_meta('_customer_user')
+            // is empty under authoritative HPOS (orders are not posts), which
+            // previously sent the reminder to an empty address.
+            $recipient = $order->get_billing_email();
+            if (empty($recipient)) {
+                $customer = new \WC_Customer($order->get_customer_id());
+                $recipient = $customer->get_email();
+            }
 
             $subject = sprintf('[%s] %s', get_bloginfo('name'), __('Please renew your subscription', 'cryptapi'));
-            $headers = 'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>' . '\r\n';
+            $headers = 'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>';
 
             $content = wc_get_template_html('emails/renewal-email.php', array(
                 'order' => $order,
@@ -1563,7 +1651,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
             <th scope="row" class="titledesc">
                 <input style="display: inline-block; margin-bottom: -4px;" type="checkbox"
                        name="coins[]" id="<?php echo esc_attr('coins_' . $token); ?>"
-                       value="<?php echo str_replace('_address', '', $key); ?>"
+                       value="<?php echo esc_attr(str_replace('_address', '', $key)); ?>"
                     <?php if (!empty($token_option) && $this->get_option('coins')[$token_search] === $token) {
                         echo 'checked="true" ';
                     } ?> />
@@ -1576,7 +1664,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                 <input class="input-text regular-input <?php echo esc_attr($data['class']); ?>" type="text"
                        name="<?php echo esc_attr($field_key); ?>"
                        id="<?php echo esc_attr($field_key); ?>" style="<?php echo esc_attr($data['css']); ?>"
-                       value="<?php echo $this->get_option($key); ?>"
+                       value="<?php echo esc_attr($this->get_option($key)); ?>"
                        placeholder="<?php echo esc_attr($data['placeholder']); ?>" <?php disabled($data['disabled'], true); ?> <?php echo $this->get_custom_attribute_html($data); // WPCS: XSS ok.
                 ?> />
             </td>
@@ -1592,7 +1680,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
         $nonce = [];
         for ($i = 0; $i < $len; $i++) {
-            $nonce[] = $data[mt_rand(0, sizeof($data) - 1)];
+            $nonce[] = $data[random_int(0, count($data) - 1)];
         }
 
         return implode('', $nonce);
@@ -1622,14 +1710,17 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
             $selected = WC()->session->get('cryptapi_coin');
 
-            if ($selected === 'none') {
-                return;
-            }
-
+            // The blockchain fee needs a concretely-selected coin, but the flat
+            // percentage fee above must still apply when no coin is chosen yet —
+            // so do NOT early-return on 'none' here.
             if (!empty($selected) && $selected != 'none' && $this->add_blockchain_fee) {
                 $est = \CryptAPI\Utils\Api::get_estimate($selected);
 
-                $fee_order += (float)$est->{get_woocommerce_currency()};
+                // get_estimate() returns null on API error; guard before deref.
+                $currency = get_woocommerce_currency();
+                if (is_object($est) && isset($est->{$currency})) {
+                    $fee_order += (float)$est->{$currency};
+                }
             }
 
             if (empty($fee_order)) {
@@ -1638,6 +1729,67 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
             WC()->cart->add_fee(__('Service Fee', 'cryptapi'), $fee_order, true);
         }
+    }
+
+    /**
+     * Re-assert the CryptAPI "Service Fee" on the order for the coin actually
+     * being charged. handling_fee() estimates the blockchain portion from the
+     * session coin during cart calculation, which a shopper can set to a
+     * different (cheaper-fee) coin than the one they submit (P2). This recomputes
+     * the fee from $coin and rewrites the fee line so the order total is correct.
+     */
+    private function reconcile_blockchain_fee($order, $coin)
+    {
+        if (!$this->add_blockchain_fee) {
+            // Only the coin-independent percentage fee applies; nothing to reconcile.
+            return;
+        }
+
+        $fee_name = __('Service Fee', 'cryptapi');
+
+        $fee_item = null;
+        foreach ($order->get_items('fee') as $item) {
+            if ($item->get_name() === $fee_name) {
+                $fee_item = $item;
+                break;
+            }
+        }
+
+        // Percentage portion (coin-independent), recomputed from the order subtotal.
+        $total_fee = $this->get_option('fee_order_percentage') === 'none' ? 0 : (float)$this->get_option('fee_order_percentage');
+        $percentage_fee = $total_fee !== 0 ? (float)$order->get_subtotal() * $total_fee : 0;
+
+        // Blockchain portion for the coin actually being charged.
+        $blockchain_fee = 0;
+        $est = \CryptAPI\Utils\Api::get_estimate($coin);
+        $currency = get_woocommerce_currency();
+        if (is_object($est) && isset($est->{$currency})) {
+            $blockchain_fee = (float)$est->{$currency};
+        }
+
+        $correct_fee = round($percentage_fee + $blockchain_fee, wc_get_price_decimals());
+
+        if ($fee_item) {
+            if ($correct_fee > 0) {
+                $fee_item->set_amount($correct_fee);
+                $fee_item->set_total($correct_fee);
+                $fee_item->save();
+            } else {
+                $order->remove_item($fee_item->get_id());
+            }
+        } elseif ($correct_fee > 0) {
+            // No fee line existed (e.g. session coin was 'none' at cart time);
+            // add the correct one now.
+            $fee_item = new \WC_Order_Item_Fee();
+            $fee_item->set_name($fee_name);
+            $fee_item->set_amount($correct_fee);
+            $fee_item->set_total($correct_fee);
+            $fee_item->set_tax_status('taxable');
+            $order->add_item($fee_item);
+        }
+
+        // Recompute order totals so $order->get_total('edit') reflects the fee.
+        $order->calculate_totals();
     }
 
     function refresh_checkout()
@@ -1658,13 +1810,28 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         parse_str($posted_data, $fields);
 
         if (isset($fields['cryptapi_coin'])) {
-            WC()->session->set('cryptapi_coin', $fields['cryptapi_coin']);
+            $coin = sanitize_text_field($fields['cryptapi_coin']);
+
+            // Mirror the REST /update-coin validation: only store 'none' or a
+            // currently-supported coin, so an arbitrary string cannot reach
+            // handling_fee() -> get_estimate() and outbound API URLs.
+            if ($coin === 'none' || array_key_exists($coin, self::load_coins())) {
+                WC()->session->set('cryptapi_coin', $coin);
+            }
         }
     }
 
     public function process_admin_options()
     {
-        parent::update_option('coins', $_POST['coins']);
+        $submitted = isset($_POST['coins']) ? (array) wp_unslash($_POST['coins']) : [];
+        $submitted = array_map('sanitize_text_field', $submitted);
+
+        $valid_coins = array_keys(self::load_coins());
+        if (!empty($valid_coins)) {
+            $submitted = array_values(array_intersect($submitted, $valid_coins));
+        }
+
+        parent::update_option('coins', $submitted);
         parent::process_admin_options();
         $this->reset_load_coins();
     }
@@ -1734,6 +1901,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         $ajax_url = add_query_arg(array(
             'action' => 'cryptapi_validate_logs',
             'order_id' => $order->get_ID(),
+            '_wpnonce' => wp_create_nonce('cryptapi_validate_logs'),
         ), home_url('/wp-admin/admin-ajax.php'));
         ?>
         <p class="form-field form-field-wide wc-customer-user">

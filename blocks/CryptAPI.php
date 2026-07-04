@@ -63,8 +63,18 @@ class WC_CryptAPI_Payments extends AbstractPaymentMethodType {
         $load_coins = \CryptAPI\Controllers\WC_CryptAPI_Gateway::load_coins();
         $output_coins = [];
 
-        if ($load_coins) {
-            foreach ($this->get_setting('coins') as $coin) {
+        $configured_coins = $this->get_setting('coins');
+
+        if ($load_coins && is_array($configured_coins)) {
+            foreach ($configured_coins as $coin) {
+                // Skip coins that are no longer in the live supported list
+                // (a delisted token, or 'xmr' which load_coins() removes):
+                // array_merge(..., null) would otherwise fatal the whole
+                // Blocks checkout for that store.
+                if (!isset($load_coins[$coin]) || !is_array($load_coins[$coin])) {
+                    continue;
+                }
+
                 $output_coins[] = array_merge(
                     ['ticker' => $coin],
                     $load_coins[$coin]

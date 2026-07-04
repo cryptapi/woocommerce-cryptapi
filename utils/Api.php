@@ -280,11 +280,17 @@ class Api {
             $url .= "?{$data}";
         }
 
-        for ($y = 0; $y < 5; $y++) {
+        for ($y = 0; $y < 3; $y++) {
             try {
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                // Bound each attempt so a slow/unresponsive upstream cannot
+                // hang a PHP worker indefinitely (retried up to 3x below).
+                // 30s response timeout gives CryptAPI headroom when it is slow;
+                // the connect timeout stays tight since connecting is fast.
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
                 $response = curl_exec($ch);
                 curl_close($ch);
 
