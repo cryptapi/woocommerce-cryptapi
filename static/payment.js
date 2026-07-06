@@ -97,11 +97,12 @@ function check_status(ajax_url) {
             }
 
             if (jQuery('.ca_time_refresh')[0]) {
-                var timer = jQuery('.ca_time_seconds_count');
-
-                if (timer.attr('data-seconds') <= 0) {
-                    timer.attr('data-seconds', data.counter);
-                }
+                // Re-sync against the server's authoritative remaining seconds on
+                // every poll by storing an absolute deadline; the 1s tick derives
+                // the display from it, so drift / background-tab throttling and a
+                // stale local value can never desync the countdown.
+                var counter = Math.max(0, parseInt(data.counter, 10) || 0);
+                jQuery('.ca_time_seconds_count').attr('data-deadline', Math.floor(Date.now() / 1000) + counter);
             }
         });
 
@@ -139,20 +140,29 @@ jQuery(function ($) {
 
             if ($('.ca_time_refresh')[0]) {
                 var refresh_time_span = $('.ca_time_seconds_count'),
-                    refresh_time = refresh_time_span.attr('data-seconds') - 1;
+                    now = Math.floor(Date.now() / 1000),
+                    deadline = parseInt(refresh_time_span.attr('data-deadline'), 10);
+
+                if (isNaN(deadline)) {
+                    // Seed the absolute deadline from the server-rendered remaining
+                    // seconds on first run; polls keep it re-synced afterwards.
+                    deadline = now + Math.max(0, parseInt(refresh_time_span.attr('data-seconds'), 10) || 0);
+                    refresh_time_span.attr('data-deadline', deadline);
+                }
+
+                var refresh_time = Math.max(0, deadline - now);
 
                 if (refresh_time <= 0) {
                     refresh_time_span.html('00:00');
-                    refresh_time_span.attr('data-seconds', 0);
-                    return;
                 } else if (refresh_time <= 30) {
                     refresh_time_span.html(refresh_time_span.attr('data-soon'));
+                } else {
+                    var refresh_hours = Math.floor(refresh_time / 3600),
+                        refresh_minutes = Math.floor(refresh_time % 3600 / 60).toString().padStart(2, '0'),
+                        refresh_seconds = Math.floor(refresh_time % 60).toString().padStart(2, '0');
+
+                    refresh_time_span.html((refresh_hours > 0 ? refresh_hours.toString().padStart(2, '0') + ':' : '') + refresh_minutes + ':' + refresh_seconds);
                 }
-
-                var refresh_minutes = Math.floor(refresh_time % 3600 / 60).toString().padStart(2, '0'),
-                    refresh_seconds = Math.floor(refresh_time % 60).toString().padStart(2, '0');
-
-                refresh_time_span.html(refresh_minutes + ':' + refresh_seconds);
 
                 refresh_time_span.attr('data-seconds', refresh_time);
             }

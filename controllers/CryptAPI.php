@@ -929,7 +929,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                 'coin' => strtoupper($order->get_meta('cryptapi_currency')),
                 'show_min_fee' => $showMinFee,
                 'order_history' => json_decode($order->get_meta('cryptapi_history'), true),
-                'counter' => (string)$counter_calc,
+                'counter' => (string) max(0, $counter_calc),
                 'crypto_total' => (float)$order->get_meta('cryptapi_total'),
                 'already_paid' => $already_paid,
                 'remaining' => (float)$remaining_pending <= 0 ? 0 : $remaining_pending,
@@ -1189,7 +1189,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
         $crypto_allowed_value = false;
 
-        $conversion_timer = ((int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval) - time();
+        $conversion_timer = max(0, ((int)$order->get_meta('cryptapi_last_price_update') + (int)$this->refresh_value_interval) - time());
         $cancel_timer = $order->get_date_created()->getTimestamp() + (int)$this->order_cancelation_timeout - time();
 
         if (in_array($crypto_coin, $allowed_to_value, true)) {
@@ -1333,7 +1333,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                                     ); ?>
                                     <span class="ca_time_seconds_count"
                                           data-soon="<?php echo esc_attr(__('a moment', 'cryptapi')); ?>"
-                                          data-seconds="<?php echo esc_attr($conversion_timer); ?>"><?php echo esc_attr(date('i:s', $conversion_timer)); ?></span>
+                                          data-seconds="<?php echo esc_attr($conversion_timer); ?>"><?php echo esc_html($conversion_timer >= 3600 ? sprintf('%02d:%02d:%02d', intdiv($conversion_timer, 3600), intdiv($conversion_timer % 3600, 60), $conversion_timer % 60) : sprintf('%02d:%02d', intdiv($conversion_timer, 60), $conversion_timer % 60)); ?></span>
                                 </div>
                                 <?php
                             }
@@ -1948,11 +1948,21 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         $cryptapi_total = $order->get_meta('cryptapi_total');
         $order_total = $order->get_total('edit');
 
+        // Nothing to do until a full refresh interval has actually elapsed.
+        if (empty($last_price_update) || (int)$last_price_update + $value_refresh >= time()) {
+            return false;
+        }
+
         $calc = $this->calc_order($history, $cryptapi_total, $order_total);
         $remaining = $calc['remaining'];
         $remaining_pending = $calc['remaining_pending'];
 
-        if ((int)$last_price_update + $value_refresh < time() && !empty($last_price_update) && $remaining === $remaining_pending && $remaining_pending > 0) {
+        // Re-quote the conversion rate only when it is safe to change the amount
+        // owed — i.e. no unconfirmed/partial payment is in flight. $remaining
+        // counts confirmed txs only; $remaining_pending counts pending ones too,
+        // so they differ exactly while a payment is unconfirmed. Re-quoting then
+        // would move the total a customer is part-way through paying.
+        if ($remaining === $remaining_pending && $remaining_pending > 0) {
             $cryptapi_coin = $order->get_meta('cryptapi_currency');
 
             $crypto_conversion = (float)\CryptAPI\Utils\Api::get_conversion($woocommerce_currency, $cryptapi_coin, $order_total, $this->disable_conversion);
@@ -1969,13 +1979,16 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
             }
 
             $order->update_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
-
-            $order->update_meta_data('cryptapi_last_price_update', time());
-            $order->save_meta_data();
-
-            return true;
         }
 
-        return false;
+        // Always advance the price-update timestamp once the interval has
+        // elapsed, so the on-page countdown resets to a fresh interval instead
+        // of running past zero into negative territory (which the UI otherwise
+        // renders as a stuck 00:00 / bogus 59:xx). The rate itself only changes
+        // inside the guard above.
+        $order->update_meta_data('cryptapi_last_price_update', time());
+        $order->save_meta_data();
+
+        return true;
     }
 }
