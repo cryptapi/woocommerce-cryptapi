@@ -2,11 +2,11 @@
 Contributors: cryptapi
 Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, litecoin, bitcoin cash, shib, doge, solana
 Requires at least: 5.8
-Tested up to: 7.0
-Stable tag: 5.2.3
+Tested up to: 7.1.2
+Stable tag: 5.2.4
 Requires PHP: 7.2
 WC requires at least: 5.8
-WC tested up to: 10.9.3
+WC tested up to: 11.1.2
 License: MIT
 
 Accept cryptocurrency payments on your WooCommerce website
@@ -439,6 +439,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 
 = 5.2.3 =
 * Version bump
+
+= 5.2.4 =
+* Minor improvements
 
 == Upgrade Notice ==
 

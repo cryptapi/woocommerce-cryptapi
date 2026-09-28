@@ -13,6 +13,8 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 {
     private static $HAS_TRIGGERED = false;
 
+    const BLOCKBEE_PLUGIN_URL = 'https://wordpress.org/plugins/blockbee-cryptocurrency-payment-gateway/';
+
     public $id;
     public $enabled;
     public $title;
@@ -157,6 +159,15 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
     function admin_options()
     {
+        if ($this->has_blockbee_api_key()) {
+            echo '<div class="notice notice-warning"><p>' .
+                sprintf(
+                    esc_html__('You are using a BlockBee API key. BlockBee now has its own WooCommerce plugin, and we recommend you move to it: %1$sBlockBee Cryptocurrency Payment Gateway%2$s.', 'cryptapi'),
+                    '<a href="' . esc_url(self::BLOCKBEE_PLUGIN_URL) . '" target="_blank" rel="noopener">',
+                    '</a>'
+                ) .
+                '</p></div>';
+        }
         parent::admin_options();
         if (!empty($_GET['cryptapi_refreshed'])) {
             echo '<div class="notice notice-success is-dismissible"><p>' .
@@ -521,13 +532,18 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                     'label' => sprintf(__('%2$s Attention: This option will disable the price conversion for ALL cryptocurrencies! %3$s %1$s If you check this, pricing will not be converted from the currency of your shop to the cryptocurrency selected by the user, and users will be requested to pay the same value as shown on your shop, regardless of the cryptocurrency selected', 'cryptapi'), '<br/>', '<strong>', '</strong>'),
                     'default' => 'no'
                 ),
-                'api_key' => array(
+            );
+
+            // The BlockBee API key is deprecated. Only show the field to stores
+            // that already saved one, so they can still edit or clear it.
+            if ($this->has_blockbee_api_key()) {
+                $this->form_fields['api_key'] = array(
                     'title' => esc_attr(__('API Key', 'cryptapi')),
                     'type' => 'text',
                     'default' => '',
-                    'description' => sprintf(esc_attr(__('(Optional) Insert here your BlockBee API Key. You can get one here: %1$s', 'cryptapi')), '<a href="https://dash.blockbee.io/" target="_blank">https://dash.blockbee.io/</a>')
-                ),
-            );
+                    'description' => sprintf(esc_attr(__('(Deprecated) BlockBee API keys belong in the %1$sBlockBee plugin%2$s, please move to it. If you clear this field, it will be hidden for good and each enabled cryptocurrency will need its own address below.', 'cryptapi')), '<a href="' . esc_url(self::BLOCKBEE_PLUGIN_URL) . '" target="_blank" rel="noopener">', '</a>')
+                );
+            }
 
             $coin_description = esc_attr(__('Insert your %s address here. Leave the checkbox unselected if you want to skip this cryptocurrency', 'cryptapi'));
 
@@ -546,6 +562,15 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
             }
 
         }
+    }
+
+    // Reads the saved option directly: init_form_fields() runs before
+    // init_settings(), so $this->api_key is not set yet at that point.
+    private function has_blockbee_api_key()
+    {
+        $settings = get_option($this->get_option_key(), []);
+
+        return is_array($settings) && !empty($settings['api_key']);
     }
 
     function needs_setup()
@@ -1639,8 +1664,11 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                     <p>
                         <strong>
                             <?php echo esc_attr(__('Addresses', 'cryptapi')); ?>
-                        </strong><br/>
-                        <?php echo sprintf(esc_attr(__('If you are using BlockBee you can choose if setting the receiving addresses here bellow or in your BlockBee settings page. %1$s - In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key. %1$s - In order to set the addresses on BlockBee settings, you need to NOT select “Address Override” while creating the API key.', 'cryptapi')), '<br/>'); ?>
+                        </strong>
+                        <?php if ($this->has_blockbee_api_key()) { ?>
+                            <br/>
+                            <?php echo sprintf(esc_attr(__('If you are using BlockBee you can choose if setting the receiving addresses here bellow or in your BlockBee settings page. %1$s - In order to set the addresses on plugin settings, you need to select “Address Override” while creating the API key. %1$s - In order to set the addresses on BlockBee settings, you need to NOT select “Address Override” while creating the API key.', 'cryptapi')), '<br/>'); ?>
+                        <?php } ?>
                     </p>
                 </td>
             </tr>
