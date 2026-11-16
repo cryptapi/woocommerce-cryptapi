@@ -141,8 +141,8 @@ msgstr "CryptAPI允许客户使用加密货币支付"
 
 #. Plugin Name of the plugin
 #: CryptAPI.php
-msgid "CryptAPI Payment Gateway for WooCommerce"
-msgstr "CryptAPI WooCommerce支付网关"
+msgid "CryptAPI – Crypto Payment Gateway for WooCommerce"
+msgstr "CryptAPI WooCommerce加密货币支付网关"
 
 #: CryptAPI.php:52
 msgid ""
@@ -647,3 +647,50 @@ msgstr "支付此訂單"
 #: controllers/CryptAPI.php
 msgid "Minimum amount per transaction: %s"
 msgstr "每筆交易最低金額：%s"
+
+#: CryptAPI.php:84
+msgid "CryptAPI Interval"
+msgstr "CryptAPI間隔"
+
+#: controllers/CryptAPI.php:170
+msgid "Verify your domain so customers can pay"
+msgstr "驗證您的網域，讓顧客可以付款"
+
+#. translators: %s: the store's domain, e.g. example.com
+#: controllers/CryptAPI.php:174
+msgid ""
+"CryptAPI only creates payment addresses for verified domains. Until you "
+"verify %s, customers can't pay with CryptAPI. You only need to do this once, "
+"with a DNS TXT record or an HTTPS file. Payment addresses you already "
+"created keep working."
+msgstr ""
+"CryptAPI只會為已驗證的網域建立付款地址。在您驗證%s之前，顧客無法使用CryptAPI"
+"付款。此操作只需進行一次，可透過DNS TXT記錄或HTTPS檔案完成。您已建立的付款地"
+"址將繼續有效。"
+
+#: controllers/CryptAPI.php:179
+msgid "Verify your domain"
+msgstr "驗證網域"
+
+#: controllers/CryptAPI.php:180
+msgid "Step-by-step guide"
+msgstr "逐步指南"
+
+#: controllers/CryptAPI.php:186
+msgid ""
+"You are using a BlockBee API key. BlockBee now has its own WooCommerce "
+"plugin, and we recommend you move to it: %1$sBlockBee Cryptocurrency Payment "
+"Gateway%2$s."
+msgstr ""
+"您正在使用BlockBee API金鑰。BlockBee現在有自己的WooCommerce外掛，我們建議您改"
+"用它：%1$sBlockBee加密貨幣支付閘道%2$s。"
+
+#: controllers/CryptAPI.php:565
+msgid ""
+"(Deprecated) BlockBee API keys belong in the %1$sBlockBee plugin%2$s, please "
+"move to it. If you clear this field, it will be hidden for good and each "
+"enabled cryptocurrency will need its own address below."
+msgstr ""
+"（已棄用）BlockBee API金鑰應在%1$sBlockBee外掛%2$s中使用，請改用該外掛。如果"
+"您清空此欄位，它將被永久隱藏，且每種已啟用的加密貨幣都需要在下方填寫各自的地"
+"址。"

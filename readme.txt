@@ -1,6 +1,6 @@
-=== CryptAPI Payment Gateway for WooCommerce ===
+=== CryptAPI – Crypto Payment Gateway for WooCommerce ===
 Contributors: cryptapi
-Tags: crypto payments, woocommerce, payment gateway, crypto, payment, pay with crypto, payment request, bitcoin, bnb, usdt, ethereum, litecoin, bitcoin cash, shib, doge, solana
+Tags: crypto payments, bitcoin, usdt, usdc, stablecoin
 Requires at least: 5.8
 Tested up to: 7.1.2
 Stable tag: 5.2.4
@@ -9,13 +9,13 @@ WC requires at least: 5.8
 WC tested up to: 11.1.2
 License: MIT
 
-Accept cryptocurrency payments on your WooCommerce website
+Accept Bitcoin, Ethereum, USDT, USDC, Solana and other cryptocurrency payments in WooCommerce. No sign-up: funds go straight to your wallet.
 
 
 == Description ==
 
 Accept payments in Bitcoin, Ethereum, Bitcoin Cash, Litecoin, BNB, USDT, SHIB, DOGE and many more directly to your crypto wallet, without any sign-ups or lengthy processes.
-All you need is to provide your crypto address.
+All you need is to provide your crypto address and verify your domain once.
 
 = Allow users to pay with crypto directly on your store =
 
@@ -30,12 +30,28 @@ The CryptAPI plugin extends WooCommerce, allowing you to get paid in crypto dire
 * (TRX) Tron
 * (BNB) Binance Coin
 * (USDT) USDT
+* (USDC) USDC
 * (SHIB) Shiba Inu
 * (DOGE) Dogecoin
 * (POL) Polygon
 * (SOL) Solana
 
 among many others, for a full list of the supported cryptocurrencies and tokens, check [this page](https://cryptapi.io/cryptocurrencies/).
+
+Stablecoins include USDT on TRC20 (Tron), ERC20, BEP20, Polygon, Solana, Base and TON, and USDC on ERC20, BEP20, Polygon, Solana, Base and Arbitrum.
+
+= Features =
+
+* Works with both the WooCommerce block checkout and the classic checkout
+* Supports WooCommerce Subscriptions
+* Supports WooCommerce HPOS (High-Performance Order Storage)
+* QR codes with or without the amount
+* Handles partial payments and shows a payment history on the order page
+* Payment tolerance for small underpayments
+* Cancels unpaid orders after a time you choose
+* Can add service and blockchain fees at checkout
+* Light and dark color schemes
+* Translated into German, Spanish, French, Italian, Portuguese, Russian, Ukrainian and Chinese
 
 = Auto-value conversion =
 
@@ -79,38 +95,38 @@ Supported currencies for automatic exchange rates are:
 If your WooCommerce's currency is none of the above, the exchange rates will default to USD.
 If you're using WooCommerce in a different currency not listed here and need support, please [contact us](https://cryptapi.io) via our live chat.
 
-**Note:** CryptAPI will not exchange your crypto for FIAT or other crypto, just convert the value
+**Note:** CryptAPI will not exchange your crypto for FIAT or other crypto, just convert the value.
 
 = Why choose CryptAPI? =
 
 CryptAPI has no setup fees, no monthly fees, no hidden costs, and you don't even need to sign-up!
-Simply set your crypto addresses and you're ready to go. As soon as your customers pay we forward your earnings directly to your own wallet.
+Simply set your crypto addresses, verify your domain and you're ready to go. As soon as your customers pay we forward your earnings directly to your own wallet.
 
 CryptAPI has a low 1% fee on the transactions processed. No hidden costs.
-For more info on our fees [click here](https://cryptapi.io/fees/)
+For more info on our fees [click here](https://cryptapi.io/fees/).
 
 == Installation ==
 
 = Using The WordPress Dashboard =
 
-1. Navigate to the 'Add New' in the plugins dashboard
-2. Search for 'CryptAPI Payment Gateway for WooCommerce'
+1. Go to Plugins > Add New Plugin in the WordPress dashboard
+2. Search for 'CryptAPI Crypto Payment Gateway for WooCommerce'
 3. Click 'Install Now'
 4. Activate the plugin on the Plugin dashboard
 
 = Uploading in WordPress Dashboard =
 
-1. Navigate to the 'Add New' in the plugins dashboard
-2. Navigate to the 'Upload' area
-3. Select `woocommerce-cryptapi.zip` from your computer
+1. Go to Plugins > Add New Plugin in the WordPress dashboard
+2. Click 'Upload Plugin'
+3. Select `cryptapi-payment-gateway-for-woocommerce.zip` from your computer
 4. Click 'Install Now'
 5. Activate the plugin in the Plugin dashboard
 
 = Using FTP =
 
-1. Download `woocommerce-cryptapi.zip`
-2. Extract the `woocommerce-cryptapi` directory to your computer
-3. Upload the `woocommerce-cryptapi` directory to the `/wp-content/plugins/` directory
+1. Download `cryptapi-payment-gateway-for-woocommerce.zip`
+2. Extract the `cryptapi-payment-gateway-for-woocommerce` directory to your computer
+3. Upload the `cryptapi-payment-gateway-for-woocommerce` directory to the `/wp-content/plugins/` directory
 4. Activate the plugin in the Plugin dashboard
 
 = Updating =
@@ -127,13 +143,20 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 6. Select which cryptocurrencies you wish to accept (control + click to select many)
 7. Input your addresses to the cryptocurrencies you selected. This is where your funds will be sent to, so make sure the addresses are correct.
 8. Click "Save Changes"
-9. All done!
+9. Verify your store's domain at [cryptapi.io/verify_domain](https://cryptapi.io/verify_domain/), with a DNS TXT record or an HTTPS file. You only need to do this once, but customers can't pay with CryptAPI until you do.
+10. All done!
 
 == Frequently Asked Questions ==
 
 = Do I need an API key? =
 
-No. You just need to insert your crypto address of the cryptocurrencies you wish to accept. Whenever a customer pays, the money will be automatically and instantly forwarded to your address.
+No. You just need to insert your crypto address of the cryptocurrencies you wish to accept and verify your domain once (see below). Whenever a customer pays, the money will be automatically and instantly forwarded to your address.
+
+= Do I need to verify my domain? =
+
+Yes. CryptAPI only creates payment addresses for verified domains, so customers can't pay until you verify the domain your store runs on. You only need to do it once, at [cryptapi.io/verify_domain](https://cryptapi.io/verify_domain/), with a DNS TXT record or an HTTPS file. You don't need an account.
+
+A DNS record also covers your subdomains. An HTTPS file covers only the exact host, so `www.example.com` and `example.com` count as two domains. Payment addresses you already created keep working. Our [step-by-step guide](https://docs.cryptapi.io/kb/developers/how-to-verify-your-callback-domain) shows how.
 
 = How long do payments take before they're confirmed? =
 
@@ -141,7 +164,7 @@ This depends on the cryptocurrency you're using. Bitcoin usually takes up to 11 
 
 = Is there a minimum for a payment? =
 
-Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/fees/).
+Yes, the minimums change according to the chosen cryptocurrency and can be checked [here](https://cryptapi.io/cryptocurrencies/).
 If the WooCommerce order total is below the chosen cryptocurrency's minimum, an error is raised to the user.
 
 = Where can I find more documentation on your service? =
@@ -158,7 +181,7 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 1. The settings panel used to configure the gateway
 2. Set your crypto addresses (part 1)
 3. Set your crypto addresses (part 2)
-4. Example of payment using Litecoins
+4. Example of payment using Litecoin
 5. The QR code can be set to provide only the address or the address with the amount: the user can choose with one click
 6. Once the payment is received, the system will wait for network confirmations
 7. The payment is confirmed!
@@ -442,6 +465,11 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 
 = 5.2.4 =
 * Minor improvements
+
+= 5.2.5 =
+* Domain verification notice
+* New plugin name
+* Translation updates
 
 == Upgrade Notice ==
 

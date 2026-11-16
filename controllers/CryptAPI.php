@@ -14,6 +14,8 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
     private static $HAS_TRIGGERED = false;
 
     const BLOCKBEE_PLUGIN_URL = 'https://wordpress.org/plugins/blockbee-cryptocurrency-payment-gateway/';
+    const VERIFY_DOMAIN_URL = 'https://cryptapi.io/verify_domain/';
+    const VERIFY_DOMAIN_GUIDE_URL = 'https://docs.cryptapi.io/kb/developers/how-to-verify-your-callback-domain';
 
     public $id;
     public $enabled;
@@ -159,7 +161,26 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
     function admin_options()
     {
-        if ($this->has_blockbee_api_key()) {
+        // CryptAPI only creates payment addresses for callbacks on a verified
+        // domain, and the callbacks go to home_url(). Stores with a BlockBee
+        // API key call BlockBee instead, so they get the BlockBee notice.
+        if (!$this->has_blockbee_api_key()) {
+            $domain = wp_parse_url(home_url(), PHP_URL_HOST);
+            echo '<div class="notice notice-warning">' .
+                '<p><strong>' . esc_html__('Verify your domain so customers can pay', 'cryptapi') . '</strong></p>' .
+                '<p>' .
+                sprintf(
+                    /* translators: %s: the store's domain, e.g. example.com */
+                    esc_html__('CryptAPI only creates payment addresses for verified domains. Until you verify %s, customers can\'t pay with CryptAPI. You only need to do this once, with a DNS TXT record or an HTTPS file. Payment addresses you already created keep working.', 'cryptapi'),
+                    '<code>' . esc_html($domain ? $domain : home_url()) . '</code>'
+                ) .
+                '</p>' .
+                '<p>' .
+                '<a class="button button-primary" href="' . esc_url(self::VERIFY_DOMAIN_URL) . '" target="_blank" rel="noopener">' . esc_html__('Verify your domain', 'cryptapi') . '</a> ' .
+                '<a class="button" href="' . esc_url(self::VERIFY_DOMAIN_GUIDE_URL) . '" target="_blank" rel="noopener">' . esc_html__('Step-by-step guide', 'cryptapi') . '</a>' .
+                '</p>' .
+                '</div>';
+        } else {
             echo '<div class="notice notice-warning"><p>' .
                 sprintf(
                     esc_html__('You are using a BlockBee API key. BlockBee now has its own WooCommerce plugin, and we recommend you move to it: %1$sBlockBee Cryptocurrency Payment Gateway%2$s.', 'cryptapi'),

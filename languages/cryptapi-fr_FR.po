@@ -147,8 +147,8 @@ msgstr "CryptAPI permet aux clients de payer en cryptomonnaie"
 
 #. Plugin Name of the plugin
 #: CryptAPI.php
-msgid "CryptAPI Payment Gateway for WooCommerce"
-msgstr "Passerelle de paiement CryptAPI pour WooCommerce"
+msgid "CryptAPI – Crypto Payment Gateway for WooCommerce"
+msgstr "Passerelle de paiement crypto CryptAPI pour WooCommerce"
 
 #: CryptAPI.php:52
 msgid ""
@@ -709,3 +709,54 @@ msgstr "Payer cette commande"
 #: controllers/CryptAPI.php
 msgid "Minimum amount per transaction: %s"
 msgstr "Montant minimum par transaction : %s"
+
+#: CryptAPI.php:84
+msgid "CryptAPI Interval"
+msgstr "Intervalle CryptAPI"
+
+#: controllers/CryptAPI.php:170
+msgid "Verify your domain so customers can pay"
+msgstr "Vérifiez votre domaine pour que vos clients puissent payer"
+
+#. translators: %s: the store's domain, e.g. example.com
+#: controllers/CryptAPI.php:174
+msgid ""
+"CryptAPI only creates payment addresses for verified domains. Until you "
+"verify %s, customers can't pay with CryptAPI. You only need to do this once, "
+"with a DNS TXT record or an HTTPS file. Payment addresses you already "
+"created keep working."
+msgstr ""
+"CryptAPI ne crée des adresses de paiement que pour les domaines vérifiés. "
+"Tant que vous n'avez pas vérifié %s, vos clients ne peuvent pas payer avec "
+"CryptAPI. Vous n'avez à le faire qu'une seule fois, avec un enregistrement "
+"DNS TXT ou un fichier HTTPS. Les adresses de paiement déjà créées continuent "
+"de fonctionner."
+
+#: controllers/CryptAPI.php:179
+msgid "Verify your domain"
+msgstr "Vérifier le domaine"
+
+#: controllers/CryptAPI.php:180
+msgid "Step-by-step guide"
+msgstr "Guide étape par étape"
+
+#: controllers/CryptAPI.php:186
+msgid ""
+"You are using a BlockBee API key. BlockBee now has its own WooCommerce "
+"plugin, and we recommend you move to it: %1$sBlockBee Cryptocurrency Payment "
+"Gateway%2$s."
+msgstr ""
+"Vous utilisez une clé API BlockBee. BlockBee a désormais son propre plugin "
+"WooCommerce, et nous vous recommandons de passer à celui-ci : %1$sPasserelle "
+"de paiement de cryptomonnaie BlockBee%2$s."
+
+#: controllers/CryptAPI.php:565
+msgid ""
+"(Deprecated) BlockBee API keys belong in the %1$sBlockBee plugin%2$s, please "
+"move to it. If you clear this field, it will be hidden for good and each "
+"enabled cryptocurrency will need its own address below."
+msgstr ""
+"(Obsolète) Les clés API BlockBee doivent être utilisées dans le %1$splugin "
+"BlockBee%2$s, veuillez passer à celui-ci. Si vous videz ce champ, il sera "
+"masqué définitivement et chaque cryptomonnaie activée aura besoin de sa "
+"propre adresse ci-dessous."
