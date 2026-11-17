@@ -695,3 +695,7 @@ msgstr ""
 "（已弃用）BlockBee API密钥应在%1$sBlockBee插件%2$s中使用，请改用该插件。如果"
 "您清空此字段，它将被永久隐藏，并且每种已启用的加密货币都需要在下方填写各自的"
 "地址。"
+
+#: controllers/CryptAPI.php:222
+msgid "I've verified my domain, hide this notice"
+msgstr "我已验证域名，隐藏此通知"

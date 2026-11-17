@@ -88,6 +88,8 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         add_action('woocommerce_admin_order_data_after_order_details', array($this, 'order_detail_validate_logs'));
 
         add_action('admin_post_cryptapi_refresh_coins', [$this, 'handle_admin_refresh_coins']);
+
+        add_action('admin_post_cryptapi_hide_domain_notice', [$this, 'handle_hide_domain_notice']);
     }
 
     function reset_load_coins() {
@@ -159,28 +161,40 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         exit;
     }
 
+    // The domain CryptAPI sends callbacks to, so the one the store must verify.
+    private static function store_domain() {
+        $domain = wp_parse_url(home_url(), PHP_URL_HOST);
+
+        return $domain ? $domain : home_url();
+    }
+
+    public function handle_hide_domain_notice() {
+        if ( ! current_user_can('manage_woocommerce') ) {
+            wp_die(__('You do not have permission to do this.', 'cryptapi'));
+        }
+
+        check_admin_referer('cryptapi_hide_domain_notice');
+
+        // The store owner says they verified: record when, and never show the
+        // domain notice again.
+        update_option('cryptapi_domain_verified_at', time(), false);
+
+        $back = wp_get_referer();
+        if (!$back) {
+            $back = admin_url('admin.php?page=wc-settings&tab=checkout&section=' . $this->id);
+        }
+        wp_safe_redirect($back);
+        exit;
+    }
+
     function admin_options()
     {
         // CryptAPI only creates payment addresses for callbacks on a verified
         // domain, and the callbacks go to home_url(). Stores with a BlockBee
         // API key call BlockBee instead, so they get the BlockBee notice.
-        if (!$this->has_blockbee_api_key()) {
-            $domain = wp_parse_url(home_url(), PHP_URL_HOST);
-            echo '<div class="notice notice-warning">' .
-                '<p><strong>' . esc_html__('Verify your domain so customers can pay', 'cryptapi') . '</strong></p>' .
-                '<p>' .
-                sprintf(
-                    /* translators: %s: the store's domain, e.g. example.com */
-                    esc_html__('CryptAPI only creates payment addresses for verified domains. Until you verify %s, customers can\'t pay with CryptAPI. You only need to do this once, with a DNS TXT record or an HTTPS file. Payment addresses you already created keep working.', 'cryptapi'),
-                    '<code>' . esc_html($domain ? $domain : home_url()) . '</code>'
-                ) .
-                '</p>' .
-                '<p>' .
-                '<a class="button button-primary" href="' . esc_url(self::VERIFY_DOMAIN_URL) . '" target="_blank" rel="noopener">' . esc_html__('Verify your domain', 'cryptapi') . '</a> ' .
-                '<a class="button" href="' . esc_url(self::VERIFY_DOMAIN_GUIDE_URL) . '" target="_blank" rel="noopener">' . esc_html__('Step-by-step guide', 'cryptapi') . '</a>' .
-                '</p>' .
-                '</div>';
-        } else {
+        // The domain notice stays until the store owner clicks the button to
+        // say they have verified.
+        if ($this->has_blockbee_api_key()) {
             echo '<div class="notice notice-warning"><p>' .
                 sprintf(
                     esc_html__('You are using a BlockBee API key. BlockBee now has its own WooCommerce plugin, and we recommend you move to it: %1$sBlockBee Cryptocurrency Payment Gateway%2$s.', 'cryptapi'),
@@ -188,6 +202,27 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                     '</a>'
                 ) .
                 '</p></div>';
+        } elseif (!get_option('cryptapi_domain_verified_at')) {
+            $domain = self::store_domain();
+            $hide_url = wp_nonce_url(
+                admin_url('admin-post.php?action=cryptapi_hide_domain_notice'),
+                'cryptapi_hide_domain_notice'
+            );
+            echo '<div class="notice notice-warning">' .
+                '<p><strong>' . esc_html__('Verify your domain so customers can pay', 'cryptapi') . '</strong></p>' .
+                '<p>' .
+                sprintf(
+                    /* translators: %s: the store's domain, e.g. example.com */
+                    esc_html__('CryptAPI only creates payment addresses for verified domains. Until you verify %s, customers can\'t pay with CryptAPI. You only need to do this once, with a DNS TXT record or an HTTPS file. Payment addresses you already created keep working.', 'cryptapi'),
+                    '<code>' . esc_html($domain) . '</code>'
+                ) .
+                '</p>' .
+                '<p>' .
+                '<a class="button button-primary" href="' . esc_url(self::VERIFY_DOMAIN_URL) . '" target="_blank" rel="noopener">' . esc_html__('Verify your domain', 'cryptapi') . '</a> ' .
+                '<a class="button" href="' . esc_url(self::VERIFY_DOMAIN_GUIDE_URL) . '" target="_blank" rel="noopener">' . esc_html__('Step-by-step guide', 'cryptapi') . '</a> ' .
+                '<a class="button" href="' . esc_url($hide_url) . '">' . esc_html__('I\'ve verified my domain, hide this notice', 'cryptapi') . '</a>' .
+                '</p>' .
+                '</div>';
         }
         parent::admin_options();
         if (!empty($_GET['cryptapi_refreshed'])) {

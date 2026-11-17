@@ -769,3 +769,7 @@ msgstr ""
 "bitte steigen Sie darauf um. Wenn Sie dieses Feld leeren, wird es dauerhaft "
 "ausgeblendet, und jede aktivierte Kryptowährung benötigt unten ihre eigene "
 "Adresse."
+
+#: controllers/CryptAPI.php:222
+msgid "I've verified my domain, hide this notice"
+msgstr "Ich habe meine Domain verifiziert, diesen Hinweis ausblenden"

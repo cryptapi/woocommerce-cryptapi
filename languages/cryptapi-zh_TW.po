@@ -694,3 +694,7 @@ msgstr ""
 "（已棄用）BlockBee API金鑰應在%1$sBlockBee外掛%2$s中使用，請改用該外掛。如果"
 "您清空此欄位，它將被永久隱藏，且每種已啟用的加密貨幣都需要在下方填寫各自的地"
 "址。"
+
+#: controllers/CryptAPI.php:222
+msgid "I've verified my domain, hide this notice"
+msgstr "我已驗證網域，隱藏此通知"

@@ -141,7 +141,7 @@ Automatic updates should work like a charm; as always though, ensure you backup 
 6. Select which cryptocurrencies you wish to accept (control + click to select many)
 7. Input your addresses to the cryptocurrencies you selected. This is where your funds will be sent to, so make sure the addresses are correct.
 8. Click "Save Changes"
-9. Verify your store's domain at [cryptapi.io/verify_domain](https://cryptapi.io/verify_domain/), with a DNS TXT record or an HTTPS file. You only need to do this once, but customers can't pay with CryptAPI until you do.
+9. Verify your store's domain at [cryptapi.io/verify_domain](https://cryptapi.io/verify_domain/), with a DNS TXT record or an HTTPS file. You only need to do this once, but customers can't pay with CryptAPI until you do. When you're done, click "I've verified my domain, hide this notice" on the settings page.
 10. All done!
 
 ### Frequently Asked Questions
@@ -472,6 +472,9 @@ The easiest and fastest way is via our live chat on our [website](https://crypta
 * Domain verification notice
 * New plugin name
 * Translation updates
+
+#### 5.2.6
+* Button to hide the domain verification notice
 
 ### Upgrade Notice
 #### 4.3

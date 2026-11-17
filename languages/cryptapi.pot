@@ -654,3 +654,7 @@ msgid ""
 "move to it. If you clear this field, it will be hidden for good and each "
 "enabled cryptocurrency will need its own address below."
 msgstr ""
+
+#: controllers/CryptAPI.php:222
+msgid "I've verified my domain, hide this notice"
+msgstr ""

@@ -770,3 +770,7 @@ msgstr ""
 "(Obsoleto) As chaves de API BlockBee devem ficar no %1$splugin BlockBee%2$s, "
 "por favor mude para ele. Se você limpar este campo, ele ficará oculto para "
 "sempre e cada criptomoeda ativada precisará do próprio endereço abaixo."
+
+#: controllers/CryptAPI.php:222
+msgid "I've verified my domain, hide this notice"
+msgstr "Já verifiquei meu domínio, ocultar este aviso"

@@ -754,3 +754,7 @@ msgstr ""
 "BlockBee%2$s; por favor, cámbiese a él. Si vacía este campo, se ocultará "
 "para siempre y cada criptomoneda activada necesitará su propia dirección más "
 "abajo."
+
+#: controllers/CryptAPI.php:222
+msgid "I've verified my domain, hide this notice"
+msgstr "Ya he verificado mi dominio, ocultar este aviso"
