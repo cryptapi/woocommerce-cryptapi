@@ -99,7 +99,7 @@ class Api {
         return false;
     }
 
-    public static function get_static_qrcode($address, $coin, $value, $size = 300)
+    public static function get_static_qrcode($address, $coin, $value, $size = 300, $tries = 3, $timeout = 30)
     {
         if (empty($address)) {
             return null;
@@ -118,7 +118,7 @@ class Api {
             ];
         }
 
-        $response = self::_request($coin, 'qrcode', $params);
+        $response = self::_request($coin, 'qrcode', $params, false, $tries, $timeout);
 
         if ($response->status == 'success') {
             return ['qr_code' => $response->qr_code, 'uri' => $response->payment_uri];
@@ -180,7 +180,7 @@ class Api {
         return null;
     }
 
-    public static function get_conversion($from, $to, $value, $disable_conversion)
+    public static function get_conversion($from, $to, $value, $disable_conversion, $tries = 3, $timeout = 30)
     {
 
         if ($disable_conversion) {
@@ -193,7 +193,7 @@ class Api {
             'value' => $value,
         ];
 
-        $response = self::_request('', 'convert', $params);
+        $response = self::_request('', 'convert', $params, false, $tries, $timeout);
 
         if ($response->status == 'success') {
             return $response->value_coin;
@@ -258,7 +258,13 @@ class Api {
         return $params;
     }
 
-    private static function _request($coin, $endpoint, $params = [], $assoc = false)
+    /**
+     * @param int $tries   attempts before giving up (3 by default)
+     * @param int $timeout seconds allowed for each attempt (30 by default);
+     *                     the payment page's rate refresh uses 1 x 10 s so a
+     *                     slow API never keeps a shopper waiting long.
+     */
+    private static function _request($coin, $endpoint, $params = [], $assoc = false, $tries = 3, $timeout = 30)
     {
         $base_url = self::$base_url;
         if (!empty($params['apikey']) && $endpoint !== 'info') {
@@ -280,19 +286,27 @@ class Api {
             $url .= "?{$data}";
         }
 
-        for ($y = 0; $y < 3; $y++) {
+        $tries = max(1, (int) $tries);
+        $timeout = max(1, (int) $timeout);
+
+        for ($y = 0; $y < $tries; $y++) {
             try {
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 // Bound each attempt so a slow/unresponsive upstream cannot
-                // hang a PHP worker indefinitely (retried up to 3x below).
-                // 30s response timeout gives CryptAPI headroom when it is slow;
-                // the connect timeout stays tight since connecting is fast.
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                // hang a PHP worker indefinitely (retried up to $tries times).
+                // The 30s default gives CryptAPI headroom when it is slow; the
+                // connect timeout stays tight since connecting is fast.
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, min(5, $timeout));
+                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
                 $response = curl_exec($ch);
-                curl_close($ch);
+                // curl_close() does nothing since PHP 8.0 (the handle is freed
+                // when $ch goes away) and is deprecated in 8.5, where the notice
+                // could end up inside an AJAX JSON reply.
+                if (PHP_VERSION_ID < 80000) {
+                    curl_close($ch);
+                }
 
                 $response_json = json_decode($response, $assoc);
 

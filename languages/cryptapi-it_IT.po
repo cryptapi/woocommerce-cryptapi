@@ -785,3 +785,17 @@ msgstr ""
 #: controllers/CryptAPI.php:222
 msgid "I've verified my domain, hide this notice"
 msgstr "Ho verificato il mio dominio, nascondi questo avviso"
+
+#. translators: 1: amount paid, 2: coin, 3: transaction ID
+#: controllers/CryptAPI.php:1170
+msgid ""
+"Crypto total unavailable: payment of %1$s %2$s (TXID: %3$s) recorded, order "
+"not completed yet. It completes once a valid total is available and "
+"confirmed payments cover it, which may need another confirmed callback or "
+"the \"Check for Callbacks\" button."
+msgstr ""
+"Totale in cripto non disponibile: pagamento di %1$s %2$s (TXID: %3$s) "
+"registrato, ordine non ancora completato. Verrà completato quando sarà "
+"disponibile un totale valido e i pagamenti confermati lo copriranno, il che "
+"può richiedere un’altra callback confermata o il pulsante “Controlla le "
+"Callback”."

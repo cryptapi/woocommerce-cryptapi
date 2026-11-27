@@ -759,3 +759,17 @@ msgstr ""
 #: controllers/CryptAPI.php:222
 msgid "I've verified my domain, hide this notice"
 msgstr "Домен підтверджено, приховати це сповіщення"
+
+#. translators: 1: amount paid, 2: coin, 3: transaction ID
+#: controllers/CryptAPI.php:1170
+msgid ""
+"Crypto total unavailable: payment of %1$s %2$s (TXID: %3$s) recorded, order "
+"not completed yet. It completes once a valid total is available and "
+"confirmed payments cover it, which may need another confirmed callback or "
+"the \"Check for Callbacks\" button."
+msgstr ""
+"Підсумкова сума в криптовалюті недоступна: платіж %1$s %2$s (TXID: %3$s) "
+"записано, замовлення ще не завершено. Його буде завершено, коли з’явиться "
+"дійсна сума і підтверджені платежі її покриють. Для цього може знадобитися "
+"ще один підтверджений зворотний виклик або кнопка «Перевірити наявність "
+"зворотних викликів»."

@@ -699,3 +699,15 @@ msgstr ""
 #: controllers/CryptAPI.php:222
 msgid "I've verified my domain, hide this notice"
 msgstr "我已验证域名，隐藏此通知"
+
+#. translators: 1: amount paid, 2: coin, 3: transaction ID
+#: controllers/CryptAPI.php:1170
+msgid ""
+"Crypto total unavailable: payment of %1$s %2$s (TXID: %3$s) recorded, order "
+"not completed yet. It completes once a valid total is available and "
+"confirmed payments cover it, which may need another confirmed callback or "
+"the \"Check for Callbacks\" button."
+msgstr ""
+"加密货币总额不可用：已记录 %1$s %2$s 的支付（TXID：%3$s），订单尚未完成。当有"
+"效总额可用且已确认的支付足以覆盖时，订单将完成，这可能需要另一次已确认的回调"
+"或“检查回调”按钮。"

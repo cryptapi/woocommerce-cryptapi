@@ -802,11 +802,22 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                 $currency = get_woocommerce_currency();
 
                 $info = \CryptAPI\Utils\Api::get_info($selected);
-                $min_tx = \CryptAPI\Utils\Helper::sig_fig($info->minimum_transaction_coin, 8);
+                $min_tx = (is_object($info) && isset($info->minimum_transaction_coin))
+                    ? self::positive_amount($info->minimum_transaction_coin)
+                    : null;
 
-                $crypto_total = \CryptAPI\Utils\Api::get_conversion($currency, $selected, $total, $this->disable_conversion);
+                $crypto_total = self::positive_amount(\CryptAPI\Utils\Api::get_conversion($currency, $selected, $total, $this->disable_conversion));
 
-                if ($crypto_total < $min_tx) {
+                // Refuse the order when the minimum or the quote is missing. A
+                // loose `null < ""` check let such orders through with an empty
+                // total, which later counted as zero.
+                if ($min_tx === null || $crypto_total === null) {
+                    wc_add_notice(__('Payment error:', 'woocommerce') . ' ' . __('There was an error with the payment. Please try again.', 'cryptapi'), 'error');
+
+                    return null;
+                }
+
+                if (bccomp($crypto_total, $min_tx, 8) < 0) {
                     wc_add_notice(__('Payment error:', 'woocommerce') . ' ' . __('Value too low, minimum is', 'cryptapi') . ' ' . $min_tx . ' ' . strtoupper($selected), 'error');
 
                     return null;
@@ -845,7 +856,10 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
                 $load_coins = self::load_coins();
 
-                $order->update_status('on-hold', __('Awaiting payment', 'cryptapi') . ': ' . $load_coins[$selected]);
+                // Each coin is ['name' => ..., 'logo' => ...]; fall back to the ticker.
+                $coin_name = isset($load_coins[$selected]['name']) ? $load_coins[$selected]['name'] : strtoupper($selected);
+
+                $order->update_status('on-hold', __('Awaiting payment', 'cryptapi') . ': ' . $coin_name);
                 $woocommerce->cart->empty_cart();
 
                 return array(
@@ -880,7 +894,17 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         // which closes the DB connection and releases the lock).
         global $wpdb;
         $lock_name = 'cryptapi_order_' . (int) $data['order_id'];
-        $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, %d)', $lock_name, 10));
+        $locked = $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, %d)', $lock_name, 10));
+
+        // '0' = timed out behind another callback for this order. Confirmed
+        // callbacks get a 503 so the provider re-sends them. Pending ones carry
+        // on as before: they are never re-sent, and a 503 would lose their
+        // history entry. NULL (no lock function, e.g. a non-MySQL database
+        // layer) also keeps the old behaviour.
+        if ((string) $locked === '0' && (int) ($data['pending'] ?? 0) === 0) {
+            status_header(503);
+            die('*retry*');
+        }
 
         $order = new \WC_Order($data['order_id']);
 
@@ -993,7 +1017,7 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
 
             $cryptapi_pending = 0;
 
-            if ($remaining_pending <= 0 && !$order->is_paid()) {
+            if ($remaining_pending <= 0 && !$order->is_paid() && !empty($history)) {
                 $cryptapi_pending = 1;
             }
 
@@ -1058,7 +1082,16 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
                     $request_url = parse_url($logs[0]->request_url);
                     parse_str($request_url['query'], $data);
 
-                    if (empty($history[$data->uuid]) || (!empty($history[$data->uuid]) && (int)$history[$data->uuid]['pending'] === 1 && (int)$data['pending'] === 0)) {
+                    // Read the history afresh: the previous replay may have changed it.
+                    $history = json_decode($order->get_meta('cryptapi_history'), true) ?: [];
+
+                    // Replay new payments and every confirmed one. A confirmed
+                    // payment can be recorded without the order completing (its
+                    // total was unavailable, or the callback crashed), and a
+                    // replay is safe: notes are matched by TXID. Skip a pending
+                    // log for a payment already recorded, so a replay never
+                    // marks a confirmed payment as pending again.
+                    if (empty($history[$data['uuid']]) || (int)$data['pending'] === 0) {
                         $this->process_callback_data($data, $order, true);
                     }
                 }
@@ -1116,9 +1149,58 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         $order->update_meta_data('cryptapi_history', json_encode($history));
         $order->save_meta_data();
 
+        // A failed rate refresh in <= 5.2.6 could store a total of "0", and the
+        // next notification then completed the order. Never compute payment
+        // state on an invalid total.
+        $crypto_total = self::positive_amount($order->get_meta('cryptapi_total'));
+
+        // Confirmed callbacks (and admin replays of them) try one re-quote.
+        // Pending ones don't: they are never re-sent, and the next poll repairs
+        // the total (see refresh_value()).
+        if ($crypto_total === null && (int)$data['pending'] === 0) {
+            $crypto_total = $this->requote_total($order);
+
+            if ($crypto_total !== null) {
+                $order->save_meta_data();
+            }
+        }
+
+        if ($crypto_total === null) {
+            if ($order->get_meta('cryptapi_total_unavailable') !== '1') {
+                $order->add_order_note(
+                    sprintf(
+                        /* translators: 1: amount paid, 2: coin, 3: transaction ID */
+                        __('Crypto total unavailable: payment of %1$s %2$s (TXID: %3$s) recorded, order not completed yet. It completes once a valid total is available and confirmed payments cover it, which may need another confirmed callback or the "Check for Callbacks" button.', 'cryptapi'),
+                        $paid,
+                        $crypto_coin,
+                        $data['txid_in']
+                    ),
+                    false
+                );
+                $order->update_meta_data('cryptapi_total_unavailable', '1');
+                $order->save_meta_data();
+            }
+
+            if ($validation) {
+                return;
+            }
+
+            if ((int)$data['pending'] === 0) {
+                status_header(503); // the provider re-sends confirmed callbacks that don't get HTTP 200
+                die('*retry*');
+            }
+
+            die('*ok*');
+        }
+
+        // Tolerance (clamped 0-10%) in bcmath. The old float maths turned a
+        // total below 0.0001 into "9.0E-5", which bcmath rejects.
+        $tolerance = min(10, max(0, (int)$order->get_meta('cryptapi_tolerance')));
+        $total_due = bcdiv(bcmul($crypto_total, (string)(100 - $tolerance), 10), '100', 8);
+
         $calc = $this->calc_order(
             json_decode($order->get_meta('cryptapi_history'), true),
-            $order->get_meta('cryptapi_total') * (1 - min(10, max(0, (int) $order->get_meta('cryptapi_tolerance'))) / 100), // Calculate based on the tolerance (clamped 0-10%). If tolerance is 0, no tolerance is applied.
+            $total_due,
             $order->get_meta('cryptapi_total_fiat')
         );
 
@@ -1618,6 +1700,62 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
         }
     }
 
+    /**
+     * A strictly positive crypto amount as a plain decimal string, or null.
+     * Strings keep their form ('100' stays '100'; fractions are rounded to 8
+     * decimals, as sig_fig() does); ints and finite floats are formatted with
+     * 8 decimals. Rejects null, '', negatives, whitespace and exponent form
+     * ("1E-7"; such amounts are below every coin's minimum).
+     */
+    private static function positive_amount($value)
+    {
+        if (is_int($value) || is_float($value)) {
+            if (!is_finite((float) $value)) {
+                return null;
+            }
+            $value = number_format((float) $value, 8, '.', '');
+        }
+
+        if (!is_string($value) || !preg_match('/\A[0-9]+(\.[0-9]+)?\z/', $value)) {
+            return null;
+        }
+
+        $value = \CryptAPI\Utils\Helper::sig_fig($value, 8);
+
+        return bccomp($value, '0', 8) > 0 ? $value : null;
+    }
+
+    /**
+     * Re-quote the order in its own currency. Stores and returns the new
+     * total, or returns null and leaves the stored total untouched.
+     * $tries / $timeout are passed to the API request (3 x 30 s by default).
+     */
+    private function requote_total($order, $tries = 3, $timeout = 30)
+    {
+        // The order's currency, not get_woocommerce_currency(): with a currency
+        // switcher that is the shopper's current pick, and a callback request
+        // has no shopper session at all.
+        $currency = $order->get_currency();
+        if (empty($currency)) {
+            $currency = get_woocommerce_currency();
+        }
+
+        $total = self::positive_amount(\CryptAPI\Utils\Api::get_conversion(
+            $currency,
+            $order->get_meta('cryptapi_currency'),
+            $order->get_total('edit'),
+            $this->disable_conversion,
+            $tries,
+            $timeout
+        ));
+
+        if ($total !== null) {
+            $order->update_meta_data('cryptapi_total', $total);
+        }
+
+        return $total;
+    }
+
     function calc_order($history, $total, $total_fiat)
     {
         $already_paid = 0;
@@ -2021,56 +2159,110 @@ class WC_CryptAPI_Gateway extends \WC_Payment_Gateway
     {
         $value_refresh = (int)$this->refresh_value_interval;
 
-        if ($value_refresh === 0) {
+        // thankyou_page() calls this unconditionally; a paid order is never re-quoted.
+        if ($value_refresh === 0 || $order->is_paid()) {
             return false;
         }
 
-        $woocommerce_currency = get_woocommerce_currency();
         $last_price_update = $order->get_meta('cryptapi_last_price_update');
-        $min_tx = (float)$order->get_meta('cryptapi_min');
-        $history = json_decode($order->get_meta('cryptapi_history'), true);
-        $cryptapi_total = $order->get_meta('cryptapi_total');
-        $order_total = $order->get_total('edit');
 
         // Nothing to do until a full refresh interval has actually elapsed.
         if (empty($last_price_update) || (int)$last_price_update + $value_refresh >= time()) {
             return false;
         }
 
-        $calc = $this->calc_order($history, $cryptapi_total, $order_total);
-        $remaining = $calc['remaining'];
-        $remaining_pending = $calc['remaining_pending'];
+        // The payment page polls every 2 s without waiting for the previous
+        // answer, so during a slow /convert/ each poll would start its own
+        // re-quote and tie up a PHP worker. Allow one re-quote per order at a
+        // time, with the same lock as validate_payment() so it can't race a
+        // callback either. '0' = busy: this poll just reads the current state.
+        // NULL (no lock function, e.g. a non-MySQL database layer) carries on;
+        // claiming the slot early in refresh_value_locked() still stops most
+        // of the overlap.
+        global $wpdb;
+        $lock_name = 'cryptapi_order_' . (int)$order->get_id();
+        $locked = $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, %d)', $lock_name, 0));
 
-        // Re-quote the conversion rate only when it is safe to change the amount
-        // owed — i.e. no unconfirmed/partial payment is in flight. $remaining
-        // counts confirmed txs only; $remaining_pending counts pending ones too,
-        // so they differ exactly while a payment is unconfirmed. Re-quoting then
-        // would move the total a customer is part-way through paying.
-        if ($remaining === $remaining_pending && $remaining_pending > 0) {
-            $cryptapi_coin = $order->get_meta('cryptapi_currency');
-
-            $crypto_conversion = (float)\CryptAPI\Utils\Api::get_conversion($woocommerce_currency, $cryptapi_coin, $order_total, $this->disable_conversion);
-            $crypto_total = \CryptAPI\Utils\Helper::sig_fig($crypto_conversion, 8);
-            $order->update_meta_data('cryptapi_total', $crypto_total);
-
-            $calc_cron = $this->calc_order($history, $crypto_total, $order_total);
-            $crypto_remaining_total = $calc_cron['remaining_pending'];
-
-            if ($remaining_pending <= $min_tx && !$remaining_pending <= 0) {
-                $qr_code_data_value = \CryptAPI\Utils\Api::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $min_tx, $this->qrcode_size);
-            } else {
-                $qr_code_data_value = \CryptAPI\Utils\Api::get_static_qrcode($order->get_meta('cryptapi_address'), $cryptapi_coin, $crypto_remaining_total, $this->qrcode_size);
-            }
-
-            $order->update_meta_data('cryptapi_qr_code_value', $qr_code_data_value['qr_code']);
+        if ((string)$locked === '0') {
+            return false;
         }
 
-        // Always advance the price-update timestamp once the interval has
-        // elapsed, so the on-page countdown resets to a fresh interval instead
-        // of running past zero into negative territory (which the UI otherwise
-        // renders as a stuck 00:00 / bogus 59:xx). The rate itself only changes
-        // inside the guard above.
+        try {
+            return $this->refresh_value_locked($order->get_id(), $value_refresh);
+        } finally {
+            if ((string)$locked === '1') {
+                $wpdb->query($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $lock_name));
+            }
+        }
+    }
+
+    /**
+     * The re-quote itself. refresh_value() holds the order lock around it.
+     * Returns true when the order may have changed, so the caller reloads it.
+     */
+    private function refresh_value_locked($order_id, $value_refresh)
+    {
+        // Re-read under the lock: another request may have just refreshed.
+        $order = wc_get_order($order_id);
+
+        if (!$order) {
+            return false;
+        }
+
+        if ((int)$order->get_meta('cryptapi_last_price_update') + $value_refresh >= time()) {
+            return true;
+        }
+
+        // Claim the slot before any API call, so polls that arrive during a
+        // slow /convert/ don't start their own re-quote. This also resets the
+        // on-page countdown, whether or not the quote below succeeds.
         $order->update_meta_data('cryptapi_last_price_update', time());
+        $order->save_meta_data();
+
+        $min_tx = (float)$order->get_meta('cryptapi_min');
+        $history = json_decode($order->get_meta('cryptapi_history'), true);
+        $order_total = $order->get_total('edit');
+        $stored_total = self::positive_amount($order->get_meta('cryptapi_total'));
+
+        if ($stored_total === null) {
+            // No valid quote stored (5.2.6 and earlier saved "0" after a failed
+            // refresh): nothing to protect, so always try to re-quote, even
+            // with a payment in flight.
+            $requote = true;
+        } else {
+            // Re-quote only when it is safe to change the amount owed, i.e. no
+            // unconfirmed payment is in flight. $remaining counts confirmed txs
+            // only; $remaining_pending counts pending ones too, so they differ
+            // exactly while a payment is unconfirmed.
+            $calc = $this->calc_order($history, $stored_total, $order_total);
+            $requote = $calc['remaining'] === $calc['remaining_pending'] && $calc['remaining_pending'] > 0;
+        }
+
+        if ($requote) {
+            // This runs inside a shopper's request (the status poll or the
+            // thank-you page), so each API call gets one 10 s try instead of
+            // 3 x 30 s. A failed quote just waits for the next interval.
+            $tries = 1;
+            $timeout = 10;
+
+            // null = the quote failed: keep the previous total and QR code.
+            $crypto_total = $this->requote_total($order, $tries, $timeout);
+
+            if ($crypto_total !== null) {
+                $calc_new = $this->calc_order($history, $crypto_total, $order_total);
+                $remaining_new = $calc_new['remaining_pending'];
+
+                if ($remaining_new > 0) {
+                    $qr_value = $remaining_new <= $min_tx ? $min_tx : $remaining_new;
+                    $qr = \CryptAPI\Utils\Api::get_static_qrcode($order->get_meta('cryptapi_address'), $order->get_meta('cryptapi_currency'), number_format($qr_value, 8, '.', ''), $this->qrcode_size, $tries, $timeout);
+
+                    if (is_array($qr) && !empty($qr['qr_code'])) {
+                        $order->update_meta_data('cryptapi_qr_code_value', $qr['qr_code']);
+                    }
+                }
+            }
+        }
+
         $order->save_meta_data();
 
         return true;
